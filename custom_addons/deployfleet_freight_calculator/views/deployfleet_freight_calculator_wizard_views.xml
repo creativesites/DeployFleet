@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_freight_calculator_wizard_form" model="ir.ui.view">
+        <field name="name">deployfleet.freight.calculator.wizard.form</field>
+        <field name="model">deployfleet.freight.calculator.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="calculator_type"/>
+                    <field name="vehicle_id"/>
+                    <field name="distance_km"
+                           invisible="calculator_type == 'break_even'"/>
+                    <field name="revenue"
+                           invisible="calculator_type not in ('load_profit', 'cost_per_km', 'break_even')"/>
+                    <field name="tolls" invisible="calculator_type != 'load_profit'"/>
+                    <field name="currency_id" invisible="1"/>
+                </group>
+                <group invisible="not result_label" string="Result">
+                    <field name="result_label" nolabel="1"/>
+                    <field name="result"/>
+                </group>
+                <footer>
+                    <button name="action_compute" type="object" string="Compute" class="btn-primary"/>
+                    <button string="Close" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_freight_calculator_wizard" model="ir.actions.act_window">
+        <field name="name">Freight Calculator</field>
+        <field name="res_model">deployfleet.freight.calculator.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_freight_calculator_wizard"
+              name="Calculator"
+              parent="menu_deployfleet_calculator_root"
+              action="action_deployfleet_freight_calculator_wizard"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="1"/>
+</odoo>

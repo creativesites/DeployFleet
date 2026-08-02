@@ -1,0 +1,1 @@
+from . import deployfleet_freight_calculator_wizard

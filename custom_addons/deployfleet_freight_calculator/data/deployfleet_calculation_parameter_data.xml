@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Placeholder defaults — every value here is meant to be edited per
+         company under DeployFleet > Configuration > Calculation Parameters
+         before the calculator is relied on for real pricing decisions. -->
+    <record id="calc_param_diesel_price_per_l" model="deployfleet.calculation.parameter">
+        <field name="key">diesel_price_per_l</field>
+        <field name="name">Diesel Price per Litre</field>
+        <field name="value">25.0</field>
+    </record>
+    <record id="calc_param_consumption_l_per_100km" model="deployfleet.calculation.parameter">
+        <field name="key">consumption_l_per_100km</field>
+        <field name="name">Fuel Consumption (L/100km)</field>
+        <field name="value">35.0</field>
+    </record>
+    <record id="calc_param_driver_cost_per_trip" model="deployfleet.calculation.parameter">
+        <field name="key">driver_cost_per_trip</field>
+        <field name="name">Driver Cost per Trip</field>
+        <field name="value">500.0</field>
+    </record>
+    <record id="calc_param_maintenance_cost_per_km" model="deployfleet.calculation.parameter">
+        <field name="key">maintenance_cost_per_km</field>
+        <field name="name">Maintenance Cost per Km</field>
+        <field name="value">1.5</field>
+    </record>
+    <record id="calc_param_insurance_cost_per_trip" model="deployfleet.calculation.parameter">
+        <field name="key">insurance_cost_per_trip</field>
+        <field name="name">Insurance Allocation per Trip</field>
+        <field name="value">300.0</field>
+    </record>
+    <record id="calc_param_depreciation_cost_per_km" model="deployfleet.calculation.parameter">
+        <field name="key">depreciation_cost_per_km</field>
+        <field name="name">Depreciation Cost per Km</field>
+        <field name="value">2.0</field>
+    </record>
+    <record id="calc_param_tyre_price" model="deployfleet.calculation.parameter">
+        <field name="key">tyre_price</field>
+        <field name="name">Tyre Price</field>
+        <field name="value">4500.0</field>
+    </record>
+    <record id="calc_param_tyre_life_km" model="deployfleet.calculation.parameter">
+        <field name="key">tyre_life_km</field>
+        <field name="name">Tyre Life (km)</field>
+        <field name="value">60000.0</field>
+    </record>
+    <record id="calc_param_monthly_fixed_cost" model="deployfleet.calculation.parameter">
+        <field name="key">monthly_fixed_cost</field>
+        <field name="name">Monthly Fixed Cost (loan + insurance + overhead)</field>
+        <field name="value">15000.0</field>
+    </record>
+    <record id="calc_param_average_speed_kmh" model="deployfleet.calculation.parameter">
+        <field name="key">average_speed_kmh</field>
+        <field name="name">Average Speed (km/h)</field>
+        <field name="value">60.0</field>
+    </record>
+    <record id="calc_param_border_delay_hours" model="deployfleet.calculation.parameter">
+        <field name="key">border_delay_hours</field>
+        <field name="name">Border Delay (hours)</field>
+        <field name="value">2.0</field>
+    </record>
+    <record id="calc_param_rest_period_hours" model="deployfleet.calculation.parameter">
+        <field name="key">rest_period_hours</field>
+        <field name="name">Rest Period (hours)</field>
+        <field name="value">1.0</field>
+    </record>
+</odoo>

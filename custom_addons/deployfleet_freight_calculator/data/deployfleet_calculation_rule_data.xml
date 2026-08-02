@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="calc_rule_fuel_cost" model="deployfleet.calculation.rule">
+        <field name="key">fuel_cost</field>
+        <field name="name">Fuel Cost</field>
+        <field name="formula">(distance_km / consumption_l_per_100km * 100) * diesel_price_per_l</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+            (0, 0, {'name': 'consumption_l_per_100km', 'source': 'parameter'}),
+            (0, 0, {'name': 'diesel_price_per_l', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_driver_cost" model="deployfleet.calculation.rule">
+        <field name="key">driver_cost</field>
+        <field name="name">Driver Cost</field>
+        <field name="formula">driver_cost_per_trip</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'driver_cost_per_trip', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_maintenance_allocation_cost" model="deployfleet.calculation.rule">
+        <field name="key">maintenance_allocation_cost</field>
+        <field name="name">Maintenance Allocation Cost</field>
+        <field name="formula">distance_km * maintenance_cost_per_km</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+            (0, 0, {'name': 'maintenance_cost_per_km', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_insurance_allocation_cost" model="deployfleet.calculation.rule">
+        <field name="key">insurance_allocation_cost</field>
+        <field name="name">Insurance Allocation Cost</field>
+        <field name="formula">insurance_cost_per_trip</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'insurance_cost_per_trip', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_depreciation_cost" model="deployfleet.calculation.rule">
+        <field name="key">depreciation_cost</field>
+        <field name="name">Depreciation Cost</field>
+        <field name="formula">distance_km * depreciation_cost_per_km</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+            (0, 0, {'name': 'depreciation_cost_per_km', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_tyre_cost" model="deployfleet.calculation.rule">
+        <field name="key">tyre_cost</field>
+        <field name="name">Tyre Cost</field>
+        <field name="formula">distance_km * (tyre_price / tyre_life_km)</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+            (0, 0, {'name': 'tyre_price', 'source': 'parameter'}),
+            (0, 0, {'name': 'tyre_life_km', 'source': 'parameter'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_load_profit" model="deployfleet.calculation.rule">
+        <field name="key">load_profit</field>
+        <field name="name">Load Profit</field>
+        <field name="formula">revenue - (fuel_cost + tolls + driver_cost + maintenance_allocation_cost + insurance_allocation_cost + depreciation_cost)</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'revenue', 'source': 'input'}),
+            (0, 0, {'name': 'tolls', 'source': 'input'}),
+            (0, 0, {'name': 'fuel_cost', 'source': 'input'}),
+            (0, 0, {'name': 'driver_cost', 'source': 'input'}),
+            (0, 0, {'name': 'maintenance_allocation_cost', 'source': 'input'}),
+            (0, 0, {'name': 'insurance_allocation_cost', 'source': 'input'}),
+            (0, 0, {'name': 'depreciation_cost', 'source': 'input'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_cost_per_km" model="deployfleet.calculation.rule">
+        <field name="key">cost_per_km</field>
+        <field name="name">Cost per Km</field>
+        <field name="formula">(fuel_cost + driver_cost + maintenance_allocation_cost + insurance_allocation_cost + depreciation_cost) / distance_km</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'fuel_cost', 'source': 'input'}),
+            (0, 0, {'name': 'driver_cost', 'source': 'input'}),
+            (0, 0, {'name': 'maintenance_allocation_cost', 'source': 'input'}),
+            (0, 0, {'name': 'insurance_allocation_cost', 'source': 'input'}),
+            (0, 0, {'name': 'depreciation_cost', 'source': 'input'}),
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_break_even_trips_per_month" model="deployfleet.calculation.rule">
+        <field name="key">break_even_trips_per_month</field>
+        <field name="name">Break-even Trips per Month</field>
+        <field name="formula">monthly_fixed_cost / (revenue_per_trip - variable_cost_per_trip)</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'monthly_fixed_cost', 'source': 'parameter'}),
+            (0, 0, {'name': 'revenue_per_trip', 'source': 'input'}),
+            (0, 0, {'name': 'variable_cost_per_trip', 'source': 'input'}),
+        ]"/>
+    </record>
+
+    <record id="calc_rule_trip_time_hours" model="deployfleet.calculation.rule">
+        <field name="key">trip_time_hours</field>
+        <field name="name">Trip Time (hours)</field>
+        <field name="formula">(distance_km / average_speed_kmh) + border_delay_hours + rest_period_hours</field>
+        <field name="variable_ids" eval="[
+            (0, 0, {'name': 'distance_km', 'source': 'input'}),
+            (0, 0, {'name': 'average_speed_kmh', 'source': 'parameter'}),
+            (0, 0, {'name': 'border_delay_hours', 'source': 'parameter'}),
+            (0, 0, {'name': 'rest_period_hours', 'source': 'parameter'}),
+        ]"/>
+    </record>
+</odoo>
