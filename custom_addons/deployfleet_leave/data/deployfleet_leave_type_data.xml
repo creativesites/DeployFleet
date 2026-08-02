@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="leave_type_annual" model="deployfleet.leave.type">
+        <field name="name">Annual Leave</field>
+        <field name="default_days_per_year">24</field>
+    </record>
+    <record id="leave_type_sick" model="deployfleet.leave.type">
+        <field name="name">Sick Leave</field>
+        <field name="default_days_per_year">14</field>
+    </record>
+    <record id="leave_type_compassionate" model="deployfleet.leave.type">
+        <field name="name">Compassionate Leave</field>
+        <field name="default_days_per_year">5</field>
+    </record>
+</odoo>
