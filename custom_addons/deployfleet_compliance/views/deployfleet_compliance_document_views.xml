@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_compliance_document_form" model="ir.ui.view">
+        <field name="name">deployfleet.compliance.document.form</field>
+        <field name="model">deployfleet.compliance.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="document_type_id"/>
+                            <field name="res_model"/>
+                            <field name="res_id"/>
+                            <field name="reference_number"/>
+                        </group>
+                        <group>
+                            <field name="issue_date"/>
+                            <field name="expiry_date"/>
+                            <field name="state"/>
+                            <field name="verified"/>
+                        </group>
+                    </group>
+                    <field name="attachment" widget="binary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_compliance_document_list" model="ir.ui.view">
+        <field name="name">deployfleet.compliance.document.list</field>
+        <field name="model">deployfleet.compliance.document</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="document_type_id"/>
+                <field name="res_model"/>
+                <field name="res_id"/>
+                <field name="expiry_date"/>
+                <field name="verified"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'valid'"
+                       decoration-warning="state == 'expiring_soon'"
+                       decoration-danger="state == 'expired'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_compliance_document" model="ir.actions.act_window">
+        <field name="name">Compliance Documents</field>
+        <field name="res_model">deployfleet.compliance.document</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_deployfleet_compliance_document_type_list" model="ir.ui.view">
+        <field name="name">deployfleet.compliance.document.type.list</field>
+        <field name="model">deployfleet.compliance.document.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="applies_to_model"/>
+                <field name="requires_expiry"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_compliance_document_type" model="ir.actions.act_window">
+        <field name="name">Document Types</field>
+        <field name="res_model">deployfleet.compliance.document.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_compliance_root"
+              name="Compliance"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="55"/>
+    <menuitem id="menu_deployfleet_compliance_document"
+              name="Documents"
+              parent="menu_deployfleet_compliance_root"
+              action="action_deployfleet_compliance_document"
+              sequence="10"/>
+    <menuitem id="menu_deployfleet_compliance_document_type"
+              name="Document Types"
+              parent="menu_deployfleet_compliance_root"
+              action="action_deployfleet_compliance_document_type"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="20"/>
+</odoo>
