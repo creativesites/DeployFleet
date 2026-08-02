@@ -1,6 +1,6 @@
 # Deployment
 
-**Current status: no DeployFleet deployment work has happened yet.** This document records the rules that govern deployment once it starts, and the pre-flight steps required before the first one — it is not a record of anything already done to the demo server.
+**Current status: tooling is in place, nothing has run against the demo server yet.** `scripts/preflight-inventory.sh`, `scripts/deploy-demo.sh`, `deploy/docker-compose.prod.yml`, and `.env.production.example` exist and are ready to use — see "Deployment tooling" below — but the pre-flight inventory itself has not been executed, because this session has no SSH access to `199.192.23.46` and the credential exposed earlier in this project's chat history has not been confirmed rotated. Do not treat the existence of these scripts as evidence anything has been deployed.
 
 ## Demo server
 
@@ -37,6 +37,18 @@ Before provisioning anything for DeployFleet on this server, inventory what's al
 - Reverse proxy configuration (nginx/Traefik/Caddy — whichever is in use) — confirm how the existing instances are routed, so DeployFleet's own routing addition doesn't shadow or conflict with an existing `server_name`/host rule.
 
 Record the results of this inventory in this file (or a linked doc) once it's done, so the next session doesn't have to re-derive it from scratch.
+
+## Deployment tooling — what exists now
+
+| File | Purpose |
+|---|---|
+| `scripts/preflight-inventory.sh` | Runs exactly the read-only checks listed above over SSH (`docker ps -a`, `docker compose ls`, `ss -tlnp`, `docker volume ls`/`network ls`, per-container `psql -l`, nginx config presence, `df -h`) and writes a timestamped report to `scripts/.preflight-reports/` (gitignored — never commit a report, it reveals what else runs on a shared server). Runs nothing that creates, modifies, or removes anything remotely. |
+| `deploy/docker-compose.prod.yml` | The isolated DeployFleet stack: named project (`deployfleet`), dedicated named volumes (`deployfleet_prod_postgres`, `deployfleet_prod_filestore`), Postgres with no host port mapping at all (reachable only from the `odoo` service on the internal compose network), Odoo ports required from `.env.production` with no defaults — so a missing port variable fails loudly instead of silently reusing a port that might collide with the existing instances. |
+| `deploy/odoo.prod.conf.template` | Rendered by `scripts/deploy-demo.sh` (via `envsubst`) into `deploy/.generated/odoo.prod.conf` at deploy time — never committed, since the rendered file contains the real `admin_passwd`. |
+| `.env.production.example` | Placeholder-only template for `.env.production` (gitignored) — SSH target, dedicated Postgres DB/user, Odoo ports, master password, remote directory. |
+| `scripts/deploy-demo.sh` | Brings up `deploy/docker-compose.prod.yml` on the demo server. **Refuses to run without `--confirm-preflight-reviewed`** — an explicit assertion that a human actually read a pre-flight report and confirmed no port/DB/volume collisions, not just that the flag was typed. Module installation (`--init-db`) is a separate opt-in flag, since creating the database is a one-time bootstrap action distinct from routine redeploys. Does not touch reverse-proxy config — wiring that up is called out as a deliberate, separate step, per the architecture diagram below. |
+
+None of these have been run against the real server yet. The next session with real SSH access should run `scripts/preflight-inventory.sh` first, review the report by hand, fill in `.env.production` with ports/names confirmed free from that report, and only then run `scripts/deploy-demo.sh --confirm-preflight-reviewed --init-db`.
 
 ## Credential handling
 

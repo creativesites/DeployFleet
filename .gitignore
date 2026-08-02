@@ -12,8 +12,11 @@ odoo.log
 
 # Env / secrets
 .env
+.env.production
 *.pem
 *.key
+deploy/.generated/
+scripts/.preflight-reports/
 
 # Node / mobile (once mobile/ exists)
 node_modules/
