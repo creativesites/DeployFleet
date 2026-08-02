@@ -1,106 +1,106 @@
 # 05 — Phased Implementation Roadmap
 
-Sequenced so that every phase produces something demoable and nothing later depends on an unstable earlier decision. **No phase below should start until the architecture in [04-module-structure.md](04-module-structure.md) is agreed** — this roadmap assumes that agreement has happened.
+*Revision 2 — replaces the original 7-phase sequence with the 5-phase order from architecture review (Operational Foundation → Cost Control → Compliance → Customer Platform → Intelligence), which is a clearer story to sell internally and to a first customer than the earlier phase split. Phase 0 (foundation decisions) is kept as an explicit prerequisite gate, since none of the 5 phases below should start before it's resolved. Module names updated to `deployfleet_*`.*
 
 ## Phase 0 — Foundation decisions & repo scaffolding
 
-**Goal:** resolve the decisions that every other module depends on, so later phases aren't rework.
+**Goal:** resolve the decisions every other module depends on, so later phases aren't rework.
 
-- Confirm the vehicle-model decision from [03-refactoring-roadmap.md](03-refactoring-roadmap.md) §A.1 (extend Odoo core `fleet.vehicle` vs. standalone `dfleet.vehicle`) — this is the single highest-leverage decision in the whole plan; get it wrong and `fleet_vehicle_registry`, `fleet_fuel_management`, and `fleet_workshop` all need rework later.
-- Confirm Odoo edition target (Community vs. Enterprise) — affects whether `fleet_billing_account`'s GL bridge is core-scope or optional, and whether native Fleet app features assumed in Phase 0 are actually available at the Community tier (verify — some Fleet app niceties are Enterprise-only).
-- Scaffold the repo: CI (GitHub Actions — Odoo `--test-enable`, mobile typecheck), linters (`ruff`/`pylint-odoo`, ESLint), `mobile/package-lock.json` committed from the first mobile-touching commit, Docker Compose dev stack (mirroring the source's `deploy/docker-compose.yml`, updated to whatever Odoo version is targeted).
-- Build `fleet_base`: driver profile fields, license classes, qualifications, role groups (`group_fleet_driver` → `..._dispatcher` → `..._manager` → `..._owner`, plus HR/Payroll Officer and Auditor).
-- Build minimal `deployfleet_licensing` and `deployfleet_theme` (even a stub) — every later module's manifest and login screen benefits from these existing early, and they carry over from the source with the least risk.
+- Confirm the vehicle-delegation decision in [03-refactoring-roadmap.md](03-refactoring-roadmap.md) §A.2 (`deployfleet.vehicle` via `_inherits` over `fleet.vehicle`) — the highest-leverage decision in the whole plan.
+- Confirm Odoo edition target (Community vs. Enterprise).
+- Scaffold the repo: CI (Odoo `--test-enable`, mobile typecheck), linters, `mobile/package-lock.json` committed from the first mobile commit, Docker Compose dev stack.
+- Build `deployfleet_core` (identity, shared mixins) and `deployfleet_security` (role groups + licensing).
+- Build `deployfleet_event_bus` as its generalized, subscriber-registry form (not the source's hardcoded if-chain) — see [02-reuse-strategy.md](02-reuse-strategy.md) §0 and [03-refactoring-roadmap.md](03-refactoring-roadmap.md). Every module from Phase 1 onward should publish onto it from the start.
 
-**Exit criteria:** a running Odoo instance with `fleet_base` installed, one test company, one test driver record, CI green on an empty test suite, and the vehicle-model decision written down as an ADR (Architecture Decision Record — the source repo's `docs/adr/` pattern is worth carrying forward for exactly this kind of decision).
+**Exit criteria:** a running Odoo instance with `deployfleet_core`/`deployfleet_security`/`deployfleet_event_bus` installed, one test company, CI green on an empty test suite, and the vehicle-delegation decision written down as an ADR.
 
-## Phase 1 — Core Dispatch MVP
+---
 
-**Goal:** the walking skeleton. A dispatcher can plan a route, assign a driver and vehicle to a trip, and see it through to a logged actual trip. This is the demo that proves the fork thesis — "the fleet module was already 80% of a real product."
+## Phase 1 — Operational Foundation
 
-**Modules:** `fleet_operations`, `fleet_dispatch`, `fleet_dispatch_planner`, `fleet_vehicle_registry`, `fleet_route_planning`, `fleet_trip_management`, `fleet_trip_execution`.
+**Goal:** a company can run daily operations. This is the demo that proves the fork thesis and matches the MVP-12 core from [04-module-structure.md](04-module-structure.md).
 
-- Client/contract/depot data model (`fleet_operations`) — direct descendant of `security_operations`'s client/site layer, least risky part of the whole Phase 1 remodel.
-- Trip requirement → dispatch batch → trip assignment (`fleet_dispatch`) — the core remodel effort flagged in the audit; budget real design time here, this is not a rename.
-- Dispatch Board OWL client (`fleet_dispatch_planner`) — port the Roster Board's interaction model (drag-drop, constraint highlighting) against the new trip-assignment domain.
-- Vehicle registry extending `fleet.vehicle` (or standalone, per the Phase 0 decision), routes/stops, trip records with planned-vs-actual tracking (`fleet_trip_execution` — direct descendant of `security_attendance`'s scheduled-vs-actual pattern).
+**Modules:** `deployfleet_hr`, `deployfleet_driver`, `deployfleet_vehicle`, `deployfleet_customer`, `deployfleet_route`, `deployfleet_dispatch` (shipment/load modeled inline per the MVP packaging note), `deployfleet_trip`, `deployfleet_delivery`.
 
-**Exit criteria:** dispatcher creates a route, generates a trip requirement, assigns driver + vehicle via the Dispatch Board, trip executes, actual departure/arrival/odometer logged. Demoable end-to-end without payroll, billing, or mobile yet.
+- Client/contract/depot data model (`deployfleet_customer`) — direct descendant of `security_operations`'s client/site layer, least risky part of this phase.
+- Shipment/load fields (what, how much, pickup, drop-off, weight) and dispatch (trip requirement → dispatch batch → trip assignment) — the core domain-remodel effort; budget real design time here. See [07-domain-model-erd.md](07-domain-model-erd.md) for the entity model this phase builds against.
+- Dispatch Board OWL client — port the Roster Board's interaction model (drag-drop, constraint highlighting) against the new trip-assignment domain.
+- `deployfleet_vehicle` via delegation over `fleet.vehicle`; routes/stops; trip records with planned-vs-actual tracking (direct descendant of `security_attendance`'s scheduled-vs-actual pattern); delivery/POD as the trip's terminal state.
+- Every state transition (dispatch created, trip departed, delivery completed) publishes onto `deployfleet_event_bus`.
 
-## Phase 2 — Workshop, maintenance & compliance
+**Exit criteria:** a dispatcher creates a shipment, generates a trip requirement, assigns driver + vehicle via the Dispatch Board, the trip executes, and a proof-of-delivery is captured. Demoable end-to-end without cost-control, compliance, billing, or mobile yet.
 
-**Goal:** the differentiated "operations platform" features the vision calls out by name — this is where DeployFleet stops looking like "DeployGuard with different labels" and starts looking like a trucking product.
+---
 
-**Modules:** `fleet_fuel_management`, `fleet_inspection`, `fleet_spare_parts`, `fleet_tyre_lifecycle`, `fleet_workshop`, `fleet_preventive_maintenance`, `fleet_breakdown_management`, `fleet_compliance_documents`, `fleet_compliance_dispatch`, `fleet_insurance_tracking`.
+## Phase 2 — Cost Control
 
-- Document/expiry engine (`fleet_compliance_documents`) generalized to the polymorphic driver-or-vehicle link described in [02-reuse-strategy.md](02-reuse-strategy.md) §1 — build this once, correctly, since both driver documents (license, medical) and vehicle documents (registration, insurance, roadworthiness) need it.
-- Spare parts + tyre lifecycle + workshop job cards, in that dependency order (parts before workshop, since job cards consume parts).
-- Preventive maintenance scheduling and breakdown management, both riding on the workshop job-card workflow.
-- Compliance-dispatch bridge — block trip assignment against expired driver/vehicle documents, with the emergency-override + audit-trail pattern carried from `security_compliance_roster`.
+**Goal:** save money. The first phase where the product visibly pays for itself beyond "replacing a spreadsheet."
 
-**Exit criteria:** a vehicle with an expired inspection or insurance document cannot be dispatched without a logged override; a job card can be opened from a breakdown report, consume spare parts, and close; a preventive-maintenance reminder fires from odometer or calendar triggers.
+**Modules:** `deployfleet_fuel`, `deployfleet_maintenance`, `deployfleet_tyres`, `deployfleet_parts`, `deployfleet_workshop`, `deployfleet_assets`.
 
-## Phase 3 — HR & payroll (driver workforce)
+- Fuel logs, consumption analytics, and the first real AI hook (fuel-anomaly detection) once there's enough trip/fuel data flowing from Phase 1 to make it useful — even a simple threshold rule is worth shipping before the full AI engine lands in Phase 5.
+- Parts before tyres before workshop, in that dependency order (parts are consumed by both tyre replacement and job cards).
+- Preventive maintenance scheduling and workshop job cards, both riding on the same open→diagnose→repair→close state machine inherited from the source's equipment-damage pattern.
+- Non-vehicle asset register (trailers, containers, tools, safety equipment) — independent of the vehicle/workshop chain, can be built in parallel.
 
-**Goal:** drivers get paid correctly, and the multi-country payroll decoupling from [03-refactoring-roadmap.md](03-refactoring-roadmap.md) is implemented, not just planned.
+**Exit criteria:** a job card can be opened from a maintenance-due alert, consume tracked parts, and close; fuel consumption per vehicle/route is visible and flags outliers.
 
-**Modules:** `fleet_payroll_core` (with the `fleet_l10n_zm` dependency inversion fixed — see below), `fleet_l10n_zm`, `fleet_leave`, `fleet_loans`, `fleet_discipline`, `fleet_discipline_payroll_bridge`.
+---
 
-- Build `fleet_payroll_core` depending only on `fleet_operations`/`fleet_leave`/`hr` — verify at manifest-review time that no country pack is a dependency.
-- `fleet_l10n_zm` ships Zambia statutory rules (NAPSA/NHIMA/WCF/PAYE) as data, not code, consistent with the source's "configuration over code" pattern.
-- This phase is also where driver rest-hour / consecutive-driving-day hard constraints get added to `fleet_dispatch_planner` (deferred from Phase 1, tracked explicitly per [03-refactoring-roadmap.md](03-refactoring-roadmap.md) — these are a bigger deal in trucking than the equivalent guard-shift rest rules were in DeployGuard, so don't let this slip past Phase 3).
+## Phase 3 — Compliance
 
-**Exit criteria:** a Zambian driver's payslip computes correctly from logged trips, with loan/discipline deductions applied; the Dispatch Board refuses (or flags) an assignment that violates rest-hour rules.
+**Goal:** become mission-critical — the point where a customer can't easily go back to spreadsheets and paper trip sheets, because the platform is now where legal/safety liability is tracked and enforced, not just recorded.
 
-## Phase 4 — Billing & finance
+**Modules:** `deployfleet_compliance`, `deployfleet_vehicle_compliance`, `deployfleet_dispatch_compliance`, `deployfleet_insurance`, `deployfleet_payroll` (with the country-pack decoupling fix implemented, not just planned), `deployfleet_l10n_zm`, `deployfleet_leave`, `deployfleet_loans`, `deployfleet_driver_performance`.
 
-**Goal:** the company gets paid.
+- Polymorphic document/expiry engine generalized correctly the first time — both driver documents (license, medical) and vehicle documents (registration, insurance, roadworthiness) build on the same base per [02-reuse-strategy.md](02-reuse-strategy.md) §1.
+- Dispatch-blocking enforcement (`deployfleet_dispatch_compliance`) against expired documents, with the emergency-override + audit-trail pattern carried from `security_compliance_roster` — and driver rest-hour / consecutive-driving-day hard constraints added to `deployfleet_dispatch`'s scoring engine. Per [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #3, this is core scope here, not a deferred nice-to-have, given the regulatory/safety stakes of trucking.
+- Zambian payroll (NAPSA/NHIMA/WCF/PAYE) computed correctly from logged trips, loan/performance deductions applied.
 
-**Modules:** `fleet_billing`, `fleet_accounting_controls`, `fleet_client_reports`, `fleet_zra_invoice`, `fleet_billing_account`, `fleet_billing_crm`, `fleet_billing_sale`, `fleet_reconciliation_core`, `fleet_reconciliation_billing_account`.
+**Exit criteria:** a vehicle with expired insurance cannot be dispatched without a logged override; a driver assignment that violates rest-hour rules is flagged or blocked; a Zambian driver's payslip computes correctly.
 
-- Rate cards per trip/tonnage/distance/lane, replacing per-shift/per-post billing plans.
-- ZRA Smart Invoice wired to the renamed billing invoice model — needed for legal compliance in the Zambia launch market, not optional.
-- Standard Odoo CRM/Sales/Accounting bridges, following the source's `auto_install` bridge pattern.
+---
 
-**Exit criteria:** a completed trip generates an invoice line automatically; a Zambian invoice submits successfully to ZRA VSDC in a sandbox/test environment.
+## Phase 4 — Customer Platform
 
-## Phase 5 — Mobile app & customer portal
+**Goal:** differentiate from spreadsheets, WhatsApp, and paper trip sheets — the customer-facing proof that this is a real operations platform, not just an internal tool.
 
-**Goal:** field usability — the product stops being a back-office tool only.
+**Modules:** `deployfleet_billing`, `deployfleet_accounting`, `deployfleet_zra`, `deployfleet_client_reports`, `deployfleet_customer_portal`, `deployfleet_mobile_dispatcher`, `deployfleet_mobile_customer`, `deployfleet_mobile_push_bridge`, `deployfleet_notifications` (fully wired as an event-bus subscriber).
 
-**Modules:** `fleet_mobile_api`, `fleet_mobile_bridge`, `fleet_customer_portal`, plus the Expo mobile app rebuild.
+- Rate cards per trip/tonnage/distance/lane; ZRA Smart Invoice wired to the renamed billing model — a legal requirement for the Zambia launch market, not optional.
+- Customer portal: shipment status, active trips, proof-of-delivery — this is what makes DeployFleet visibly better than a WhatsApp group and a paper trip sheet.
+- Dispatcher and customer mobile apps follow the driver app shipped in the MVP; push notifications wired end-to-end (dispatch alerts, breakdown reports) rather than left as the source's unwired device-token field.
 
-- Rebuild mobile controllers role-by-role (driver, dispatcher, fleet manager, owner), fixing the field-name and role-detection debt items as they're rewritten (per [03-refactoring-roadmap.md](03-refactoring-roadmap.md) — don't reproduce them).
-- Wire push notifications end-to-end (bring forward from the source's "planned but not implemented" list — dispatch alerts are more time-critical for this product than the source's use case).
-- Customer portal: shipment status, active trips, proof-of-delivery.
+**Exit criteria:** a completed trip generates an invoice automatically and submits successfully to ZRA VSDC in a test environment; a customer can see their shipment's live status; a dispatcher gets a push alert on a breakdown report.
 
-**Exit criteria:** a driver can see and acknowledge an assigned trip on the mobile app; a dispatcher gets a push alert on a breakdown report; a customer can see their shipment's live status on the portal.
+---
 
-## Phase 6 — AI & automation
+## Phase 5 — Intelligence
 
-**Goal:** the differentiated intelligence layer, once there's enough real operational data flowing through Phases 1–5 for it to be useful (AI features on empty data are a demo, not a product).
+**Goal:** become the "smart logistics operating system" — differentiated AI value, sequenced last because it needs Phases 1–4's real operational data to be useful rather than a demo running on seed data.
 
-**Modules:** `fleet_ai_engine`, `fleet_ai_whatsapp_bridge`.
+**Modules:** `deployfleet_ai`, `deployfleet_ai_whatsapp`.
 
-- Port the provider-abstraction/config/cache/chat infrastructure verbatim.
-- Reframe the 10 features per [02-reuse-strategy.md](02-reuse-strategy.md): fuel/fraud anomaly detection, driver risk scoring, freight billing audit, dispatch optimizer, trip-fill suggestions, breakdown/accident advisor, license/insurance-renewal nudges, performance review, payslip explanation, WhatsApp-based driver check-in and breakdown reporting.
+- Port the provider-abstraction/config/cache/chat infrastructure verbatim; reframe the feature set per [02-reuse-strategy.md](02-reuse-strategy.md): fuel/fraud anomaly detection, predictive maintenance ("service likely required within 800km"), dispatch assistant (recommend truck X over truck Y with a stated reason), driver risk scoring, freight billing audit, payment-risk intelligence (late-paying customers), license/insurance-renewal nudges, driver performance review, payslip explanation, WhatsApp-based check-in and breakdown reporting.
+- AI features should read from `deployfleet_event_bus` where practical (a stream of fuel, breakdown, and delivery events) rather than only batch-querying tables, so they benefit from the same real-time signal dispatch and notifications already use.
 
-**Exit criteria:** at least 3 of the 10 AI features are live against real (not seeded-only) operational data from a pilot customer.
+**Exit criteria:** at least 3 of the AI features are live against real (not seeded-only) operational data from a pilot customer.
 
-## Phase 7 — Regional expansion readiness
+---
 
-**Goal:** prove the "expand to regional logistics operators" thesis without another rewrite.
+## Beyond Phase 5 — regional expansion readiness
 
-- Activate `fleet_l10n_na` (already dormant-but-ready per the decoupling done in Phase 3) as the first test of "does adding a country actually just mean adding a data pack."
-- GPS integration (explicitly deferred to this phase in the vision — correctly sequenced last, since it's an integration point that depends on trip/route models being stable).
-- Multi-company hardening: verify record rules, billing, and payroll correctly scope by company across a multi-country group.
+Not a numbered phase because it's not gated on Phase 5 completing — it's ongoing validation work that should start as early as Phase 0–1 and come due once a second market is actually being pursued:
 
-**Exit criteria:** a second country's payroll pack installs and runs correctly with zero changes to `fleet_payroll_core`; a pilot customer's GPS feed populates `fleet_trip_execution` actuals automatically instead of manual entry.
+- Activate `deployfleet_l10n_na` (dormant-but-ready per the Phase 3 decoupling work) as the first real test of "does adding a country actually just mean adding a data pack."
+- GPS integration — deferred by the product vision, and correctly sequenced after trip/route models are stable, but the *integration contract* (what fields, what update frequency, what vendor/protocol) should be scoped early per [06-risks-and-recommendations.md](06-risks-and-recommendations.md), even if implementation waits, to avoid reworking `deployfleet_trip` later.
+- Multi-company/multi-country hardening: record rules, billing, and payroll correctly scoped by company across a multi-country group.
 
 ---
 
 ## Cross-cutting, ongoing across all phases
 
-- `deployfleet_suite` and demo data (`deployfleet_demo_data_zm`) are living documents — update the meta-installer's dependency list and demo dataset at the end of each phase, not once at the very end.
-- Every phase that touches the mobile app should update `mobile/package-lock.json` and keep CI green — this is cheap now, expensive to retrofit (per the source's own documented debt).
-- Every new country pack, new deduction type, or new mobile screen should follow the extension-point patterns catalogued in the source `ARCHITECTURE.md` §11 (new country = new `l10n` pack depending on core; new deduction = model + `_inherit` on payslip; new mobile screen = controller + API module + Expo route) — these patterns are inherited unchanged and are good Odoo practice, not something specific to the security domain.
+- `deployfleet_suite` and demo data (`deployfleet_demo_data_zm`) are living documents — update at the end of each phase, not once at the very end.
+- Keep CI green and `mobile/package-lock.json` current on every phase that touches the mobile app.
+- New country pack, new deduction type, new mobile screen, new event type: follow the extension-point patterns catalogued in the source `ARCHITECTURE.md` §11 — inherited unchanged, good Odoo practice independent of the security-guard domain.
+- Re-validate the domain model in [07-domain-model-erd.md](07-domain-model-erd.md) against real trucking-company workflows (spot loads, backhauls, owner-operator vs. company-owned trucks) before Phase 1 schema is treated as frozen — see [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #4. This is cheap to do now and expensive to fix once Phases 2–4 are built on top of an unvalidated shipment/dispatch schema.

@@ -1,182 +1,205 @@
 # 04 — Proposed DeployFleet Module Structure
 
-This is the target module list resulting from the audit in [01-module-audit.md](01-module-audit.md), applying the naming convention from [03-refactoring-roadmap.md](03-refactoring-roadmap.md). It assumes the recommended decision from that document — DeployFleet extends Odoo's native `fleet.vehicle`/`fleet` app rather than reinventing vehicle master data — pending confirmation.
+*Revision 2 — adopts the `deployfleet_*` namespace throughout, the domain-grouping structure from architecture review (Foundation / People / Fleet Assets / Operations / Finance / Reporting / Mobile / Intelligence), the vehicle-delegation pattern from [03-refactoring-roadmap.md](03-refactoring-roadmap.md), the event bus as a foundation-layer module, the 3-way equipment split (parts/tyres/assets), the 3-way mobile split, and the MVP-12 first-release scope — reconciled against the more granular bridge/localization modules this document already had in v1 where the two didn't conflict.*
 
 ## Design principles
 
 1. **Fleet, dispatch, and compliance are the product core** — they get more, smaller modules than DeployGuard gave them, because independent installability, focused security groups, and isolated test suites matter more for a product's differentiator than for its supporting cast.
-2. **HR/payroll/billing stay coarse-grained** — they were already well-factored as generic engines; splitting them further would just add manifest overhead without a corresponding boundary benefit.
-3. **No module should be forced to install country-specific logic to get country-neutral behavior** — this is the `fleet_payroll_core`/`fleet_l10n_zm` decoupling fix from [03-refactoring-roadmap.md](03-refactoring-roadmap.md) applied as a structural rule, not just a payroll-specific patch.
-4. **Bridges stay bridges.** Cross-cutting modules (`fleet_fleet_ops`-style bridges, `*_payroll_bridge`, `*_crm`, `*_sale`, `*_account`) remain separate, thin, and `auto_install`-able where the source used that pattern — this keeps the core modules installable without their optional integrations.
+2. **HR/payroll/billing stay coarse-grained** — already well-factored as generic engines; splitting further adds manifest overhead without a boundary benefit.
+3. **No module should be forced to install country-specific logic to get country-neutral behavior** — the `deployfleet_payroll`/`deployfleet_l10n_zm` decoupling from [03-refactoring-roadmap.md](03-refactoring-roadmap.md) applied as a structural rule.
+4. **Infrastructure modules are not "sellable features," and shouldn't be counted the same way in scoping conversations.** `deployfleet_core`, `deployfleet_security`, `deployfleet_event_bus`, `deployfleet_theme`, `deployfleet_notifications`, and `deployfleet_backup` are substrate every install needs; they don't belong in a "here are our 12 modules" sales conversation any more than PostgreSQL does. Keep that distinction explicit — see the MVP section below, where this matters.
+5. **Bridges stay bridges.** Cross-cutting modules (CRM/Sale/Account integrations, payroll bridges) remain separate, thin, and `auto_install`-able — core modules stay installable without their optional integrations.
 
 ## Module list
 
-### Foundation
+### Foundation (infrastructure substrate — always installed, not a "feature")
 
 | Module | Depends | Purpose |
 |---|---|---|
-| `fleet_base` | `hr`, `mail`, `web` | Driver profile (extends `hr.employee`), license classes, endorsements, qualifications, reliability score, core Fleet role groups |
-| `deployfleet_licensing` | `base`, `mail`, `web` | Product entitlement/license enforcement |
-| `deployfleet_theme` | `web`, `base_setup`, `fleet_base` | White-label branding, PDF theming |
-| `deployfleet_help` | `web`, `fleet_base` | In-app help centre |
-| `deployfleet_tour` | `web`, `web_tour`, `fleet_base`, `deployfleet_help`, `deployfleet_theme` | Product tours & onboarding |
-| `deployfleet_backup_vault` | `base`, `fleet_base` | Backup/offsite sync |
-| `fleet_reconciliation_core` | `fleet_base`, `mail` | Cross-module sync/audit framework |
+| `deployfleet_core` | `hr`, `mail`, `web` | Company/role identity base, shared mixins, module category. *(For the MVP release, the event-bus model described below ships inside this module rather than as a separate manifest — see the MVP note.)* |
+| `deployfleet_security` | `deployfleet_core`, `base`, `web` | Role groups (`group_deployfleet_driver` → `dispatcher` → `manager` → `owner`, plus HR/Payroll Officer and Auditor), plus product license/entitlement enforcement — merged per review naming rather than kept as a separate `_licensing` module. |
+| `deployfleet_event_bus` | `deployfleet_core`, `mail` | The promoted, generalized event bus (see [02-reuse-strategy.md](02-reuse-strategy.md) §0) — `deployfleet.event.log` publish/dispatch model with a subscriber-registry table instead of the source's hardcoded if-chain. Every operational module below publishes onto this; notifications, mobile push, AI, and CRM-sync subscribe. |
+| `deployfleet_theme` | `web`, `base_setup`, `deployfleet_core` | White-label branding, PDF theming |
+| `deployfleet_help` | `web`, `deployfleet_core` | In-app help centre |
+| `deployfleet_backup` | `base`, `deployfleet_core` | Backup/offsite sync |
+| `deployfleet_notifications` | `deployfleet_event_bus`, `deployfleet_core`, `mail` | Internal alert model, daily crons, and a bus subscriber for time-critical events |
 
-### Operations & dispatch
+### People
 
 | Module | Depends | Purpose |
 |---|---|---|
-| `fleet_operations` | `fleet_base`, `contacts` | Clients, contracts/lanes, depots/terminals, demand planning |
-| `fleet_dispatch` | `fleet_operations` | Trip requirements, dispatch batches, trip assignments — the direct successor to `security_operations`'s roster batch/slot |
-| `fleet_dispatch_planner` | `fleet_dispatch`, `fleet_base`, `web` | Constraint-satisfaction driver↔vehicle↔trip scoring, Dispatch Board OWL client |
-| `fleet_trip_execution` | `fleet_dispatch`, `web` | Planned-vs-actual trip records: departure/arrival, odometer, delay reason |
-| `fleet_compliance_dispatch` | `fleet_compliance_documents`, `fleet_dispatch`, `fleet_base` | Blocks dispatch against expired driver/vehicle documents, with emergency-override audit trail |
-| `fleet_client_onboarding` | `fleet_operations`, `fleet_billing` | Wizard: contract → routes/lanes → rate card → billing plan → first trip schedule |
-| `fleet_operations_crm` | `fleet_operations`, `crm`, `fleet_base` | Syncs on-time %, breakdown rate, utilization to CRM opportunities |
+| `deployfleet_hr` | `hr`, `deployfleet_core` | General staff administration for non-driver roles — dispatchers, mechanics, admin — kept distinct from driver-specific data per review feedback ("a driver is not just an employee"). |
+| `deployfleet_driver` | `deployfleet_hr`, `hr` | Driver profile (`_inherit` on `hr.employee`): license class, endorsements, truck-type qualifications, experience, accident history, computed risk/fuel-efficiency scores. |
+| `deployfleet_payroll` | `deployfleet_core`, `deployfleet_leave`, `web` | Payroll pipeline — no dependency on any country pack |
+| `deployfleet_l10n_zm` | `deployfleet_payroll` | Zambia NAPSA/NHIMA/WCF/PAYE, ZM payslip |
+| `deployfleet_l10n_na` | `deployfleet_payroll` | Namibia pack, dormant until regional expansion |
+| `deployfleet_leave` | `deployfleet_trip` | Leave types, balances, requests |
+| `deployfleet_loans` | `deployfleet_payroll` | Employee loans, payslip deductions |
+| `deployfleet_driver_performance` | `deployfleet_loans`, `mail` | Accidents, violations, harsh-braking/speeding events, fuel-abuse patterns, late deliveries → reliability score impact, optional payroll deduction. Reframed from "discipline" per review — this is a safety/performance signal, not an HR conduct write-up. |
+| `deployfleet_driver_performance_payroll_bridge` | `deployfleet_trip`, `deployfleet_driver_performance`, `deployfleet_payroll` | Reliability index, progressive intervention, automated penalties |
+| `deployfleet_training` | `deployfleet_driver` | Driver certification/refresher training records — net-new, low priority, not in MVP |
 
-### Fleet & maintenance (product core)
+### Fleet assets (product core)
 
 | Module | Depends | Purpose |
 |---|---|---|
 | *(Odoo core)* `fleet` | — | Native vehicle/model/brand master data, base fuel/service/odometer logs — dependency, not ours |
-| `fleet_vehicle_registry` | `fleet` *(core)*, `fleet_base`, `fleet_operations` | Extends `fleet.vehicle` with VIN, axle config, GVW, registration/permit fields |
-| `fleet_route_planning` | `fleet_vehicle_registry`, `fleet_operations` | Routes, route stops, lane distances |
-| `fleet_trip_management` | `fleet_route_planning`, `fleet_dispatch` | Trip records, cargo/load manifest (successor to `SecurityShuttleRun`/`Passenger`) |
-| `fleet_fuel_management` | `fleet_vehicle_registry`, `fleet` *(core)* | Fuel logs, consumption analytics, anomaly flags |
-| `fleet_inspection` | `fleet_vehicle_registry` | Pre-trip/post-trip inspection checklists |
-| `fleet_spare_parts` | `fleet_vehicle_registry` | Parts categories, items, stock alerts |
-| `fleet_tyre_lifecycle` | `fleet_vehicle_registry`, `fleet_spare_parts` | Tread depth readings, position tracking, rotation/retread/scrap history |
-| `fleet_workshop` | `fleet_vehicle_registry`, `fleet_spare_parts` | Job cards: open → diagnose → repair (labor + parts) → approve → close |
-| `fleet_preventive_maintenance` | `fleet_vehicle_registry`, `fleet_workshop` | Odometer/engine-hour/calendar service scheduling |
-| `fleet_breakdown_management` | `fleet_vehicle_registry`, `fleet_workshop`, `mail` | Breakdown/incident logging, severity, resolution |
-| `fleet_insurance_tracking` | `fleet_compliance_documents`, `fleet_vehicle_registry` | Policy, premium, claims |
-| `fleet_workshop_payroll_bridge` | `fleet_workshop`, `fleet_payroll_core`, `fleet_base` | Unreturned-tool/vehicle-damage payroll deductions, low-stock alerts |
-| `fleet_operations_bridge` | `fleet_trip_management`, `fleet_trip_execution`, `fleet_operations`, `fleet_base` | Vehicle-event ↔ ops ↔ trip-execution bridge (direct successor to `security_fleet_ops`) |
-| `fleet_compliance_documents` | `fleet_base` | Polymorphic document-type/expiry/verification engine (driver *and* vehicle documents) |
+| `deployfleet_vehicle` | `fleet` *(core)*, `deployfleet_core` | `deployfleet.vehicle` delegating to `fleet.vehicle` (see [03-refactoring-roadmap.md](03-refactoring-roadmap.md) §A.2): operational status (available/assigned/maintenance/breakdown/retired), current driver, current trip |
+| `deployfleet_vehicle_compliance` | `deployfleet_vehicle`, `deployfleet_compliance` | Vehicle-side application of the compliance engine: insurance, roadworthiness, permits, licensing; feeds dispatch-blocking checks |
+| `deployfleet_fuel` | `deployfleet_vehicle`, `fleet` *(core)* | Fuel logs, consumption analytics, anomaly flags |
+| `deployfleet_inspection` | `deployfleet_vehicle` | Pre-trip/post-trip inspection checklists |
+| `deployfleet_parts` | `deployfleet_vehicle` | Parts categories, items, stock alerts |
+| `deployfleet_tyres` | `deployfleet_vehicle`, `deployfleet_parts` | Tread depth readings, position tracking, rotation/retread/scrap history |
+| `deployfleet_assets` | `deployfleet_core` | Non-vehicle trackable assets — trailers, containers, GPS trackers, tools, safety equipment |
+| `deployfleet_workshop` | `deployfleet_vehicle`, `deployfleet_parts` | Job cards: open → diagnose → repair (labor + parts) → approve → close |
+| `deployfleet_maintenance` | `deployfleet_vehicle`, `deployfleet_workshop` | Odometer/engine-hour/calendar preventive service scheduling; publishes `deployfleet.maintenance.due` |
+| `deployfleet_breakdown` | `deployfleet_vehicle`, `deployfleet_workshop`, `deployfleet_event_bus` | Breakdown logging, severity, resolution; publishes `deployfleet.vehicle.breakdown` |
+| `deployfleet_insurance` | `deployfleet_compliance`, `deployfleet_vehicle` | Policy, premium, claims |
+| `deployfleet_workshop_payroll_bridge` | `deployfleet_workshop`, `deployfleet_payroll` | Unreturned-tool/vehicle-damage payroll deductions, low-stock alerts |
+| `deployfleet_fleet_ops_bridge` | `deployfleet_trip`, `deployfleet_vehicle`, `deployfleet_event_bus` | Vehicle-event ↔ ops ↔ trip bridge, already event-driven in the source — keep that shape |
+| `deployfleet_compliance` | `deployfleet_core` | Polymorphic document-type/expiry/verification engine — the shared foundation both driver and vehicle compliance build on |
 
-### HR & payroll
-
-| Module | Depends | Purpose |
-|---|---|---|
-| `fleet_payroll_core` | `fleet_operations`, `fleet_leave`, `web` | Payroll pipeline — **no dependency on any country pack** (fixes the source's coupling bug) |
-| `fleet_l10n_zm` | `fleet_payroll_core` | Zambia NAPSA/NHIMA/WCF/PAYE, ZM payslip |
-| `fleet_l10n_na` | `fleet_payroll_core` | Namibia pack, dormant until regional expansion |
-| `fleet_leave` | `fleet_trip_execution` | Leave types, balances, requests |
-| `fleet_loans` | `fleet_payroll_core` | Employee loans, payslip deductions |
-| `fleet_discipline` | `fleet_loans`, `mail` | Behavioral incidents, reliability impact |
-| `fleet_discipline_payroll_bridge` | `fleet_trip_execution`, `fleet_discipline`, `fleet_payroll_core`, `fleet_base` | Reliability index, progressive discipline, automated penalties |
-
-### Billing & finance
+### Operations — the heart of the product
 
 | Module | Depends | Purpose |
 |---|---|---|
-| `fleet_billing` | `fleet_operations`, `fleet_trip_execution`, `account` | Contracts, rate cards (per-trip/tonnage/distance/lane), invoice generation, Billing Command Center |
-| `fleet_accounting_controls` | `fleet_billing` | Payment tracking, ageing |
-| `fleet_client_reports` | `fleet_billing`, `fleet_reporting`, `fleet_operations`, `fleet_trip_execution` | Client-facing shipment/trip summaries |
-| `fleet_billing_account` | `fleet_billing`, `account`, `fleet_accounting_controls`, `fleet_reconciliation_billing_account` | Bridge to standard customer invoices |
-| `fleet_billing_crm` | `fleet_billing`, `crm` | Bridge to CRM leads/opportunities |
-| `fleet_billing_sale` | `fleet_billing`, `sale` | Bridge to Sales Orders |
-| `fleet_reconciliation_billing_account` | `fleet_reconciliation_core`, `fleet_billing`, `account`, `fleet_accounting_controls` | Invoice/payment/credit-note reconciliation |
-| `fleet_zra_invoice` | `fleet_billing`, `fleet_operations` | Zambia ZRA Smart Invoice (VSDC) |
+| `deployfleet_customer` | `deployfleet_core`, `contacts` | Clients, contracts/lanes, depots/terminals |
+| `deployfleet_shipment` | `deployfleet_customer` | **The module the review correctly identified as missing from v1.** Cargo/load: what, how much, pickup, drop-off, weight, per-shipment customer terms. One shipment fulfilled by one or more trips. *For the MVP release this ships as models inside `deployfleet_dispatch` rather than a separate manifest — see the MVP note — but the entity must exist in the schema from day one regardless of module packaging, per [07-domain-model-erd.md](07-domain-model-erd.md).* |
+| `deployfleet_route` | `deployfleet_vehicle`, `deployfleet_customer` | Routes, route stops, lane distances |
+| `deployfleet_dispatch` | `deployfleet_customer`, `deployfleet_route` | Trip requirements, dispatch batches, driver↔vehicle↔trip constraint-satisfaction scoring, Dispatch Board OWL client |
+| `deployfleet_trip` | `deployfleet_dispatch` | Trip records, planned-vs-actual (departure/arrival, odometer, delay reason); publishes `deployfleet.trip.departed` / `deployfleet.trip.delayed` |
+| `deployfleet_delivery` | `deployfleet_trip` | Proof-of-delivery: signature, photo, GPS stamp, recipient; publishes `deployfleet.delivery.completed` |
+| `deployfleet_dispatch_compliance` | `deployfleet_compliance`, `deployfleet_dispatch` | Blocks dispatch against expired driver/vehicle documents, emergency-override + audit trail |
+| `deployfleet_customer_onboarding` | `deployfleet_customer`, `deployfleet_billing` | Wizard: contract → routes/lanes → rate card → billing plan → first shipment |
+| `deployfleet_operations_crm` | `deployfleet_customer`, `crm` | Syncs on-time %, breakdown rate, utilization to CRM opportunities — bus subscriber |
 
-### Reporting & notifications
-
-| Module | Depends | Purpose |
-|---|---|---|
-| `fleet_reporting` | `web`, `fleet_accounting_controls`, `fleet_discipline`, `fleet_loans` | Pivot/graph dashboards |
-| `fleet_notifications` | `fleet_compliance_documents`, `fleet_leave`, `fleet_billing`, `fleet_trip_execution`, `mail` | Internal alerts: document expiry, maintenance due, overdue invoices |
-
-### Mobile, portal, AI
+### Finance
 
 | Module | Depends | Purpose |
 |---|---|---|
-| `fleet_mobile_api` | `fleet_base`, `fleet_trip_execution`, `fleet_operations` | REST JSON controllers: driver / dispatcher / fleet-manager / owner |
-| `fleet_mobile_bridge` | `fleet_mobile_api`, `fleet_base` | Event bus → Expo push notifications |
-| `fleet_customer_portal` | `portal`, `fleet_operations`, `fleet_trip_execution`, `fleet_base` | Shipment status, active trips, POD, feedback |
-| `fleet_ai_engine` | `fleet_billing`, `fleet_dispatch_planner`, `fleet_trip_execution`, `fleet_discipline`, `fleet_leave`, `fleet_compliance_documents`, `fleet_payroll_core`, `fleet_vehicle_registry`, `web` | Multi-provider AI facade + 10 fleet-relevant features |
-| `fleet_ai_whatsapp_bridge` | `hr`, `fleet_operations`, `fleet_trip_execution`, `fleet_base`, `fleet_ai_engine` | WhatsApp check-in / breakdown reporting / dispatcher alerts |
+| `deployfleet_billing` | `deployfleet_customer`, `deployfleet_trip`, `account` | Contracts, rate cards (per-trip/tonnage/distance/lane), invoice generation, Billing Command Center |
+| `deployfleet_accounting` | `deployfleet_billing` | Payment tracking, ageing (source: `security_accounting_controls`) |
+| `deployfleet_client_reports` | `deployfleet_billing`, `deployfleet_reports`, `deployfleet_trip` | Client-facing shipment/trip summaries |
+| `deployfleet_billing_account` | `deployfleet_billing`, `account`, `deployfleet_accounting` | Bridge to standard customer invoices |
+| `deployfleet_billing_crm` | `deployfleet_billing`, `crm` | Bridge to CRM leads/opportunities |
+| `deployfleet_sales` | `deployfleet_billing`, `sale` | Bridge to Sales Orders (source: `security_billing_sale`) |
+| `deployfleet_reconciliation` | `deployfleet_billing`, `account`, `deployfleet_accounting` | Invoice/payment/credit-note reconciliation |
+| `deployfleet_zra` | `deployfleet_billing`, `deployfleet_customer` | Zambia ZRA Smart Invoice (VSDC) |
+
+### Reporting
+
+| Module | Depends | Purpose |
+|---|---|---|
+| `deployfleet_reports` | `web`, `deployfleet_accounting`, `deployfleet_driver_performance`, `deployfleet_loans` | Pivot/graph dashboards |
+
+### Mobile & portal
+
+| Module | Depends | Purpose |
+|---|---|---|
+| `deployfleet_mobile_driver` | `deployfleet_driver`, `deployfleet_trip` | Driver-facing endpoints/app: assigned trip, check-in/out, delivery capture |
+| `deployfleet_mobile_dispatcher` | `deployfleet_dispatch`, `deployfleet_trip` | Dispatcher-facing endpoints/app: real-time board, overtime/exception approval |
+| `deployfleet_mobile_customer` | `deployfleet_customer`, `deployfleet_shipment` | Read-mostly shipment tracking for customers |
+| `deployfleet_mobile_push_bridge` | `deployfleet_event_bus` | Event bus → Expo push notifications, already event-driven in the source |
+| `deployfleet_customer_portal` | `portal`, `deployfleet_customer`, `deployfleet_trip` | Shipment status, active trips, POD, feedback |
+
+### Intelligence
+
+| Module | Depends | Purpose |
+|---|---|---|
+| `deployfleet_ai` | `deployfleet_billing`, `deployfleet_dispatch`, `deployfleet_trip`, `deployfleet_driver_performance`, `deployfleet_compliance`, `deployfleet_payroll`, `deployfleet_vehicle`, `deployfleet_event_bus`, `web` | Multi-provider AI facade + fleet-relevant features (fuel anomaly, predictive maintenance, dispatch assistant, driver risk, payment-risk) — see [02-reuse-strategy.md](02-reuse-strategy.md) |
+| `deployfleet_ai_whatsapp` | `deployfleet_hr`, `deployfleet_customer`, `deployfleet_trip`, `deployfleet_ai` | WhatsApp check-in / breakdown reporting / dispatcher alerts |
 
 ### Meta & demo
 
 | Module | Depends | Purpose |
 |---|---|---|
 | `deployfleet_suite` | all of the above | One-step installer |
-| `deployfleet_demo_data_zm` | core operational + payroll modules | Zambia trucking demo dataset — written fresh, no DogForce content |
+| `deployfleet_demo_data_zm` | core operational + payroll modules | Zambia trucking demo dataset — written fresh |
 | `deployfleet_demo_site` | `web`, `base`, `deployfleet_theme`, `deployfleet_suite` | Demo login panel / sandbox management |
 
-**Total: ~43 modules** (vs. 45 in the source), organized into 8 layers instead of the source's implicit 6.
+**Total: ~48 modules** across 8 groupings, matching the audit in [01-module-audit.md](01-module-audit.md).
 
 ## Dependency graph (simplified)
 
 ```mermaid
 graph TD
-    HR[Odoo hr + mail] --> BASE[fleet_base]
-    CONTACTS[Odoo contacts] --> OPS[fleet_operations]
-    CORE_FLEET[Odoo fleet - core app] --> VREG[fleet_vehicle_registry]
-    BASE --> OPS
-    BASE --> VREG
-    OPS --> VREG
-    OPS --> DISP[fleet_dispatch]
-    DISP --> PLANNER[fleet_dispatch_planner]
-    DISP --> TRIPEXEC[fleet_trip_execution]
+    CORE[deployfleet_core] --> SEC[deployfleet_security]
+    CORE --> BUS[deployfleet_event_bus]
+    CORE --> HR[deployfleet_hr]
+    HR --> DRV[deployfleet_driver]
 
-    VREG --> ROUTE[fleet_route_planning]
-    ROUTE --> TRIPMGMT[fleet_trip_management]
-    DISP --> TRIPMGMT
-    VREG --> FUEL[fleet_fuel_management]
-    VREG --> INSPECT[fleet_inspection]
-    VREG --> PARTS[fleet_spare_parts]
-    PARTS --> TYRE[fleet_tyre_lifecycle]
-    PARTS --> WORKSHOP[fleet_workshop]
-    WORKSHOP --> PM[fleet_preventive_maintenance]
-    WORKSHOP --> BREAKDOWN[fleet_breakdown_management]
+    CORE_FLEET[Odoo fleet - core app] --> VEH[deployfleet_vehicle]
+    VEH --> VCOMP[deployfleet_vehicle_compliance]
+    CORE --> COMP[deployfleet_compliance]
+    COMP --> VCOMP
+    VEH --> FUEL[deployfleet_fuel]
+    VEH --> INSPECT[deployfleet_inspection]
+    VEH --> PARTS[deployfleet_parts]
+    PARTS --> TYRE[deployfleet_tyres]
+    PARTS --> WORKSHOP[deployfleet_workshop]
+    WORKSHOP --> MAINT[deployfleet_maintenance]
+    WORKSHOP --> BREAK[deployfleet_breakdown]
+    BREAK --> BUS
 
-    BASE --> DOCS[fleet_compliance_documents]
-    DOCS --> INSURANCE[fleet_insurance_tracking]
-    DOCS --> COMPLIANCE_DISP[fleet_compliance_dispatch]
-    DISP --> COMPLIANCE_DISP
+    CORE --> CUST[deployfleet_customer]
+    CUST --> SHIP[deployfleet_shipment]
+    VEH --> ROUTE[deployfleet_route]
+    CUST --> ROUTE
+    ROUTE --> DISP[deployfleet_dispatch]
+    SHIP --> DISP
+    DISP --> TRIP[deployfleet_trip]
+    TRIP --> DELIV[deployfleet_delivery]
+    COMP --> DCOMP[deployfleet_dispatch_compliance]
+    DISP --> DCOMP
 
-    TRIPEXEC --> LEAVE[fleet_leave]
-    LEAVE --> PAY[fleet_payroll_core]
-    PAY --> ZM[fleet_l10n_zm]
-    PAY --> NA[fleet_l10n_na]
-    PAY --> LOANS[fleet_loans]
-    LOANS --> DISC[fleet_discipline]
+    TRIP --> LEAVE[deployfleet_leave]
+    LEAVE --> PAY[deployfleet_payroll]
+    PAY --> ZM[deployfleet_l10n_zm]
+    PAY --> LOANS[deployfleet_loans]
+    LOANS --> PERF[deployfleet_driver_performance]
 
-    OPS --> BILL[fleet_billing]
-    TRIPEXEC --> BILL
-    BILL --> ACCT[fleet_accounting_controls]
-    BILL --> CREP[fleet_client_reports]
-    BILL --> ZRA[fleet_zra_invoice]
+    CUST --> BILL[deployfleet_billing]
+    TRIP --> BILL
+    BILL --> ACCT[deployfleet_accounting]
+    BILL --> ZRA[deployfleet_zra]
+    ACCT --> REP[deployfleet_reports]
 
-    ACCT --> REP[fleet_reporting]
-    DISC --> REP
-    LOANS --> REP
+    DRV --> MOBDRV[deployfleet_mobile_driver]
+    TRIP --> MOBDRV
+    DISP --> MOBDISP[deployfleet_mobile_dispatcher]
+    CUST --> MOBCUST[deployfleet_mobile_customer]
+    BUS --> MOBPUSH[deployfleet_mobile_push_bridge]
 
-    BASE --> MOB[fleet_mobile_api]
-    TRIPEXEC --> MOB
-    OPS --> MOB
-    MOB --> MOBBRIDGE[fleet_mobile_bridge]
-
-    BILL --> AI[fleet_ai_engine]
-    PLANNER --> AI
-    TRIPEXEC --> AI
+    BILL --> AI[deployfleet_ai]
+    DISP --> AI
+    TRIP --> AI
     PAY --> AI
-    VREG --> AI
+    VEH --> AI
+    BUS --> AI
 ```
 
-## Suggested install profiles
+## First commercial release: MVP-12
 
-Not every deployment needs every module on day one — install profiles give sales/onboarding a clean story:
+Per architecture review: **do not build all ~48 modules before the first sale.** The first sellable product is a focused 12-module set — plus the infrastructure substrate every install needs regardless (principle 4 above), which isn't counted against the "12" the same way Postgres isn't:
 
-| Profile | Modules |
-|---|---|
-| **Core Dispatch** (MVP, see [05-implementation-roadmap.md](05-implementation-roadmap.md)) | `fleet_base`, `fleet_operations`, `fleet_dispatch`, `fleet_dispatch_planner`, `fleet_trip_execution`, `fleet_vehicle_registry`, `fleet_route_planning`, `fleet_trip_management` |
-| **+ Workshop** | `fleet_fuel_management`, `fleet_inspection`, `fleet_spare_parts`, `fleet_tyre_lifecycle`, `fleet_workshop`, `fleet_preventive_maintenance`, `fleet_breakdown_management` |
-| **+ Compliance** | `fleet_compliance_documents`, `fleet_compliance_dispatch`, `fleet_insurance_tracking` |
-| **+ Payroll & HR** | `fleet_payroll_core`, `fleet_l10n_zm`, `fleet_leave`, `fleet_loans`, `fleet_discipline` |
-| **+ Billing** | `fleet_billing`, `fleet_accounting_controls`, `fleet_client_reports`, `fleet_zra_invoice` |
-| **+ Mobile & Portal** | `fleet_mobile_api`, `fleet_mobile_bridge`, `fleet_customer_portal` |
-| **+ AI & Automation** | `fleet_ai_engine`, `fleet_ai_whatsapp_bridge` |
-| **Everything** | `deployfleet_suite` |
+| # | Module | Why it's in the MVP |
+|---|---|---|
+| 1 | `deployfleet_core` | Substrate (ships the event bus's initial implementation inline — see note below) |
+| 2 | `deployfleet_driver` | A trucking company can't dispatch without driver records |
+| 3 | `deployfleet_vehicle` | Or without vehicle records |
+| 4 | `deployfleet_dispatch` | The core scheduling loop — includes shipment/load fields inline for the MVP (see note below) |
+| 5 | `deployfleet_trip` | Planned vs. actual execution |
+| 6 | `deployfleet_delivery` | Proof of delivery — the moment a customer actually cares about |
+| 7 | `deployfleet_fuel` | Immediate, visible cost-control value |
+| 8 | `deployfleet_maintenance` | Same — prevents an even more expensive cost (breakdowns) |
+| 9 | `deployfleet_compliance` | Documents/expiry — insurance and licensing lapses are a liability from day one, not a Phase 3 nice-to-have |
+| 10 | `deployfleet_billing` | The company needs to invoice its customers |
+| 11 | `deployfleet_mobile_driver` | Field usability — start with the driver app; dispatcher and customer apps follow once the driver flow is proven |
+| 12 | `deployfleet_reports` | Basic visibility without waiting for the full BI/AI story |
+
+**Two packaging notes worth being explicit about, since the MVP list and the fuller module list above don't literally match module-for-module:**
+
+- **Shipment/load** is a first-class *entity* from day one (see [07-domain-model-erd.md](07-domain-model-erd.md)) — the review's core point that "a trip without cargo is meaningless" stands regardless of MVP scope. For the MVP, its models simply live inside `deployfleet_dispatch`'s manifest rather than a separate `deployfleet_shipment` module, to keep the *module count* at 12 without losing the *concept*. Split it into its own module once contract/load complexity (multi-leg shipments, consolidated loads) grows enough to justify independent versioning.
+- **The event bus** ships as part of `deployfleet_core` for the MVP, for the same reason — it's substrate, not a sales-pitch line item, but per [02-reuse-strategy.md](02-reuse-strategy.md) §0 it should still be designed and built as the generalized, subscriber-registry version from day one, not the source's hardcoded-if-chain version. Split it into its own `deployfleet_event_bus` module once enough subscribers exist (compliance, maintenance, AI, notifications) to justify independent lifecycle.
+
+Everything else — workshop, tyres, parts, assets, insurance, driver performance, payroll/l10n, dispatcher and customer mobile, CRM/Sales/Accounting bridges, AI, WhatsApp — is a deliberate **expansion module**, sequenced in [05-implementation-roadmap.md](05-implementation-roadmap.md), not a "we'll get to it eventually, undated" backlog.

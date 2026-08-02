@@ -1,10 +1,24 @@
 # 02 — Reuse Strategy
 
-What we carry forward, and at what level (concept / pattern / code). Organized by the categories requested in Phase 1: business logic, UI components, security groups, reports, APIs, mobile functionality.
+*Revision 2 — adds §0 (the event-driven core, a correction to v1 which missed that this already exists in the source) and reframes the AI feature list and mobile/API sections around the 3-way mobile split and `deployfleet_*` naming from the architecture review. See [01-module-audit.md](01-module-audit.md) revision note.*
+
+What we carry forward, and at what level (concept / pattern / code). Organized by the categories requested in Phase 1: business logic, UI components, security groups, reports, APIs, mobile functionality — plus a new §0 for the event-driven core, since it turned out to be the highest-leverage reusable asset in the codebase and deserves top billing rather than being buried in a business-logic table row.
 
 The guiding test throughout: **is this reusable because it's generic machinery, or does it only look reusable because we haven't yet noticed the security-industry assumption baked into it?** Several items below note where that assumption is buried.
 
 ---
+
+## 0. The event-driven core — the highest-leverage reusable asset in the codebase
+
+v1 of this document didn't call this out as its own section — it was easy to miss, since it isn't mentioned in the source's own `ARCHITECTURE.md` (which claims "no shared service layer, no event bus" — that description is stale; the event bus was evidently added after that document was last updated). It lives in `security_base/models/security_event_bus.py` and is real, working infrastructure:
+
+- **`security.event.log`** — a model that is simultaneously the event bus *and* its own audit log: `register_event(name, source_model, source_id, payload)` creates a record and immediately calls `_dispatch_event()`, which fans the event out to subscriber models and marks itself `processed` or `failed`.
+- **Already has real publishers**: `security_attendance` fires `attendance.missed`; `security_fleet_ops` fires `fleet.breakdown` (and a delay event); `security_compliance_roster` fires `compliance.bypass`; `security_equipment_payroll` and `security_portal` also publish.
+- **Already has real subscribers**: `security_mobile_bridge._handle_bus_event()` turns `attendance.missed` / `fleet.breakdown` / `compliance.bypass` directly into Expo push notifications to the right role (supervisors, managers, owners respectively). `security_operations_crm`, `security_discipline_payroll`, `security_fleet_ops`, and `security_equipment_payroll` also implement `_handle_bus_event()` as bridge subscribers.
+
+**Reuse level: code, near-verbatim, with one structural fix.** The one real defect: `_dispatch_event()` hardcodes a fixed if-chain of five specific downstream model names (`if "security.operations.crm.bridge" in self.env: ...`). This means the *core* module (`security_base`) has compile-time knowledge of every *downstream* bridge module that will ever subscribe to it — backwards from how Odoo dependencies should flow, and it means adding a sixth subscriber means editing core again. Fix during the fork: replace the hardcoded chain with a subscriber-registry (a simple `deployfleet.event.subscription` data model mapping an event-name pattern to a model + method, loaded via each subscribing module's own data files) so `deployfleet_event_bus` never needs to change when a new bridge module is added. This is a small, mechanical fix — a few hours of work — but worth doing explicitly rather than copying the hardcoded chain forward. See [03-refactoring-roadmap.md](03-refactoring-roadmap.md).
+
+**Why this matters more for DeployFleet than it did for DeployGuard:** the review correctly identified that transportation generates a much denser stream of operationally significant events (trip departed, vehicle broke down, document expired, delivery completed, dispatch reassigned) than guard shift management does, and that GPS integration (explicitly a later phase) becomes far easier to wire in later if trip/vehicle state changes are already flowing through a bus rather than being read out of tables on demand. Promote `deployfleet_event_bus` to a Phase 0 module — every operational module from Phase 1 onward should be built to publish onto it from day one, not retrofitted later.
 
 ## 1. Reusable business logic
 
@@ -16,9 +30,9 @@ The guiding test throughout: **is this reusable because it's generic machinery, 
 | Deduction-injection architecture | `security_loans`, `security_discipline`, `security_equipment` (extending `security.payslip`) | **Pattern, fully reusable** | Each module extends the payslip model and hooks into `action_compute_from_sources()` to inject its own deduction lines. This plug-in-style extension point is the right shape for driver loans, driver discipline, and unreturned-kit/vehicle-damage deductions — no redesign needed, just re-attach the same hooks to renamed models. |
 | Billing plan → invoice pipeline | `security_billing` | **Pattern + partial code** | Contract terms → generation rule → invoice lines → VAT → amount-in-words. Rate basis changes (per-shift/post → per-trip/per-tonnage/per-distance/per-lane) but the pipeline shape (plan defines *how* to bill, a generator turns operational records into invoice lines) is reusable. |
 | Governed cross-module reconciliation/audit framework | `security_reconciliation_core` | **Code, verbatim** | Generic sync/audit bus with no domain coupling — reuse as-is. |
-| AI provider facade | `security_ai_engine` (config/cache/chat/engine models) | **Code, near-verbatim** | Multi-provider abstraction (Claude/OpenAI/Gemini), caching, chat session/message models, and the assistant chat panel are pure infrastructure. Only the 10 *feature* implementations (anomaly detection, risk profiling, etc.) need reframing — the plumbing underneath does not. |
+| AI provider facade | `security_ai_engine` (config/cache/chat/engine models) | **Code, near-verbatim** | Multi-provider abstraction (Claude/OpenAI/Gemini), caching, chat session/message models, and the assistant chat panel are pure infrastructure. Only the 10 *feature* implementations (anomaly detection, risk profiling, etc.) need reframing — the plumbing underneath does not. Concrete reframing, per architecture review: **fuel anomaly detection** ("Truck ABC123 has consumed 22% more fuel this month"), **predictive maintenance** ("Engine service likely required within 800km"), **dispatch assistant** ("Assign Truck 14 instead of Truck 7 — lower fuel cost, closer location, driver available"), **driver risk scoring** ("Driver John has increased harsh-braking events"), and **payment-risk intelligence** ("Customer X is consistently paying 45 days late"). All five map onto the source's existing anomaly-detection/risk-profiling/billing-audit/roster-optimizer/document-renewal feature slots — reframing, not new engineering. Should read its signal data from `deployfleet_event_bus` where possible (e.g., a stream of fuel-log and breakdown events) rather than only batch-querying tables, so AI features benefit from the same real-time event stream that dispatch and notifications use. |
 | ZRA Smart Invoice (VSDC) integration | `security_zra_invoice` | **Code, near-verbatim** | Zambia's e-invoicing mandate doesn't care what industry issued the invoice. Needed as-is for any Zambian company; just re-point at the renamed billing invoice model. |
-| Notification/cron alerting engine | `security_notifications` | **Code, verbatim; new triggers** | Generic internal-notification model with daily crons. Reuse the model and cron *pattern*; add new cron triggers for maintenance-due and license/insurance expiry (today it only watches document expiry and overdue invoices). |
+| Notification/cron alerting engine | `security_notifications` | **Code, verbatim; new triggers** | Generic internal-notification model with daily crons. Reuse the model and cron *pattern*; add new cron triggers for maintenance-due and license/insurance expiry (today it only watches document expiry and overdue invoices). Should also register itself as a `deployfleet_event_bus` subscriber (see §0) so time-critical events — breakdown, compliance bypass — surface as in-app notifications immediately rather than waiting for the next daily cron. |
 | License/entitlement enforcement | `security_licensing` | **Code, verbatim** | This is DeployFleet's *own* product licensing, not guard licensing — no change needed. |
 
 ## 2. Reusable UI components (OWL)
@@ -38,12 +52,12 @@ The role-hierarchy *pattern* in `security_base/security/security_groups.xml` —
 
 | DeployGuard group | DeployFleet equivalent |
 |---|---|
-| `group_security_guard` | `group_fleet_driver` |
-| `group_security_supervisor` | `group_fleet_dispatcher` |
-| `group_security_manager` | `group_fleet_manager` |
-| `group_security_owner` | `group_fleet_owner` |
-| `group_security_hr_payroll_officer` | `group_fleet_hr_payroll_officer` |
-| `group_security_system_auditor` | `group_fleet_system_auditor` |
+| `group_security_guard` | `group_deployfleet_driver` |
+| `group_security_supervisor` | `group_deployfleet_dispatcher` |
+| `group_security_manager` | `group_deployfleet_manager` |
+| `group_security_owner` | `group_deployfleet_owner` |
+| `group_security_hr_payroll_officer` | `group_deployfleet_hr_payroll_officer` |
+| `group_security_system_auditor` | `group_deployfleet_system_auditor` |
 
 Structure to keep: `res.groups.privilege` categorization, `implied_ids` chaining (so a Fleet Manager automatically has Dispatcher access), and per-module `ir.model.access.csv` + sparing use of `ir.rule` for record-level rules. This is good Odoo practice already in the source and should not be redesigned, only relabeled.
 
@@ -62,27 +76,27 @@ Structure to keep: `res.groups.privilege` categorization, `implied_ids` chaining
 
 ## 5. Reusable APIs
 
-The `security_mobile` controller architecture is the strongest asset to reuse verbatim as *infrastructure*:
+The `security_mobile` controller architecture is the strongest asset to reuse verbatim as *infrastructure*, even though — per architecture review — it now splits into three installable modules (`deployfleet_mobile_driver`, `deployfleet_mobile_dispatcher`, `deployfleet_mobile_customer`) instead of remaining one:
 
-- Session-cookie auth via `/web/session/authenticate` (standard Odoo JSON-RPC) — keep exactly.
-- `@require_group()` decorator pattern for endpoint authorization against Odoo security groups — keep exactly, re-point at the new group names.
+- Session-cookie auth via `/web/session/authenticate` (standard Odoo JSON-RPC) — keep exactly, shared across all three.
+- `@require_group()` decorator pattern for endpoint authorization against Odoo security groups — keep exactly, re-point at the new group names (`group_deployfleet_driver`, `group_deployfleet_dispatcher`, etc.).
 - Response envelope `{ "success": true, "data": {...} }` / `{ "success": false, "error": "..." }` — keep exactly; this is a good, simple contract and changing it buys nothing.
-- Role-partitioned controller files (`guard.py`, `supervisor.py`, `manager.py`, `owner.py`, `notifications.py`) — keep this file-per-role organization; rename to `driver.py`, `dispatcher.py`, `fleet_manager.py`, `owner.py`.
+- Role-partitioned controller files (`guard.py`, `supervisor.py`, `manager.py`, `owner.py`, `notifications.py`) — the *file-per-role* organization was already right; it now becomes *module-per-role* to match the 3-way split: `deployfleet_mobile_driver/controllers/`, `deployfleet_mobile_dispatcher/controllers/`, `deployfleet_mobile_customer/controllers/`, each depending on a shared base (`deployfleet_mobile_api` or folded into `deployfleet_base`) that carries the auth/envelope/decorator plumbing all three need.
 - Endpoint *domains* (what data each query returns) need a full rewrite — they currently query attendance/roster models that won't exist in DeployFleet's schema.
 
 **Do not port forward as-is:** the documented field-name mismatches in the current mobile controllers (`batch_id` vs. the model's actual `attendance_batch_id`, `overtime_note` vs. `overtime_approval_note`) — see [03-refactoring-roadmap.md](03-refactoring-roadmap.md). Rewriting the controllers against new models is the natural point to not reproduce these bugs.
 
 ## 6. Reusable mobile functionality
 
-The Expo/React Native app (`mobile/`) is architected as a genuinely thin client, which is exactly right and should not change:
+The Expo/React Native app (`mobile/`) is architected as a genuinely thin client, which is exactly right and should not change. Per architecture review, the single app with three role-routed sections is likely better split into purpose-built shells (a driver app can tolerate — even expect — intermittent connectivity and a trip-focused UI; a dispatcher needs a real-time board better suited to a tablet/desktop-class experience; a customer-facing tracking view is nearly read-only). Whether that becomes three separate Expo apps or three route groups within one app sharing a common shell is an implementation-time call, not an architecture-time one — either way, the underlying layers below are shared:
 
 | Layer | Reuse level | Notes |
 |-------|--------------|-------|
-| Expo Router file-based routing with role route-groups (`(auth)`, `(role)/...`) | **Pattern, verbatim** | `(supervisor)`/`(manager)`/`(owner)` → `(driver)`/`(dispatcher)`/`(fleet-manager)`/`(owner)` |
-| `src/api/client.ts` (Axios instance, session injection, auth-expiry handling) | **Code, verbatim** | No domain coupling at all |
+| Expo Router file-based routing with role route-groups (`(auth)`, `(role)/...`) | **Pattern, verbatim** | `(supervisor)`/`(manager)`/`(owner)` → `(driver)`/`(dispatcher)`/`(customer)` |
+| `src/api/client.ts` (Axios instance, session injection, auth-expiry handling) | **Code, verbatim** | No domain coupling at all — shared across driver/dispatcher/customer clients regardless of how they're packaged |
 | `src/api/auth.ts` (login/logout) | **Code, verbatim, but fix role detection** | Today infers role from username/name heuristics — a documented bug. Fix as part of the fork by fetching actual Odoo groups via a `/me`-style endpoint, not by carrying the heuristic forward. |
 | `src/stores/` (Zustand: `authStore`, `appStore`) | **Pattern, verbatim** | Session/UI state layer has no domain coupling |
 | `src/theme/` (RN Paper dark theme tokens) | **Code, verbatim or re-skinned via `deployfleet_theme` tokens** | |
-| `src/components/` (`GuardCard`, `KpiMetric`, `SiteKpiCard`, `StatusBadge`, `CheckInButton`) | **Mixed** | `KpiMetric`, `StatusBadge`, `CheckInButton` are generic UI atoms — reuse verbatim. `GuardCard`/`SiteKpiCard` are domain-shaped — become `DriverCard`/`VehicleCard` and `RouteKpiCard`, rebuilt against new fields but following the same component contract. |
+| `src/components/` (`GuardCard`, `KpiMetric`, `SiteKpiCard`, `StatusBadge`, `CheckInButton`) | **Mixed** | `KpiMetric`, `StatusBadge`, `CheckInButton` are generic UI atoms — reuse verbatim across all three clients. `GuardCard`/`SiteKpiCard` are domain-shaped — become `DriverCard`/`VehicleCard`/`ShipmentCard` and `RouteKpiCard`, rebuilt against new fields but following the same component contract. |
 
 **Known mobile gaps to close *during* the fork rather than carry forward** (all documented in the source `KNOWN_ISSUES.md`): PIN quick re-auth (field exists, no endpoint), FCM/Expo push not wired (device-token field exists, unused), no offline queue, hardcoded `localhost` in the API client. None of these are hard blockers to reuse — they're a to-do list to execute once, in the new repo, rather than a debt to inherit twice.
