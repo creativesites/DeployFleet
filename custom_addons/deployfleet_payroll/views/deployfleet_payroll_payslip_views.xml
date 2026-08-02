@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_payroll_payslip_form" model="ir.ui.view">
+        <field name="name">deployfleet.payroll.payslip.form</field>
+        <field name="model">deployfleet.payroll.payslip</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_compute" type="object" string="Compute"
+                            invisible="state not in ('draft', 'computed')" class="btn-primary"/>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            invisible="state != 'computed'" class="btn-primary"/>
+                    <button name="action_mark_paid" type="object" string="Mark Paid"
+                            invisible="state != 'confirmed'" class="btn-primary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,computed,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                        </group>
+                        <group>
+                            <field name="gross_pay"/>
+                            <field name="total_deductions"/>
+                            <field name="net_pay"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="1">
+                        <list>
+                            <field name="rule_id"/>
+                            <field name="amount"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_payroll_payslip_list" model="ir.ui.view">
+        <field name="name">deployfleet.payroll.payslip.list</field>
+        <field name="model">deployfleet.payroll.payslip</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="employee_id"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="net_pay"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_payroll_payslip" model="ir.actions.act_window">
+        <field name="name">Payslips</field>
+        <field name="res_model">deployfleet.payroll.payslip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_deployfleet_payroll_rule_list" model="ir.ui.view">
+        <field name="name">deployfleet.payroll.rule.list</field>
+        <field name="model">deployfleet.payroll.rule</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="amount_type"/>
+                <field name="amount_fixed"/>
+                <field name="amount_percentage"/>
+                <field name="percentage_base_code"/>
+                <field name="formula"/>
+                <field name="country_code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_payroll_rule" model="ir.actions.act_window">
+        <field name="name">Payroll Rules</field>
+        <field name="res_model">deployfleet.payroll.rule</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_payroll_root"
+              name="Payroll"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="deployfleet_security.group_deployfleet_hr_payroll_officer"
+              sequence="59"/>
+    <menuitem id="menu_deployfleet_payroll_payslip"
+              name="Payslips"
+              parent="menu_deployfleet_payroll_root"
+              action="action_deployfleet_payroll_payslip"
+              sequence="10"/>
+    <menuitem id="menu_deployfleet_payroll_rule"
+              name="Payroll Rules"
+              parent="menu_deployfleet_payroll_root"
+              action="action_deployfleet_payroll_rule"
+              sequence="20"/>
+</odoo>
