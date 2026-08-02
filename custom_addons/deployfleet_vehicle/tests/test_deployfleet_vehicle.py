@@ -37,6 +37,17 @@ class TestDeployfleetVehicle(TransactionCase):
         vehicle.action_set_available()
         self.assertEqual(vehicle.status, "available")
 
+    def test_breakdown_registers_event(self):
+        vehicle = self._create_vehicle()
+        before = self.env["deployfleet.event.log"].search_count([
+            ("name", "=", "deployfleet.vehicle.breakdown"),
+        ])
+        vehicle.action_set_breakdown()
+        after = self.env["deployfleet.event.log"].search_count([
+            ("name", "=", "deployfleet.vehicle.breakdown"),
+        ])
+        self.assertEqual(after, before + 1)
+
     def test_retiring_clears_current_driver(self):
         vehicle = self._create_vehicle()
         vehicle.action_set_retired()

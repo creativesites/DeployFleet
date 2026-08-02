@@ -71,6 +71,11 @@ class DeployfleetVehicle(models.Model):
 
     def action_set_breakdown(self):
         self.write({"status": "breakdown"})
+        for vehicle in self:
+            self.env["deployfleet.event.log"].register_event(
+                "deployfleet.vehicle.breakdown", "deployfleet.vehicle", vehicle.id,
+                {"vehicle": vehicle.display_name, "driver_id": vehicle.current_driver_id.id},
+            )
 
     def action_set_retired(self):
         self.write({"status": "retired", "current_driver_id": False})

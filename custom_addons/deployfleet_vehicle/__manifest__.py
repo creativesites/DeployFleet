@@ -5,7 +5,7 @@
     "summary": "Vehicle operational profile — delegates Odoo's native fleet.vehicle rather than reinventing it",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["fleet", "hr", "deployfleet_core", "deployfleet_security"],
+    "depends": ["fleet", "hr", "deployfleet_core", "deployfleet_event_bus", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_vehicle_views.xml",
