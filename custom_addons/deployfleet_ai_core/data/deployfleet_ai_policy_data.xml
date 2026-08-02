@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Safe-by-default company policy: AI on, external providers allowed,
+         payroll/financial blocked until explicitly opened up, fleet
+         analytics allowed. See docs/architecture/06-risks-and-recommendations.md
+         risk #8. noupdate="1" so an admin's later changes survive module upgrades. -->
+    <record id="deployfleet_ai_policy_default" model="deployfleet.ai.policy">
+        <field name="ai_enabled">True</field>
+        <field name="external_providers_allowed">True</field>
+        <field name="block_payroll_data">True</field>
+        <field name="block_financial_data">True</field>
+        <field name="block_fleet_analytics">False</field>
+    </record>
+
+    <record id="deployfleet_ai_budget_default" model="deployfleet.ai.budget">
+        <field name="monthly_token_limit">0</field>
+        <field name="monthly_cost_limit_usd">0.0</field>
+        <field name="alert_threshold_pct">80</field>
+    </record>
+</odoo>

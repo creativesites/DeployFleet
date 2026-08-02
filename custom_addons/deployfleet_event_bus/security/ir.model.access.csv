@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_event_log_system,deployfleet.event.log system,model_deployfleet_event_log,base.group_system,1,1,1,1
+access_deployfleet_event_log_user,deployfleet.event.log user,model_deployfleet_event_log,base.group_user,1,0,0,0
+access_deployfleet_event_subscription_system,deployfleet.event.subscription system,model_deployfleet_event_subscription,base.group_system,1,1,1,1
+access_deployfleet_event_subscription_user,deployfleet.event.subscription user,model_deployfleet_event_subscription,base.group_user,1,0,0,0

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Root application menu. Later modules (dispatch, fleet, billing, ...)
+        attach their own menus as children of this one via
+        parent="deployfleet_core.menu_deployfleet_root" rather than each
+        defining a separate top-level app entry.
+    -->
+    <menuitem id="menu_deployfleet_root"
+              name="DeployFleet"
+              sequence="20"
+              web_icon="deployfleet_core,static/description/icon.png"/>
+</odoo>

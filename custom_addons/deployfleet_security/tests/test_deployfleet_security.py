@@ -1,0 +1,66 @@
+from datetime import timedelta
+
+from odoo import fields
+from odoo.tests.common import TransactionCase, tagged
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetSecurityGroups(TransactionCase):
+    def test_manager_implies_dispatcher_and_driver(self):
+        driver = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        dispatcher = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        manager = self.env.ref("deployfleet_security.group_deployfleet_manager")
+        owner = self.env.ref("deployfleet_security.group_deployfleet_owner")
+
+        self.assertIn(driver, dispatcher.implied_ids)
+        self.assertIn(dispatcher, manager.implied_ids)
+        self.assertIn(manager, owner.implied_ids)
+
+    def test_user_in_manager_group_gets_driver_access_too(self):
+        manager = self.env.ref("deployfleet_security.group_deployfleet_manager")
+        driver = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        user = self.env["res.users"].create({
+            "name": "Test Fleet Manager",
+            "login": "test_fleet_manager@example.com",
+            "groups_id": [(6, 0, [manager.id])],
+        })
+        self.assertIn(driver, user.groups_id)
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetLicense(TransactionCase):
+    def test_activate_sets_active_state(self):
+        record = self.env["deployfleet.license"].create({
+            "license_key": "TEST-KEY-001",
+            "valid_until": fields.Date.today() + timedelta(days=30),
+        })
+        record.action_activate()
+        self.assertEqual(record.state, "active")
+        self.assertTrue(record.is_valid())
+        self.assertTrue(record.log_ids)
+
+    def test_activate_past_valid_until_marks_expired(self):
+        record = self.env["deployfleet.license"].create({
+            "license_key": "TEST-KEY-002",
+            "valid_until": fields.Date.today() - timedelta(days=1),
+        })
+        record.action_activate()
+        self.assertEqual(record.state, "expired")
+        self.assertFalse(record.is_valid())
+
+    def test_invalidate(self):
+        record = self.env["deployfleet.license"].create({"license_key": "TEST-KEY-003"})
+        record.action_activate()
+        record.action_invalidate(reason="Test revocation")
+        self.assertEqual(record.state, "invalid")
+        self.assertFalse(record.is_valid())
+
+    def test_cron_expires_stale_active_license(self):
+        record = self.env["deployfleet.license"].create({
+            "license_key": "TEST-KEY-004",
+            "state": "active",
+            "valid_until": fields.Date.today() - timedelta(days=5),
+        })
+        expired = self.env["deployfleet.license"]._cron_check_expiry()
+        self.assertIn(record, expired)
+        self.assertEqual(record.state, "expired")

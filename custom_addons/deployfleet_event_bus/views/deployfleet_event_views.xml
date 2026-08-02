@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_event_log_list" model="ir.ui.view">
+        <field name="name">deployfleet.event.log.list</field>
+        <field name="model">deployfleet.event.log</field>
+        <field name="arch" type="xml">
+            <list default_order="create_date desc">
+                <field name="create_date"/>
+                <field name="name"/>
+                <field name="source_model"/>
+                <field name="source_id"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'processed'"
+                       decoration-danger="state == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_event_log_form" model="ir.ui.view">
+        <field name="name">deployfleet.event.log.form</field>
+        <field name="model">deployfleet.event.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="source_model"/>
+                        <field name="source_id"/>
+                        <field name="state"/>
+                    </group>
+                    <field name="event_data" readonly="1"/>
+                    <field name="error_message" readonly="1" invisible="not error_message"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_event_log" model="ir.actions.act_window">
+        <field name="name">Event Log</field>
+        <field name="res_model">deployfleet.event.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_deployfleet_event_subscription_list" model="ir.ui.view">
+        <field name="name">deployfleet.event.subscription.list</field>
+        <field name="model">deployfleet.event.subscription</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="event_pattern"/>
+                <field name="model_name"/>
+                <field name="method_name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_event_subscription" model="ir.actions.act_window">
+        <field name="name">Event Subscriptions</field>
+        <field name="res_model">deployfleet.event.subscription</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_event_bus_root"
+              name="Event Bus"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="base.group_system"
+              sequence="90"/>
+    <menuitem id="menu_deployfleet_event_log"
+              name="Event Log"
+              parent="menu_deployfleet_event_bus_root"
+              action="action_deployfleet_event_log"
+              sequence="10"/>
+    <menuitem id="menu_deployfleet_event_subscription"
+              name="Subscriptions"
+              parent="menu_deployfleet_event_bus_root"
+              action="action_deployfleet_event_subscription"
+              sequence="20"/>
+</odoo>

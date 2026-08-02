@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_license_system,deployfleet.license system,model_deployfleet_license,base.group_system,1,1,1,1
+access_deployfleet_license_user,deployfleet.license user,model_deployfleet_license,base.group_user,1,0,0,0
+access_deployfleet_license_log_system,deployfleet.license.log system,model_deployfleet_license_log,base.group_system,1,1,1,1
+access_deployfleet_license_log_user,deployfleet.license.log user,model_deployfleet_license_log,base.group_user,1,0,0,0

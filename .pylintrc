@@ -1,0 +1,24 @@
+[MASTER]
+load-plugins=pylint_odoo
+ignore=.local,mobile
+
+[ODOOLINT]
+manifest-required-authors=DeployFleet
+manifest-required-keys=name,version,depends,license
+valid-odoo-versions=19.0
+
+[MESSAGES CONTROL]
+# pylint-odoo's defaults are the point of running it; only silence checks
+# that don't apply to this repo's layout or fight idioms inherent to Odoo
+# module structure (calling a model's own "_private" helpers on a fresh
+# recordset is completely normal, not an encapsulation violation) or to
+# unittest (setUp/setUpClass are framework-mandated names, not a style choice).
+disable=missing-docstring,too-few-public-methods,protected-access,broad-exception-caught,invalid-name
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=8
+max-positional-arguments=8
+max-locals=25

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_deployfleet_license_expiry_check" model="ir.cron">
+        <field name="name">DeployFleet: check license expiry</field>
+        <field name="model_id" ref="model_deployfleet_license"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_check_expiry()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

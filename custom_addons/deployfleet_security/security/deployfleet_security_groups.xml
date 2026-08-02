@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_privilege_deployfleet_operations" model="res.groups.privilege">
+        <field name="name">DeployFleet Operations</field>
+    </record>
+
+    <record id="group_deployfleet_driver" model="res.groups">
+        <field name="name">DeployFleet Driver</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+    </record>
+
+    <record id="group_deployfleet_dispatcher" model="res.groups">
+        <field name="name">DeployFleet Dispatcher</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+        <field name="implied_ids" eval="[(4, ref('group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="group_deployfleet_manager" model="res.groups">
+        <field name="name">DeployFleet Fleet Manager</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+        <field name="implied_ids" eval="[(4, ref('group_deployfleet_dispatcher'))]"/>
+    </record>
+
+    <record id="group_deployfleet_owner" model="res.groups">
+        <field name="name">DeployFleet Owner</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+        <field name="implied_ids" eval="[(4, ref('group_deployfleet_manager'))]"/>
+    </record>
+
+    <record id="group_deployfleet_hr_payroll_officer" model="res.groups">
+        <field name="name">DeployFleet HR/Payroll Officer</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user'))]"/>
+    </record>
+
+    <record id="group_deployfleet_system_auditor" model="res.groups">
+        <field name="name">DeployFleet System Auditor</field>
+        <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="category_id" ref="deployfleet_core.module_category_deployfleet"/>
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user'))]"/>
+    </record>
+</odoo>

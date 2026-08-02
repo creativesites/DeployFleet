@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install linters
+        run: pip install ruff pylint pylint-odoo
+      - name: Ruff
+        run: ruff check .
+      - name: pylint-odoo
+        run: |
+          if find custom_addons -mindepth 1 -maxdepth 1 -type d | grep -q .; then
+            pylint --rcfile=.pylintrc custom_addons
+          else
+            echo "No modules under custom_addons yet — skipping pylint-odoo."
+          fi
+
+  odoo-tests:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine installable modules
+        id: modules
+        run: |
+          if [ -d custom_addons ] && [ "$(find custom_addons -mindepth 1 -maxdepth 1 -type d | wc -l)" -gt 0 ]; then
+            MODULES=$(find custom_addons -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | paste -sd, -)
+            echo "modules=$MODULES" >> "$GITHUB_OUTPUT"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run Odoo test suite (--test-enable)
+        if: steps.modules.outputs.run == 'true'
+        run: |
+          docker run --rm \
+            --network host \
+            -v "${{ github.workspace }}/custom_addons:/mnt/extra-addons" \
+            -e HOST=localhost -e USER=odoo -e PASSWORD=odoo \
+            odoo:19.0 \
+            odoo -i "${{ steps.modules.outputs.modules }}" \
+              --test-enable --stop-after-init --without-demo=all \
+              -d deployfleet_ci --db_host=localhost --db_port=5432 \
+              --db_user=odoo --db_password=odoo
+      - name: No modules yet
+        if: steps.modules.outputs.run == 'false'
+        run: echo "No modules under custom_addons yet — skipping Odoo test run."
+
+  mobile-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for mobile app
+        id: mobile
+        run: echo "exists=$( [ -d mobile ] && echo true || echo false )" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        if: steps.mobile.outputs.exists == 'true'
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install and typecheck
+        if: steps.mobile.outputs.exists == 'true'
+        working-directory: mobile
+        run: |
+          npm ci
+          npx tsc --noEmit
+      - name: No mobile app yet
+        if: steps.mobile.outputs.exists == 'false'
+        run: echo "mobile/ does not exist yet — skipping mobile typecheck."

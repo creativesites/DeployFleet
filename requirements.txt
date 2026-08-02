@@ -1,0 +1,6 @@
+# Additional Python dependencies required by custom_addons/, beyond what the
+# base odoo:19.0 image already provides. Keep this list to what DeployFleet's
+# own modules import directly.
+
+# deployfleet_ai_core: HTTP calls to DeepSeek/OpenAI/Claude/Gemini provider APIs
+requests>=2.31

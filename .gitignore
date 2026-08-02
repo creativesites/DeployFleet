@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Odoo runtime
+.local/
+*.pot
+odoo.log
+
+# Env / secrets
+.env
+*.pem
+*.key
+
+# Node / mobile (once mobile/ exists)
+node_modules/
+mobile/.expo/
+mobile/dist/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/

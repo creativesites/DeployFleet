@@ -153,11 +153,12 @@ DeployFleet is a commercial SaaS product, not a one-off customer customization. 
 
 ## 10. Current status and next step
 
-**Done:** the Phase 1 architecture analysis (`docs/architecture/01` through `08`), this operating guide, and the supporting root-level docs listed in §2.
+**Done:** the Phase 1 architecture analysis (`docs/architecture/01` through `08`), this operating guide, the supporting root-level docs listed in §2, and formal sign-off resolving 7 of the 8 hard risks in [06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md) (see that doc's "Hard risks" section — each now carries a binding decision, not just a recommendation). **Phase 0 implementation is in progress**: repo/CI scaffolding plus the `deployfleet_core`, `deployfleet_security`, `deployfleet_event_bus`, and `deployfleet_ai_core` foundation modules, built against those resolved decisions.
 
-**Not yet done, and blocking broad implementation:**
+**Still genuinely open, and not to be silently closed just because implementation has started:**
 
-- The open questions in [06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md) — Odoo edition, confirmed launch-market scope, team size/timeline against the 5-phase roadmap, real-world validation of the domain model against an actual trucking company's dispatch workflow, the owner-operator-vehicle modeling question, DeepSeek data-governance sign-off, WhatsApp action-approval policy, and the AI cost-budget default.
-- A pre-flight inventory of the demo server (`199.192.23.46`) — containers, ports, databases, volumes, reverse proxy — has not been performed. Do this before provisioning DeployFleet's own Docker stack there, not as an afterthought.
+- Hard risk #5: the domain model in [07-domain-model-erd.md](docs/architecture/07-domain-model-erd.md) has not yet been validated against a real trucking operator's actual dispatch workflow. Implementation should not get far ahead of this — see the discovery requirements in that risk entry.
+- The remaining open questions in [06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md): Odoo edition (Community vs. Enterprise), confirmed launch-market scope, team size/timeline against the 5-phase roadmap, and the concrete default AI token/cost budget numbers for the MVP release.
+- A pre-flight inventory of the demo server (`199.192.23.46`) — containers, ports, databases, volumes, reverse proxy — has not been performed. Do this before provisioning DeployFleet's own Docker stack there, not as an afterthought. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
-**Proposed next step:** Phase 0 from [05-implementation-roadmap.md](docs/architecture/05-implementation-roadmap.md) — resolve the Odoo edition question, scaffold CI/linters, and build `deployfleet_core`, `deployfleet_security`, `deployfleet_event_bus`, and `deployfleet_ai_core`'s foundation, in that order, once the open questions above have explicit answers rather than assumed ones.
+**Proposed next step after Phase 0 lands:** Phase 1 (Operational Foundation) from [05-implementation-roadmap.md](docs/architecture/05-implementation-roadmap.md) — `deployfleet_driver`, `deployfleet_vehicle`, `deployfleet_customer`, `deployfleet_route`, `deployfleet_dispatch`, `deployfleet_trip`, `deployfleet_delivery` — ideally not started until hard risk #5's discovery pass has at least begun.

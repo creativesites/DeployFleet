@@ -1,0 +1,18 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".local", "mobile"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # line length handled loosely for Odoo XML-adjacent string blocks
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Odoo __init__.py files import submodules purely to register them with the
+# ORM — there is no re-export to "use", this is the standard Odoo idiom.
+"**/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["odoo"]

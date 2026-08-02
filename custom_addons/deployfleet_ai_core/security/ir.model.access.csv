@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_ai_policy_system,deployfleet.ai.policy system,model_deployfleet_ai_policy,base.group_system,1,1,1,1
+access_deployfleet_ai_policy_user,deployfleet.ai.policy user,model_deployfleet_ai_policy,base.group_user,1,0,0,0
+access_deployfleet_ai_config_system,deployfleet.ai.config system,model_deployfleet_ai_config,base.group_system,1,1,1,1
+access_deployfleet_ai_feature_system,deployfleet.ai.feature system,model_deployfleet_ai_feature,base.group_system,1,1,1,1
+access_deployfleet_ai_feature_user,deployfleet.ai.feature user,model_deployfleet_ai_feature,base.group_user,1,0,0,0
+access_deployfleet_ai_response_cache_system,deployfleet.ai.response.cache system,model_deployfleet_ai_response_cache,base.group_system,1,1,1,1
+access_deployfleet_ai_context_cache_system,deployfleet.ai.context.cache system,model_deployfleet_ai_context_cache,base.group_system,1,1,1,1
+access_deployfleet_ai_usage_system,deployfleet.ai.usage system,model_deployfleet_ai_usage,base.group_system,1,1,1,1
+access_deployfleet_ai_usage_user,deployfleet.ai.usage user,model_deployfleet_ai_usage,base.group_user,1,0,0,0
+access_deployfleet_ai_budget_system,deployfleet.ai.budget system,model_deployfleet_ai_budget,base.group_system,1,1,1,1
+access_deployfleet_ai_chat_session_user,deployfleet.ai.chat.session user,model_deployfleet_ai_chat_session,base.group_user,1,1,1,1
+access_deployfleet_ai_chat_message_user,deployfleet.ai.chat.message user,model_deployfleet_ai_chat_message,base.group_user,1,1,1,1

@@ -1,5 +1,7 @@
 # 08 — AI Architecture
 
+*Revision 2 — aligned with the formally approved risk resolutions in [06-risks-and-recommendations.md](06-risks-and-recommendations.md): the WhatsApp breakdown-ticket flow no longer proposes a fast-tracked approval exception (there is none, for any mutating action), a reserved "local model" provider slot is added to the router, and the company AI policy shape (global + external-provider + per-data-category flags) is now specified concretely rather than left as an open question.*
+
 **Governing principle**, per architecture review, and binding on every AI feature this document describes:
 
 > DeployFleet is an operations platform where AI assists humans, automates repetitive work, detects problems early, and provides intelligence — but every AI capability is modular, permission-controlled, measurable, and optional.
@@ -50,12 +52,12 @@ deployfleet.ai.core.complete(feature, agent, system_prompt, user_message, contex
         v
 Provider Router  ──── reads deployfleet.ai.config: active_provider, per-feature model tier
         |
-   ┌────┼────┬─────────────┐
-   v    v    v             v
-DeepSeek OpenAI  Claude   (local model — future extension point, not built now)
+   ┌────┼────┬────────┬──────────────┐
+   v    v    v        v              v
+DeepSeek OpenAI  Claude  Gemini   Local model (reserved provider slot — see below)
 ```
 
-**DeepSeek becomes the default/primary provider**, added alongside the existing Claude/OpenAI/Gemini options rather than replacing them — the abstraction's whole value is that no feature code cares which provider answers it. Rationale for DeepSeek as default, per review: low cost for a commercial SaaS product serving price-sensitive Zambian trucking companies, strong reasoning models, and native prompt-caching support that pairs well with §3.
+**DeepSeek is the default provider for development and testing**; production deployments keep the provider configurable per company (DeepSeek, OpenAI, Claude, Gemini) per [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #8's resolved decision. A "local" provider value is reserved in the selection field from Phase 0 (not implemented — calling it raises a clear "not yet available" error) specifically so a future self-hosted/private model slots into the same router without a schema change, matching the requirement that sensitive workflows be able to use "internal/private models" rather than only choosing between external providers. Rationale for DeepSeek as the working default: low cost for a commercial SaaS product serving price-sensitive Zambian trucking companies, strong reasoning models, and native prompt-caching support that pairs well with §3.
 
 **Two-tier model routing per feature**, a genuine addition beyond what the source has (the source picks one model per provider, not per call complexity):
 
@@ -146,7 +148,7 @@ These annotations are Fleet Analyst / Maintenance Agent outputs (§6) surfaced i
 
 `deployfleet_ai_whatsapp` (successor to `security_ai_whatsapp_bridge`) handles both inbound patterns from the review:
 
-- **Driver-reported events** ("Truck 14 broke down") → parsed into structured fields (driver, vehicle, location, issue) → **routed through `deployfleet_ai_actions`** to create a breakdown ticket, not written directly — this is exactly the kind of AI-initiated write §5's approval pipeline exists for, though for a driver-originated breakdown report a fast-tracked/pre-approved action type is a reasonable design choice (a dispatcher confirming "yes, that's a real breakdown" within the app is arguably still faster than requiring approval before the ticket even appears) — flagged here as an implementation-time policy decision per action type, not a blanket exception to §5's rule.
+- **Driver-reported events** ("Truck 14 broke down") → parsed into structured fields (driver, vehicle, location, issue) → creates a `deployfleet_ai_actions` request in `pending_approval` state immediately (visible to a dispatcher in near-real-time), but **does not create the breakdown ticket itself until approved** — resolved by [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #7: there is no pre-approved or fast-tracked exception for any mutating AI action, WhatsApp-originated or otherwise. A dispatcher confirming "yes, that's a real breakdown" is the approval step, not a bypass of it — the UX goal is a fast *approval*, not a skipped one.
 - **Customer queries** ("Where is my shipment?") → read-only, served by the Customer Agent directly against `deployfleet_shipment`/`deployfleet_trip`, no approval step needed since nothing is written.
 
 ## 9. AI security and permissions — the genuinely new subsystem
@@ -157,6 +159,18 @@ Nothing in the source enforces this today (§0). `deployfleet_ai_permissions` in
 - **Row-level scoping within a permitted feature** — a driver permitted to query the Dispatch Agent must be scoped to their *own* trips, not the whole company's, which is a data-scope rule the AI layer has to enforce on top of (not instead of) Odoo's own record rules, since the AI's answer is synthesized text, not a raw recordset a record rule would naturally filter.
 - **Token/cost budgets per company and optionally per user** (§3), checked before a call proceeds, not just reported after the fact — the source's usage tracking is entirely retrospective (compute stats from logs) with no pre-call gate.
 - **Data-sensitivity flags per feature** — see §2's data-governance note; a company should be able to mark payroll-adjacent features as "no external AI provider" without turning off AI entirely.
+
+**Company AI policy — resolved shape** ([06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #8): each company gets one `deployfleet.ai.policy` record combining a global on/off, an "external providers allowed" flag, and a per-data-category allow/block matrix, e.g.:
+
+```
+AI Enabled: Yes
+External AI Providers: Allowed
+Payroll Data: Blocked
+Financial Data: Blocked
+Fleet Analytics: Allowed
+```
+
+Every AI call in `deployfleet_ai_core` checks this policy — feature toggle, data category, and provider restriction — before it checks anything else, including cache. A blocked category never reaches the provider router regardless of cache state.
 
 ## 10. Audit trail
 

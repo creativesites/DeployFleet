@@ -1,6 +1,19 @@
 # Changelog
 
-Documentation and architecture history for DeployFleet. No Odoo module code has shipped yet — every entry to date is planning/architecture work. Once implementation starts, this file follows normal changelog practice (dated entries, grouped by Added/Changed/Fixed), keyed to conventional-commit scopes (see [CLAUDE.md](CLAUDE.md) §7).
+## Phase 0 — repo scaffolding and foundation modules (first implementation)
+
+All 8 hard risks in [docs/architecture/06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md) except #5 (real-world domain validation, still pending) were formally resolved and approved, unblocking implementation.
+
+**Added:**
+
+- Repo scaffolding: `.github/workflows/ci.yml` (Odoo `--test-enable` + ruff + pylint-odoo + a mobile-typecheck job that no-ops until `mobile/` exists), `pyproject.toml`/`.pylintrc` linter config, `deploy/docker-compose.yml`, `scripts/{docker-env,start,stop,run-tests}.sh`, `requirements.txt`, `.env.example`.
+- `custom_addons/deployfleet_core` — module category, root app menu, `deployfleet.sequence.mixin` reference-code helper.
+- `custom_addons/deployfleet_security` — role groups (`group_deployfleet_driver` → `dispatcher` → `manager` → `owner`, plus HR/Payroll Officer and System Auditor), `deployfleet.license`/`deployfleet.license.log` product entitlement model with a daily expiry-check cron.
+- `custom_addons/deployfleet_event_bus` — `deployfleet.event.log` publish/dispatch model and `deployfleet.event.subscription` registry, resolving risk #4 (the source's hardcoded subscriber if-chain).
+- `custom_addons/deployfleet_ai_core` — provider router (`deployfleet.ai.core.complete()`) with working DeepSeek/OpenAI (shared OpenAI-compatible adapter) and Claude adapters, Gemini/local reserved as not-yet-implemented; `deployfleet.ai.policy` (the per-company governance shape from risk #8); `deployfleet.ai.config`; `deployfleet.ai.feature` (data-driven toggles, not hardcoded booleans); split response/context cache; usage log + pre-call budget gate.
+- Test suites for all four modules (unittest-style `TransactionCase`s), set as the coverage bar from the first module per [CLAUDE.md](CLAUDE.md) §9.
+
+**Not yet done:** `deployfleet_ai_permissions`/`deployfleet_ai_actions` (Phase 4), and every operational module (driver, vehicle, dispatch, trip, ...) — Phase 1 onward per [docs/architecture/05-implementation-roadmap.md](docs/architecture/05-implementation-roadmap.md).
 
 ## Architecture planning — revision 3 (AI architecture)
 
