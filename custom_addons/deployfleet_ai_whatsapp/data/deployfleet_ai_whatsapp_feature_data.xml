@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="feature_whatsapp_breakdown_report" model="deployfleet.ai.feature">
+        <field name="key">whatsapp_breakdown_report</field>
+        <field name="name">WhatsApp Breakdown Report</field>
+        <field name="description">A driver texting "breakdown" proposes marking their vehicle broken down - requires dispatcher/manager approval before it takes effect.</field>
+        <field name="data_category">fleet_analytics</field>
+        <field name="enabled">True</field>
+    </record>
+</odoo>

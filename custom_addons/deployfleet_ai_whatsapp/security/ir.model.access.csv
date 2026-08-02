@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_ai_whatsapp_config_manager,deployfleet.ai.whatsapp.config manager,model_deployfleet_ai_whatsapp_config,deployfleet_security.group_deployfleet_manager,1,0,0,0
+access_deployfleet_ai_whatsapp_config_owner,deployfleet.ai.whatsapp.config owner,model_deployfleet_ai_whatsapp_config,deployfleet_security.group_deployfleet_owner,1,1,1,0
