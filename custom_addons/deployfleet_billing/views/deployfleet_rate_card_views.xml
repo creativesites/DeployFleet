@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_rate_card_list" model="ir.ui.view">
+        <field name="name">deployfleet.rate.card.list</field>
+        <field name="model">deployfleet.rate.card</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="contract_id"/>
+                <field name="rate_basis"/>
+                <field name="vehicle_type_id"/>
+                <field name="unit_amount"/>
+                <field name="currency_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_rate_card" model="ir.actions.act_window">
+        <field name="name">Rate Cards</field>
+        <field name="res_model">deployfleet.rate.card</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_billing_root"
+              name="Billing"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="65"/>
+    <menuitem id="menu_deployfleet_rate_card"
+              name="Rate Cards"
+              parent="menu_deployfleet_billing_root"
+              action="action_deployfleet_rate_card"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="20"/>
+</odoo>
