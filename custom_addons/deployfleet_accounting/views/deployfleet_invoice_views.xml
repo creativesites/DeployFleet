@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_invoice_form_accounting" model="ir.ui.view">
+        <field name="name">deployfleet.invoice.form.accounting</field>
+        <field name="model">deployfleet.invoice</field>
+        <field name="inherit_id" ref="deployfleet_billing.view_deployfleet_invoice_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="account_move_id" readonly="1"/>
+                <field name="payment_state" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
