@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_menu_shipment" inherit_id="portal.portal_breadcrumbs" name="Portal Shipment Menu">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'shipment' or shipment" t-attf-class="breadcrumb-item #{'active ' if not shipment else ''}">
+                <a t-if="shipment" t-attf-href="/my/shipments?{{ keep_query() }}">Shipments</a>
+                <t t-else="">Shipments</t>
+            </li>
+            <li t-if="shipment" class="breadcrumb-item active">
+                <span t-field="shipment.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home_shipment" inherit_id="portal.portal_my_home" name="Portal My Shipments Link">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Shipments</t>
+                <t t-set="url" t-value="'/my/shipments'"/>
+                <t t-set="count" t-value="shipment_count"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_shipments" name="My Shipments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <div class="o_portal_my_doc_table">
+                <table class="table table-hover o_portal_my_doc_table" t-if="shipments">
+                    <thead>
+                        <tr class="active">
+                            <th>Reference</th>
+                            <th>Pickup</th>
+                            <th>Drop-off</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="shipments" t-as="shipment">
+                            <td>
+                                <a t-attf-href="/my/shipments/#{shipment.id}">
+                                    <span t-field="shipment.name"/>
+                                </a>
+                            </td>
+                            <td t-field="shipment.pickup_depot_id.name"/>
+                            <td t-field="shipment.dropoff_depot_id.name"/>
+                            <td t-field="shipment.state"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <p t-if="not shipments">You have no shipments yet.</p>
+                <t t-call="portal.pager"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_shipment_detail" name="Shipment Detail">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <div class="row">
+                <div class="col-12">
+                    <h3>
+                        <span t-field="shipment.name"/> — <span t-field="shipment.state"/>
+                    </h3>
+                    <p>
+                        <strong>Pickup: </strong><span t-field="shipment.pickup_depot_id.name"/><br/>
+                        <strong>Drop-off: </strong><span t-field="shipment.dropoff_depot_id.name"/><br/>
+                        <strong>Cargo: </strong><span t-field="shipment.cargo_description"/>
+                    </p>
+
+                    <h4>Proof of Delivery</h4>
+                    <div t-if="deliveries">
+                        <div t-foreach="deliveries" t-as="delivery" class="mb-3">
+                            <p>
+                                Delivered <span t-field="delivery.delivered_at"/>
+                                <t t-if="delivery.recipient_name"> to <span t-field="delivery.recipient_name"/></t>
+                            </p>
+                            <img t-if="delivery.signature" t-attf-src="/web/image/deployfleet.delivery/#{delivery.id}/signature"
+                                 style="max-height: 100px;" alt="Signature"/>
+                        </div>
+                    </div>
+                    <p t-if="not deliveries">Not yet delivered.</p>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

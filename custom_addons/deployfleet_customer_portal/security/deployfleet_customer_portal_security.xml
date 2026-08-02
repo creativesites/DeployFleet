@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="deployfleet_shipment_rule_portal" model="ir.rule">
+        <field name="name">Portal users only see their own shipments</field>
+        <field name="model_id" ref="deployfleet_dispatch.model_deployfleet_shipment"/>
+        <field name="domain_force">[('customer_id', 'child_of', [user.commercial_partner_id.id])]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <record id="deployfleet_delivery_rule_portal" model="ir.rule">
+        <field name="name">Portal users only see deliveries for their own shipments</field>
+        <field name="model_id" ref="deployfleet_delivery.model_deployfleet_delivery"/>
+        <field name="domain_force">
+            [('shipment_id.customer_id', 'child_of', [user.commercial_partner_id.id])]
+        </field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+
+    <record id="deployfleet_invoice_rule_portal" model="ir.rule">
+        <field name="name">Portal users only see their own invoices</field>
+        <field name="model_id" ref="deployfleet_billing.model_deployfleet_invoice"/>
+        <field name="domain_force">[('customer_id', 'child_of', [user.commercial_partner_id.id])]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_shipment_portal,deployfleet.shipment portal,deployfleet_dispatch.model_deployfleet_shipment,base.group_portal,1,0,0,0
+access_deployfleet_delivery_portal,deployfleet.delivery portal,deployfleet_delivery.model_deployfleet_delivery,base.group_portal,1,0,0,0
+access_deployfleet_invoice_portal,deployfleet.invoice portal,deployfleet_billing.model_deployfleet_invoice,base.group_portal,1,0,0,0

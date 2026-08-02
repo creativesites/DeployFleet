@@ -8,7 +8,7 @@ ignore=.local,mobile
 # every module raises import-error (E0401), which fails the job on code
 # that is otherwise correct. This is the standard fix for linting Odoo
 # addons without a full Odoo installation present.
-ignored-modules=odoo
+ignored-modules=odoo,werkzeug
 
 [ODOOLINT]
 manifest-required-authors=DeployFleet
