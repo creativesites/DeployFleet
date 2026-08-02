@@ -38,4 +38,16 @@
         <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
         <field name="implied_ids" eval="[(4, ref('hr.group_hr_user'))]"/>
     </record>
+
+    <!--
+        Without this, a fresh install leaves the initial admin user in none
+        of the groups above, so every DeployFleet menu (all gated by these
+        groups) is invisible to the only user that exists - only menus
+        gated by base.group_system (AI, Event Bus, Vehicle Types) show up.
+        group_deployfleet_owner is the top of the implied_ids chain, so
+        this also grants manager/dispatcher/driver access transitively.
+    -->
+    <record id="base.user_admin" model="res.users">
+        <field name="groups_id" eval="[(4, ref('group_deployfleet_owner'))]"/>
+    </record>
 </odoo>
