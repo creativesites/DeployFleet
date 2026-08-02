@@ -1,0 +1,31 @@
+# Changelog
+
+Documentation and architecture history for DeployFleet. No Odoo module code has shipped yet — every entry to date is planning/architecture work. Once implementation starts, this file follows normal changelog practice (dated entries, grouped by Added/Changed/Fixed), keyed to conventional-commit scopes (see [CLAUDE.md](CLAUDE.md) §7).
+
+## Architecture planning — revision 3 (AI architecture)
+
+- Added [docs/architecture/08-ai-architecture.md](docs/architecture/08-ai-architecture.md): provider abstraction (DeepSeek added as default alongside Claude/OpenAI/Gemini, cheap/reasoning model tiers), cost architecture (caching, usage tracking, budgets), a fixed-verb "Ask AI" UI pattern, a six-agent catalog, and a mandatory suggestion→permission-check→human-approval→execute→audit pipeline for any AI-initiated write.
+- Verified, via a field-level re-check of `security_ai_engine`'s actual model code, that roughly 70% of the requested AI foundation (provider router, per-feature toggles, response caching, usage/cost logging) already exists in the DeployGuard source. Split the AI module accordingly: `deployfleet_ai_core` (verified-reusable) separated from `deployfleet_ai_permissions`/`deployfleet_ai_actions` (genuinely new).
+- Updated [01-module-audit.md](docs/architecture/01-module-audit.md), [02-reuse-strategy.md](docs/architecture/02-reuse-strategy.md), [04-module-structure.md](docs/architecture/04-module-structure.md), and [05-implementation-roadmap.md](docs/architecture/05-implementation-roadmap.md) to reflect the AI module split and move the AI foundation to Phase 0.
+- Added two hard risks to [06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md): AI writes without human approval, and data-governance implications of routing business data through a third-party AI provider.
+
+## Architecture planning — revision 2 (naming, event bus, domain model)
+
+- Unified all module/model naming under the `deployfleet_*`/`deployfleet.*` namespace, replacing an earlier `fleet_*`/`dfleet.*` split, to avoid confusion with Odoo's native Fleet app.
+- Resolved the vehicle-architecture question: `deployfleet.vehicle` uses delegation inheritance (`_inherits`) over Odoo's native `fleet.vehicle`.
+- Discovered, via re-reading `security_base`'s actual model code, a working event bus (`security.event.log`) already present in the DeployGuard source. Promoted it to a first-class `deployfleet_event_bus` foundation module and flagged its one real defect (a hardcoded subscriber list) to fix during the port.
+- Added Shipment/Load as a first-class entity between Customer and Trip.
+- Regrouped modules: driver split from core identity into its own module; "discipline" reframed as `deployfleet_driver_performance`; equipment split three ways (parts/tyres/assets); mobile split three ways by role (driver/dispatcher/customer).
+- Replaced an install-profile framing with a focused MVP-12 first release.
+- Restructured the roadmap into 5 phases (Operational Foundation → Cost Control → Compliance → Customer Platform → Intelligence).
+- Added [docs/architecture/07-domain-model-erd.md](docs/architecture/07-domain-model-erd.md): entities, relationships, and key workflows, with explicit notes on unvalidated judgment calls (spot loads, backhauls, owner-operator vehicles, consolidated cargo).
+
+## Architecture planning — revision 1 (initial fork analysis)
+
+- Analyzed the DeployGuard source (`creativesites/DogFrce-Security-Services-Custom-Odoo-Modules`, 45 custom modules) and produced the initial Phase 1 deliverable set: module audit, reuse strategy, refactoring roadmap, proposed module structure, phased implementation roadmap, and risks/recommendations.
+- Flagged `security_dogforce_data` (71,419 lines of a real client's production data) as a hard exclusion — never to be forked in any form.
+
+## Repository scaffolding
+
+- Added [CLAUDE.md](CLAUDE.md) as the permanent operating guide: architecture pointers, naming conventions, AI architecture summary, UI/UX standards, mobile app structure, deployment safety rules, git commit standards, and the required development workflow.
+- Added root-level entry-point docs (`ARCHITECTURE.md`, `MODULE_STRUCTURE.md`, `AI_ARCHITECTURE.md`, `DATABASE_DESIGN.md`, `MOBILE_ARCHITECTURE.md`, `DEPLOYMENT.md`) pointing into the detailed `docs/architecture/` analysis, plus this changelog.

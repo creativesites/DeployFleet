@@ -6,4 +6,8 @@ This repository currently contains the Phase 1 architecture planning deliverable
 
 ## Start here
 
-**[docs/architecture/README.md](docs/architecture/README.md)** — full Phase 1 analysis: module audit of the DeployGuard source codebase, reuse strategy, refactoring roadmap, proposed DeployFleet module structure, phased implementation roadmap, and risks/recommendations.
+**[CLAUDE.md](CLAUDE.md)** — the operating guide for every development session: conventions, naming rules, AI architecture summary, UI/UX and mobile standards, deployment safety rules, git commit standards, and the required workflow. Read this first.
+
+**[docs/architecture/README.md](docs/architecture/README.md)** — the full Phase 1 analysis: module audit of the DeployGuard source codebase, reuse strategy, refactoring roadmap, proposed DeployFleet module structure, phased implementation roadmap, domain model/ERD, AI architecture, and risks/recommendations.
+
+Short root-level entry points into that analysis: [ARCHITECTURE.md](ARCHITECTURE.md), [MODULE_STRUCTURE.md](MODULE_STRUCTURE.md), [AI_ARCHITECTURE.md](AI_ARCHITECTURE.md), [DATABASE_DESIGN.md](DATABASE_DESIGN.md), [MOBILE_ARCHITECTURE.md](MOBILE_ARCHITECTURE.md), [DEPLOYMENT.md](DEPLOYMENT.md), [CHANGELOG.md](CHANGELOG.md).
