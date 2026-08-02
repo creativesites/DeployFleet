@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="doc_type_vehicle_insurance" model="deployfleet.compliance.document.type">
+        <field name="name">Insurance</field>
+        <field name="code">vehicle_insurance</field>
+        <field name="applies_to_model">deployfleet.vehicle</field>
+    </record>
+    <record id="doc_type_vehicle_roadworthiness" model="deployfleet.compliance.document.type">
+        <field name="name">Roadworthiness Certificate</field>
+        <field name="code">vehicle_roadworthiness</field>
+        <field name="applies_to_model">deployfleet.vehicle</field>
+    </record>
+    <record id="doc_type_vehicle_permit" model="deployfleet.compliance.document.type">
+        <field name="name">Operating Permit</field>
+        <field name="code">vehicle_permit</field>
+        <field name="applies_to_model">deployfleet.vehicle</field>
+    </record>
+    <record id="doc_type_vehicle_registration" model="deployfleet.compliance.document.type">
+        <field name="name">Registration/Licensing</field>
+        <field name="code">vehicle_registration</field>
+        <field name="applies_to_model">deployfleet.vehicle</field>
+    </record>
+</odoo>

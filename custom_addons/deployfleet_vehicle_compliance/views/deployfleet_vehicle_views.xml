@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_vehicle_form_compliance" model="ir.ui.view">
+        <field name="name">deployfleet.vehicle.form.compliance</field>
+        <field name="model">deployfleet.vehicle</field>
+        <field name="inherit_id" ref="deployfleet_vehicle.view_deployfleet_vehicle_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="action_view_compliance_documents" type="object"
+                        string="Compliance Documents"
+                        class="btn-danger" invisible="not has_expired_compliance_documents"/>
+            </header>
+            <field name="odometer" position="after">
+                <field name="has_expired_compliance_documents" widget="boolean_toggle"/>
+            </field>
+        </field>
+    </record>
+</odoo>
