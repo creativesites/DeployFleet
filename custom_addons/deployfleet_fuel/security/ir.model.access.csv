@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_fuel_log_driver,deployfleet.fuel.log driver,model_deployfleet_fuel_log,deployfleet_security.group_deployfleet_driver,1,0,1,0
+access_deployfleet_fuel_log_dispatcher,deployfleet.fuel.log dispatcher,model_deployfleet_fuel_log,deployfleet_security.group_deployfleet_dispatcher,1,1,1,0
+access_deployfleet_fuel_log_manager,deployfleet.fuel.log manager,model_deployfleet_fuel_log,deployfleet_security.group_deployfleet_manager,1,1,1,1
