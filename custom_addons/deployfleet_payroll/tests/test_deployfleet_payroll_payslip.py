@@ -11,31 +11,39 @@ class TestDeployfleetPayrollPayslip(TransactionCase):
         self.employee = self.env["hr.employee"].create({"name": "Payroll Employee"})
         self.rule_model = self.env["deployfleet.payroll.rule"]
         self.rule_model.create({
-            "code": "BASIC", "name": "Basic Pay", "sequence": 10,
-            "category": "gross", "amount_type": "fixed", "amount_fixed": 10000.0,
-        })
-        self.rule_model.create({
-            "code": "PENSION", "name": "Pension Contribution", "sequence": 20,
+            "code": "PENSION", "name": "Pension Contribution", "sequence": 10,
             "category": "deduction", "amount_type": "percentage",
             "amount_percentage": 5.0, "percentage_base_code": "BASIC",
         })
 
-    def _create_payslip(self):
+    def _create_payslip(self, base_salary=10000.0):
         return self.env["deployfleet.payroll.payslip"].create({
-            "employee_id": self.employee.id,
+            "employee_id": self.employee.id, "base_salary": base_salary,
             "period_start": date(2026, 1, 1), "period_end": date(2026, 1, 31),
         })
 
     def test_compute_creates_one_line_per_active_rule(self):
         payslip = self._create_payslip()
         payslip.action_compute()
-        self.assertEqual(len(payslip.line_ids), 2)
+        self.assertEqual(len(payslip.line_ids), 1)
 
-    def test_percentage_rule_computed_against_base_rule(self):
+    def test_percentage_rule_computed_against_base_salary(self):
         payslip = self._create_payslip()
         payslip.action_compute()
         pension_line = payslip.line_ids.filtered(lambda line: line.rule_id.code == "PENSION")
         self.assertEqual(pension_line.amount, 500.0)
+
+    def test_different_employees_can_have_different_base_salaries(self):
+        low = self._create_payslip(base_salary=8000.0)
+        high = self._create_payslip(base_salary=20000.0)
+        low.action_compute()
+        high.action_compute()
+        self.assertEqual(
+            low.line_ids.filtered(lambda line: line.rule_id.code == "PENSION").amount, 400.0,
+        )
+        self.assertEqual(
+            high.line_ids.filtered(lambda line: line.rule_id.code == "PENSION").amount, 1000.0,
+        )
 
     def test_gross_and_net_totals(self):
         payslip = self._create_payslip()
@@ -44,9 +52,9 @@ class TestDeployfleetPayrollPayslip(TransactionCase):
         self.assertEqual(payslip.total_deductions, 500.0)
         self.assertEqual(payslip.net_pay, 9500.0)
 
-    def test_formula_rule_references_earlier_rules(self):
+    def test_formula_rule_references_basic_and_earlier_rules(self):
         self.rule_model.create({
-            "code": "TAKE_HOME", "name": "Take Home (formula check)", "sequence": 30,
+            "code": "TAKE_HOME", "name": "Take Home (formula check)", "sequence": 20,
             "category": "gross", "amount_type": "formula", "formula": "BASIC - PENSION",
         })
         payslip = self._create_payslip()

@@ -18,6 +18,14 @@ calculation-rule engine — a formula (fixed / percentage-of-another-rule
 to later rules by code. A deliberate parallel design, not shared code:
 payroll and freight costing are different bounded contexts.
 
+``base_salary`` lives directly on the payslip, not as a
+``deployfleet.payroll.rule`` — a rule's ``amount_fixed`` is a single
+global value shared by every payslip that uses it, which would give
+every employee an identical basic wage. It's seeded into the
+rule-evaluation context as ``BASIC`` so rules (NAPSA, PAYE, ...) can
+reference it, without this engine needing to know about ``hr.contract``
+at all.
+
 ``deployfleet_l10n_zm`` supplies the actual NAPSA/NHIMA/WCF/PAYE rule
 *data* on top of this engine. ``deployfleet_loans`` extends the payslip
 computation the same way every other cross-module extension in this

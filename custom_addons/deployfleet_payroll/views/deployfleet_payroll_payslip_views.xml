@@ -20,6 +20,7 @@
                             <field name="employee_id"/>
                             <field name="period_start"/>
                             <field name="period_end"/>
+                            <field name="base_salary"/>
                         </group>
                         <group>
                             <field name="gross_pay"/>
