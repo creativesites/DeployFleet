@@ -33,9 +33,11 @@
 
 ---
 
-## Phase 2 — Cost Control
+## Phase 2 — Cost Control ✅ delivered
 
 **Goal:** save money. The first phase where the product visibly pays for itself beyond "replacing a spreadsheet."
+
+**Status: implemented.** All six core modules plus both recommended additions below are built, tested, lint-clean, and committed: `deployfleet_freight_calculator`, `deployfleet_load_expense`, `deployfleet_driver_advance`, `deployfleet_fuel`, `deployfleet_parts`, `deployfleet_tyres`, `deployfleet_workshop`, `deployfleet_maintenance`, `deployfleet_assets`, plus the `max_weight_kg`/`max_volume_m3`/`gross_vehicle_weight_kg`/`tare_weight_kg` patch to `deployfleet_vehicle` (bundled into one migration as recommended) and the weight-aware hard-disqualify this enabled in `deployfleet_dispatch`'s scoring engine.
 
 **Modules:** `deployfleet_fuel`, `deployfleet_maintenance`, `deployfleet_tyres`, `deployfleet_parts`, `deployfleet_workshop`, `deployfleet_assets`.
 

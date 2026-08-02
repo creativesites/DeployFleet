@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_asset_form" model="ir.ui.view">
+        <field name="name">deployfleet.asset.form</field>
+        <field name="model">deployfleet.asset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_set_in_service" type="object" string="Set In Service"
+                            invisible="status == 'in_service'"/>
+                    <button name="action_set_in_storage" type="object" string="Set In Storage"
+                            invisible="status == 'in_storage'"/>
+                    <button name="action_set_under_repair" type="object" string="Set Under Repair"
+                            invisible="status == 'under_repair'"/>
+                    <button name="action_set_retired" type="object" string="Retire"
+                            invisible="status == 'retired'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="in_service,in_storage,under_repair,retired"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="asset_type"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group>
+                            <field name="location"/>
+                            <field name="acquisition_date"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Notes..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_asset_list" model="ir.ui.view">
+        <field name="name">deployfleet.asset.list</field>
+        <field name="model">deployfleet.asset</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="asset_type"/>
+                <field name="serial_number"/>
+                <field name="location"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'in_service'"
+                       decoration-info="status == 'in_storage'"
+                       decoration-warning="status == 'under_repair'"
+                       decoration-danger="status == 'retired'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_asset" model="ir.actions.act_window">
+        <field name="name">Assets</field>
+        <field name="res_model">deployfleet.asset</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_asset"
+              name="Assets"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_asset"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="50"/>
+</odoo>

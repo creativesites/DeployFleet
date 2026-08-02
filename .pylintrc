@@ -21,7 +21,14 @@ valid-odoo-versions=19.0
 # module structure (calling a model's own "_private" helpers on a fresh
 # recordset is completely normal, not an encapsulation violation) or to
 # unittest (setUp/setUpClass are framework-mandated names, not a style choice).
-disable=missing-docstring,too-few-public-methods,protected-access,broad-exception-caught,invalid-name
+disable=missing-docstring,too-few-public-methods,protected-access,broad-exception-caught,invalid-name,duplicate-code
+# duplicate-code (R0801) flags manifest boilerplate (author/license/data
+# key structure) and test-fixture setup (the "create a fleet.vehicle.model
+# if none exists" helper) that legitimately repeats across independently
+# installable modules — OCA convention keeps each module self-contained
+# rather than depending on a shared test-helper or manifest-generation
+# module. That coupling would cost more than the few repeated lines it
+# saves, so this is silenced deliberately, not overlooked.
 
 [FORMAT]
 max-line-length=120
