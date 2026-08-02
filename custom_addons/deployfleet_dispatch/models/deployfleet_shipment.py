@@ -102,6 +102,8 @@ class DeployfleetShipment(models.Model):
             return None
         if self.required_vehicle_type_id and vehicle.vehicle_type_id != self.required_vehicle_type_id:
             return None
+        if vehicle.max_weight_kg and self.weight_kg > vehicle.max_weight_kg:
+            return None
         if self._driver_has_conflicting_assignment(driver):
             return None
 

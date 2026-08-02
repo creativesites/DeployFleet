@@ -53,3 +53,7 @@ class TestDeployfleetVehicle(TransactionCase):
         vehicle_type = self.env.ref("deployfleet_core.vehicle_type_tanker")
         vehicle = self._create_vehicle(vehicle_type_id=vehicle_type.id)
         self.assertEqual(vehicle.vehicle_type_id, vehicle_type)
+
+    def test_payload_capacity_is_gvw_minus_tare(self):
+        vehicle = self._create_vehicle(gross_vehicle_weight_kg=32000.0, tare_weight_kg=9000.0)
+        self.assertEqual(vehicle.payload_capacity_kg, 23000.0)

@@ -73,6 +73,24 @@ class TestDeployfleetScoring(DeployfleetDispatchTestBase):
         shipment = self._create_shipment(required_vehicle_type_id=rigid.id)
         self.assertIsNotNone(shipment._score_candidate(vehicle, driver))
 
+    def test_overweight_shipment_is_disqualified(self):
+        vehicle = self._create_vehicle(max_weight_kg=10000.0)
+        driver = self._create_driver()
+        shipment = self._create_shipment(weight_kg=15000.0)
+        self.assertIsNone(shipment._score_candidate(vehicle, driver))
+
+    def test_shipment_within_weight_limit_is_not_disqualified(self):
+        vehicle = self._create_vehicle(max_weight_kg=10000.0)
+        driver = self._create_driver()
+        shipment = self._create_shipment(weight_kg=8000.0)
+        self.assertIsNotNone(shipment._score_candidate(vehicle, driver))
+
+    def test_vehicle_with_no_max_weight_set_is_never_weight_disqualified(self):
+        vehicle = self._create_vehicle()
+        driver = self._create_driver()
+        shipment = self._create_shipment(weight_kg=50000.0)
+        self.assertIsNotNone(shipment._score_candidate(vehicle, driver))
+
     def test_experience_increases_score_and_accidents_decrease_it(self):
         vehicle = self._create_vehicle()
         shipment = self._create_shipment()

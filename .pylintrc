@@ -1,6 +1,14 @@
 [MASTER]
 load-plugins=pylint_odoo
 ignore=.local,mobile
+# CI's lint job intentionally never installs the odoo package itself (it
+# only needs ruff/pylint/pylint-odoo to lint custom_addons against the
+# Odoo APIs, not to run Odoo) — so pylint can never resolve `import odoo`
+# or its submodules. Without this, every single model/view/test file in
+# every module raises import-error (E0401), which fails the job on code
+# that is otherwise correct. This is the standard fix for linting Odoo
+# addons without a full Odoo installation present.
+ignored-modules=odoo
 
 [ODOOLINT]
 manifest-required-authors=DeployFleet

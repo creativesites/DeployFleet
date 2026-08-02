@@ -27,6 +27,13 @@
                             <field name="current_driver_id"/>
                             <field name="odometer"/>
                         </group>
+                        <group string="Capacity">
+                            <field name="max_weight_kg"/>
+                            <field name="max_volume_m3"/>
+                            <field name="gross_vehicle_weight_kg"/>
+                            <field name="tare_weight_kg"/>
+                            <field name="payload_capacity_kg"/>
+                        </group>
                     </group>
                 </sheet>
             </form>

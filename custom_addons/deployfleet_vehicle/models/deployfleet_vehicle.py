@@ -43,6 +43,25 @@ class DeployfleetVehicle(models.Model):
     current_driver_id = fields.Many2one(
         "hr.employee", domain=[("deployfleet_is_driver", "=", True)],
     )
+    max_weight_kg = fields.Float(
+        help="Maximum cargo weight this vehicle can carry, in kg. Used for "
+             "weight-aware dispatch scoring — see docs/architecture/12-ltl-freight-management-architecture.md §5.",
+    )
+    max_volume_m3 = fields.Float(help="Maximum cargo volume this vehicle can carry, in cubic meters.")
+    gross_vehicle_weight_kg = fields.Float(
+        string="Gross Vehicle Weight (kg)",
+        help="Fully loaded weight limit (GVW). See docs/architecture/14-freight-calculator-engine.md §5.",
+    )
+    tare_weight_kg = fields.Float(string="Tare Weight (kg)", help="Empty (unloaded) vehicle weight.")
+    payload_capacity_kg = fields.Float(
+        compute="_compute_payload_capacity_kg", store=True,
+        help="Gross vehicle weight minus tare weight — the maximum cargo weight before exceeding GVW.",
+    )
+
+    @api.depends("gross_vehicle_weight_kg", "tare_weight_kg")
+    def _compute_payload_capacity_kg(self):
+        for vehicle in self:
+            vehicle.payload_capacity_kg = vehicle.gross_vehicle_weight_kg - vehicle.tare_weight_kg
 
     def action_set_available(self):
         self.write({"status": "available"})
