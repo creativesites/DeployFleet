@@ -24,17 +24,33 @@ def envelope_error(message):
 
 
 def require_group(group_xml_id):
-    """Decorator for a JSON-type controller route: returns an error
-    envelope (never raises) if the current user isn't in `group_xml_id`,
-    so the mobile client always gets a well-formed response body."""
+    """Decorator for a type="http" controller route returning JSON by hand:
+    responds with a well-formed error envelope (never raises, never
+    redirects to a login page) if the current user isn't in
+    `group_xml_id`, so a mobile client always gets a parseable body."""
 
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if request.env.user._is_public() or not request.env.user.has_group(group_xml_id):
-                return envelope_error("Access denied.")
+                return request.make_json_response(envelope_error("Access denied."))
             return func(*args, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+def require_authenticated(func):
+    """Same shape as `require_group()`, for routes any logged-in user may
+    call regardless of group - e.g. the customer mobile app, whose users
+    hold no `deployfleet_security` group at all and are instead scoped by
+    ir.rule (see deployfleet_customer_portal)."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if request.env.user._is_public():
+            return request.make_json_response(envelope_error("Access denied."))
+        return func(*args, **kwargs)
+
+    return wrapper
