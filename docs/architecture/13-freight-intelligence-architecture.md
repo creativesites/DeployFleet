@@ -30,15 +30,17 @@ This is real, valuable enrichment — but it's a schema change to an already-shi
 | Model | Purpose |
 |---|---|
 | `deployfleet.rate.benchmark` | Historical average rate per lane (origin depot/region → destination depot/region), updated as real invoices/trips accumulate — the thing that lets the system say "market average for this lane is $4,200" instead of a guess |
-| `deployfleet.cost.model` | Per-vehicle-type or per-company cost assumptions: fuel cost per km, driver cost per trip, maintenance allocation per km, insurance allocation per trip |
+| ~~`deployfleet.cost.model`~~ | **Superseded — see revision note below.** |
 
-Core computation, the formula from the proposal, implemented directly rather than left as prose:
+**Revision note: this cost model is superseded by [14-freight-calculator-engine.md](14-freight-calculator-engine.md).** That document turns this one-paragraph sketch into the actual buildable spec — a `deployfleet.calculation.rule` / `deployfleet.calculation.parameter` engine, evaluated via `safe_eval`, covering the same Trip Profit formula plus depreciation (which this sketch missed) and ten other calculators. `deployfleet_rate_intelligence` keeps only what's genuinely its own job — `deployfleet.rate.benchmark`, historical market-rate data — and consumes doc 14's engine for cost/profit computation instead of maintaining a second one. Don't implement `deployfleet.cost.model` as described below; it's kept here only so the reasoning for the consolidation is visible in context.
+
+Core computation, the formula from the original proposal — now doc 14's, not this document's:
 
 ```
 Trip Profit = Revenue − (Fuel + Tolls + Driver Cost + Maintenance Allocation + Insurance Allocation)
 ```
 
-`Tolls` comes from `deployfleet_route_intelligence` (§4); everything else from `deployfleet.cost.model` and the shipment's offered rate. This computation is what the Finance Agent's rate/profitability recommendations (§5) call — the AI layer doesn't invent the arithmetic, it explains and contextualizes a number this module computes deterministically.
+`Tolls` comes from `deployfleet_route_intelligence` (§4); everything else is a `deployfleet.calculation.rule` in doc 14's engine, parameterized per company/vehicle-type via `deployfleet.calculation.parameter`. This computation is what the Finance Agent's rate/profitability recommendations (§5) call — the AI layer doesn't invent the arithmetic, it explains and contextualizes a number doc 14's engine computes deterministically.
 
 **Depends on:** `deployfleet_billing` (Phase 4) for real historical rate data to benchmark against — before that exists, `deployfleet.rate.benchmark` has nothing to learn from.
 

@@ -45,6 +45,8 @@
 - Non-vehicle asset register (trailers, containers, tools, safety equipment) — independent of the vehicle/workshop chain, can be built in parallel.
 - Add `max_weight_kg`/`max_volume_m3` to the already-shipped `deployfleet_vehicle`, per [12-ltl-freight-management-architecture.md](12-ltl-freight-management-architecture.md) §5 — a small, generically useful patch (weight-aware dispatch scoring) that doesn't need to wait for an LTL scheduling decision, even though the full LTL module itself is a later, separate call.
 
+**Candidate addition, recommended for this phase**: `deployfleet_freight_calculator` (per [14-freight-calculator-engine.md](14-freight-calculator-engine.md)) — the calculation-rule engine plus calculators #1, #2, #5, #6, #7, #10 (profit, cost/km, break-even, fuel, trip time, tyre cost). Unlike everything else proposed in the freight-intelligence document set, it needs no historical trip/billing data and no AI, only `deployfleet_vehicle`/`deployfleet_route` (both shipped) plus company-configured parameters — it fits this phase's "product visibly pays for itself" goal directly and doubles as strong demo material for the incoming real customer. Bundle its `gross_vehicle_weight_kg`/`tare_weight_kg` vehicle-field addition (doc 14 §5) into the same migration as the `max_weight_kg`/`max_volume_m3` patch above rather than touching `deployfleet_vehicle` twice.
+
 **Exit criteria:** a job card can be opened from a maintenance-due alert, consume tracked parts, and close; fuel consumption per vehicle/route is visible and flags outliers.
 
 ---

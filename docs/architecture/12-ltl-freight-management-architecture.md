@@ -96,6 +96,8 @@ The proposal frames capacity tracking as an LTL feature. On reflection, **weight
 
 This is a better module boundary than the original proposal's — it means Phase 1's dispatch scoring gets a real improvement (weight-aware disqualification) years before any customer needs LTL, instead of that fix being locked behind a feature most early customers won't use yet.
 
+**Forward reference**: [14-freight-calculator-engine.md](14-freight-calculator-engine.md) §5 extends this same vehicle-fields patch with `gross_vehicle_weight_kg`/`tare_weight_kg` for its Weight & Payload Calculator — bundle both additions into one migration rather than touching `deployfleet_vehicle` twice.
+
 ## 6. AI features — agent capabilities, not new AI plumbing
 
 Per the established pattern ([08-ai-architecture.md](08-ai-architecture.md) §6, reaffirmed in [10](10-lead-intelligence-architecture.md)/[11](11-dispatch-network-architecture.md)): no new provider router, cache, or permission model. These are capabilities added to existing agents.
