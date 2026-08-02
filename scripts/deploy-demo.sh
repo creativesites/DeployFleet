@@ -100,8 +100,13 @@ ssh "${SSH_ARGS[@]}" "$REMOTE" "cd '${DEPLOYFLEET_REMOTE_DIR}' && docker compose
 if [ "$INIT_DB" -eq 1 ]; then
   echo "Initializing DeployFleet database and installing Phase 0/1 modules (one-time bootstrap)..."
   MODULES="deployfleet_core,deployfleet_security,deployfleet_event_bus,deployfleet_ai_core,deployfleet_driver,deployfleet_vehicle,deployfleet_customer,deployfleet_route,deployfleet_dispatch,deployfleet_trip,deployfleet_delivery"
+  # --no-http is required here: `exec` starts a second, independent Odoo
+  # process inside the already-running container, which would otherwise
+  # try to bind the same HTTP port the main process already holds and
+  # fail with "Address already in use". A module-install run never needs
+  # the web server anyway.
   ssh "${SSH_ARGS[@]}" "$REMOTE" "cd '${DEPLOYFLEET_REMOTE_DIR}' && docker compose -f deploy/docker-compose.prod.yml --env-file .env.production exec -T odoo \
-    odoo -i ${MODULES} --stop-after-init -d '${POSTGRES_DB}' \
+    odoo -i ${MODULES} --no-http --stop-after-init -d '${POSTGRES_DB}' \
     --db_host=db --db_user='${POSTGRES_USER}' --db_password='${POSTGRES_PASSWORD}'"
 fi
 
