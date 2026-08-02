@@ -41,6 +41,7 @@ Target repository: `creativesites/DeployFleet`.
 | [09-dispatch-module-design.md](09-dispatch-module-design.md) | The dispatch module's entities, scoring function, workflow states, and the deliberate scope call to ship standard views before a custom OWL board |
 | [10-lead-intelligence-architecture.md](10-lead-intelligence-architecture.md) | **Vision, not current scope** — AI-powered lead capture and sales automation for trucking companies, brokers, and dispatch companies |
 | [11-dispatch-network-architecture.md](11-dispatch-network-architecture.md) | **Vision, not current scope** — dispatch as its own business model (third-party carriers, load board, commissions), distinct from the internal-fleet `deployfleet_dispatch` module already built |
+| [12-ltl-freight-management-architecture.md](12-ltl-freight-management-architecture.md) | **Designed, candidate Phase 2/3, priority medium** — FTL/LTL as optional execution modes over the same foundation; reconciles the proposal against what Phase 1 already ships (the trip↔shipment join already supports consolidation) and identifies the real gaps (assignment is 1:1, no trip consolidation, no multi-stop model, no vehicle capacity fields) |
 
 ## Executive summary
 

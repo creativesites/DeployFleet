@@ -43,6 +43,7 @@
 - Parts before tyres before workshop, in that dependency order (parts are consumed by both tyre replacement and job cards).
 - Preventive maintenance scheduling and workshop job cards, both riding on the same open→diagnose→repair→close state machine inherited from the source's equipment-damage pattern.
 - Non-vehicle asset register (trailers, containers, tools, safety equipment) — independent of the vehicle/workshop chain, can be built in parallel.
+- Add `max_weight_kg`/`max_volume_m3` to the already-shipped `deployfleet_vehicle`, per [12-ltl-freight-management-architecture.md](12-ltl-freight-management-architecture.md) §5 — a small, generically useful patch (weight-aware dispatch scoring) that doesn't need to wait for an LTL scheduling decision, even though the full LTL module itself is a later, separate call.
 
 **Exit criteria:** a job card can be opened from a maintenance-due alert, consume tracked parts, and close; fuel consumption per vehicle/route is visible and flags outliers.
 
@@ -75,6 +76,8 @@
 - The AI approval pipeline (§5 of [08-ai-architecture.md](08-ai-architecture.md)) and per-role AI permission scoping (§9) ship here — this is genuinely new engineering, not a port, and it's what turns the read-only agents live since Phase 2–3 into action-capable ones (e.g., a WhatsApp-reported breakdown creating a real ticket). Treat the human-approval gate as non-negotiable scope, not something deferred under schedule pressure — see [08-ai-architecture.md](08-ai-architecture.md) §5.
 
 **Exit criteria:** a completed trip generates an invoice automatically and submits successfully to ZRA VSDC in a test environment; a customer can see their shipment's live status; a dispatcher gets a push alert on a breakdown report; an AI-proposed action (e.g., a maintenance reminder) requires and receives explicit human approval before it writes anything, and that approval is visible in the audit log.
+
+**Candidate addition, not yet scheduled**: `deployfleet_ltl_management` (per [12-ltl-freight-management-architecture.md](12-ltl-freight-management-architecture.md)) depends on `deployfleet_billing` landing here for its split-invoicing piece — the consolidation/multi-stop-trip pieces of that module have no such dependency and could land as early as Phase 2/3 if LTL demand shows up before Phase 4 does. Priority medium, per that document's own framing — schedule only once there's a real signal a customer needs LTL, not preemptively.
 
 ---
 
