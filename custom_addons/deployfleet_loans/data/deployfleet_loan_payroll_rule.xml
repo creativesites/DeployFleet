@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        A placeholder rule record so deployfleet.payroll.payslip.line's
+        required rule_id has something to point to for loan deduction
+        lines. Deliberately active="False" — its own amount_type/
+        amount_fixed are never evaluated; deployfleet_payroll_payslip.py's
+        action_compute() extension creates this line directly with the
+        real computed total. If it were active, deployfleet_payroll's
+        base engine would also create a second, always-zero line for
+        this same rule via its own rule search, which is confusing to a
+        payroll officer looking at the payslip, even though the totals
+        would still sum correctly either way.
+    -->
+    <record id="payroll_rule_loan_deduction" model="deployfleet.payroll.rule">
+        <field name="code">LOAN</field>
+        <field name="name">Loan Deduction</field>
+        <field name="sequence">90</field>
+        <field name="category">deduction</field>
+        <field name="amount_type">fixed</field>
+        <field name="amount_fixed">0.0</field>
+        <field name="active">False</field>
+    </record>
+</odoo>
