@@ -42,6 +42,7 @@ Target repository: `creativesites/DeployFleet`.
 | [10-lead-intelligence-architecture.md](10-lead-intelligence-architecture.md) | **Vision, not current scope** — AI-powered lead capture and sales automation for trucking companies, brokers, and dispatch companies |
 | [11-dispatch-network-architecture.md](11-dispatch-network-architecture.md) | **Vision, not current scope** — dispatch as its own business model (third-party carriers, load board, commissions), distinct from the internal-fleet `deployfleet_dispatch` module already built |
 | [12-ltl-freight-management-architecture.md](12-ltl-freight-management-architecture.md) | **Designed, candidate Phase 2/3, priority medium** — FTL/LTL as optional execution modes over the same foundation; reconciles the proposal against what Phase 1 already ships (the trip↔shipment join already supports consolidation) and identifies the real gaps (assignment is 1:1, no trip consolidation, no multi-stop model, no vehicle capacity fields) |
+| [13-freight-intelligence-architecture.md](13-freight-intelligence-architecture.md) | **Vision, not current scope** — rate/route/backhaul intelligence and an AI freight optimizer; reconciles most of a larger proposal against docs already written (dispatch marketplace = doc 11, "Load" = the already-shipped shipment model) and scopes the genuinely new part (rate benchmarking, backhaul prediction) as gated on real trip/billing history existing first |
 
 ## Executive summary
 

@@ -66,6 +66,23 @@ This extends `deployfleet_billing` (per [04-module-structure.md](04-module-struc
 
 `deployfleet_load_board`: customers post a need ("truck needed, Lusaka → Kitwe, 30 tons copper"), available carriers respond. This is a two-sided marketplace, which is a fundamentally different product surface (matching, trust/rating, possibly payment escrow) from anything else in this document set — flagged explicitly as the piece to defer longest, and to treat as its own discovery-and-validation exercise (same rigor as [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #5 demanded for the core domain model) rather than build speculatively.
 
+**Illustrative UI shape**, folded in here rather than as a separate document (a later proposal re-described this same marketplace concept as `deployfleet_dispatch_marketplace` — see [13-freight-intelligence-architecture.md](13-freight-intelligence-architecture.md) §1):
+
+```
+Load Board                                  Available Trucks
+--------------------------------            --------------------------------
+Copper: Zambia -> Tanzania                  Truck ABC 1234
+Weight: 35 tons                             Location: Lusaka
+Rate: $4,500                                Available: Tomorrow
+Distance: 1,700km                           Capacity: 40 tons
+Required: Truck + trailer                   Fuel: 80%
+Deadline: Friday                            Driver: John
+Profit Score: 87%                           Estimated profit: $1,200
+--------------------------------            --------------------------------
+```
+
+The "Profit Score" / "Estimated profit" figures shown here are Dispatch/Finance Agent output per [13-freight-intelligence-architecture.md](13-freight-intelligence-architecture.md) §5 — this board is a consumer of that intelligence layer, not a reason to build it earlier than that document's sequencing (§7 there) calls for.
+
 ## 7. Proposed modules
 
 | Module | Purpose |
