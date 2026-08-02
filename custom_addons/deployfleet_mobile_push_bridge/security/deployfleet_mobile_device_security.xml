@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Without this, the broad read grant in ir.model.access.csv (needed
+        so any logged-in user, internal or portal, can register their own
+        device) would let any user read every other user's push token.
+        Managers keep full access via the separate ACL row.
+    -->
+    <record id="deployfleet_mobile_device_rule_own_only" model="ir.rule">
+        <field name="name">Users only see their own registered devices</field>
+        <field name="model_id" ref="model_deployfleet_mobile_device"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('base.group_portal'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_mobile_device_list" model="ir.ui.view">
+        <field name="name">deployfleet.mobile.device.list</field>
+        <field name="model">deployfleet.mobile.device</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="user_id"/>
+                <field name="platform"/>
+                <field name="push_token"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_mobile_device" model="ir.actions.act_window">
+        <field name="name">Registered Mobile Devices</field>
+        <field name="res_model">deployfleet.mobile.device</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_mobile_device"
+              name="Mobile Devices"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mobile_device"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="75"/>
+</odoo>
