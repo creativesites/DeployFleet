@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_client_summary" model="ir.actions.report">
+        <field name="name">Client Summary</field>
+        <field name="model">deployfleet.client.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">deployfleet_client_reports.report_client_summary_document</field>
+        <field name="report_file">deployfleet_client_reports.report_client_summary_document</field>
+        <field name="print_report_name">'Client Summary - %s' % (object.customer_id.name)</field>
+    </record>
+
+    <template id="report_client_summary_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Client Summary</h2>
+                        <p>
+                            <strong t-field="doc.customer_id.name"/><br/>
+                            <span t-field="doc.date_from"/> — <span t-field="doc.date_to"/>
+                        </p>
+
+                        <h3>Shipments Delivered</h3>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Cargo</th>
+                                    <th>Pickup</th>
+                                    <th>Drop-off</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc._get_shipments()" t-as="shipment">
+                                    <td t-field="shipment.name"/>
+                                    <td t-field="shipment.cargo_description"/>
+                                    <td t-field="shipment.pickup_depot_id.name"/>
+                                    <td t-field="shipment.dropoff_depot_id.name"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>On-Time Performance</h3>
+                        <p>
+                            <span t-esc="doc._get_on_time_rate()"/>% of completed trips arrived on or before
+                            their planned arrival time.
+                        </p>
+
+                        <h3>Billing</h3>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc._get_invoices()" t-as="invoice">
+                                    <td t-field="invoice.name"/>
+                                    <td t-field="invoice.invoice_date"/>
+                                    <td t-field="invoice.state"/>
+                                    <td class="text-end" t-field="invoice.amount_total"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            <strong>Total billed: </strong>
+                            <span t-esc="doc._get_total_billed()"/>
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

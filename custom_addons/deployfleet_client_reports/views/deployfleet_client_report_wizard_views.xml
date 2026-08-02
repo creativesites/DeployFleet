@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_client_report_wizard_form" model="ir.ui.view">
+        <field name="name">deployfleet.client.report.wizard.form</field>
+        <field name="model">deployfleet.client.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="customer_id"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button name="action_print_report" type="object" string="Print Report" class="btn-primary"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_client_report_wizard" model="ir.actions.act_window">
+        <field name="name">Client Summary Report</field>
+        <field name="res_model">deployfleet.client.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_client_report_wizard"
+              name="Client Summary Report"
+              parent="deployfleet_billing.menu_deployfleet_billing_root"
+              action="action_deployfleet_client_report_wizard"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="40"/>
+</odoo>
