@@ -5,7 +5,7 @@
     "summary": "Country-neutral payroll rule engine and payslips",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_core", "deployfleet_leave", "web"],
+    "depends": ["deployfleet_core", "deployfleet_leave", "web", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_payroll_payslip_views.xml",

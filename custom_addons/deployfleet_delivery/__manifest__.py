@@ -5,7 +5,7 @@
     "summary": "Proof of delivery: signature, photo, recipient, GPS stamp",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_trip"],
+    "depends": ["deployfleet_trip", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_delivery_sequence.xml",

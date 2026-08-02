@@ -5,7 +5,7 @@
     "summary": "Fuel logs, consumption analytics, and simple threshold anomaly flags",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle"],
+    "depends": ["deployfleet_vehicle", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_fuel_log_views.xml",

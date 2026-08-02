@@ -5,7 +5,7 @@
     "summary": "Job cards: open -> diagnose -> repair (labor + parts) -> approve -> close",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle", "deployfleet_parts"],
+    "depends": ["deployfleet_vehicle", "deployfleet_parts", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_workshop_sequence.xml",

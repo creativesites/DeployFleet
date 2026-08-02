@@ -5,7 +5,7 @@
     "summary": "Employee loans with automatic payslip deductions",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_payroll"],
+    "depends": ["deployfleet_payroll", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_loan_payroll_rule.xml",

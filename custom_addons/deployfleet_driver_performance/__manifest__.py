@@ -5,7 +5,7 @@
     "summary": "Driver safety/performance events -> reliability score, optional payroll deduction",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_loans", "deployfleet_driver", "mail"],
+    "depends": ["deployfleet_loans", "deployfleet_driver", "mail", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_driver_performance_payroll_rule.xml",

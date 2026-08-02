@@ -5,7 +5,7 @@
     "summary": "Trip execution: planned vs. actual, created automatically when a dispatch assignment is confirmed",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_dispatch"],
+    "depends": ["deployfleet_dispatch", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_trip_sequence.xml",

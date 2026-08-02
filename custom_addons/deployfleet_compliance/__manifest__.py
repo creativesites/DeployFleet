@@ -5,7 +5,7 @@
     "summary": "Polymorphic document/expiry engine shared by driver and vehicle compliance",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_core"],
+    "depends": ["deployfleet_core", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_compliance_cron.xml",

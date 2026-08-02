@@ -5,7 +5,7 @@
     "summary": "Non-vehicle trackable assets — trailers, containers, GPS trackers, tools, safety equipment",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_core"],
+    "depends": ["deployfleet_core", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_asset_views.xml",

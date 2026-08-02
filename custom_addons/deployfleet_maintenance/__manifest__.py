@@ -5,7 +5,7 @@
     "summary": "Odometer/calendar preventive service scheduling, publishes deployfleet.maintenance.due",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle", "deployfleet_workshop", "deployfleet_event_bus"],
+    "depends": ["deployfleet_vehicle", "deployfleet_workshop", "deployfleet_event_bus", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_maintenance_cron.xml",

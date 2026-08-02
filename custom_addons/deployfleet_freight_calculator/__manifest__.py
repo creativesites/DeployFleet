@@ -5,7 +5,7 @@
     "summary": "Company-configurable cost/profit calculation engine and trucking calculators",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle", "deployfleet_route"],
+    "depends": ["deployfleet_vehicle", "deployfleet_route", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_calculation_rule_data.xml",

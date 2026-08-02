@@ -5,7 +5,7 @@
     "summary": "Parts categories, items, and low-stock alerts consumed by workshop/tyres",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle"],
+    "depends": ["deployfleet_vehicle", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_part_views.xml",

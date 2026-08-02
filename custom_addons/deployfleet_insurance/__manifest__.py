@@ -5,7 +5,7 @@
     "summary": "Insurance policies, premiums, and claims",
     "author": "DeployFleet",
     "license": "LGPL-3",
-    "depends": ["deployfleet_vehicle_compliance"],
+    "depends": ["deployfleet_vehicle_compliance", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
         "views/deployfleet_insurance_policy_views.xml",
