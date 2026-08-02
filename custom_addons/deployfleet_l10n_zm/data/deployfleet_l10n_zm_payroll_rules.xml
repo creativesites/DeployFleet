@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Illustrative Zambian statutory rates — review and correct against
+        the current official NAPSA/NHIMA/ZRA tables before relying on
+        these for a real payroll run, the same "verify before production
+        use" caveat deployfleet_freight_calculator's seed parameters carry.
+
+        WCF (Workers Compensation Fund) is deliberately NOT seeded here:
+        it is an employer-borne contribution in Zambia, not a deduction
+        from the employee's own pay, so it has no payslip line in this
+        employee-facing engine. Track it as a separate employer-cost
+        concern if/when that's needed, not as a payroll rule.
+    -->
+    <record id="payroll_rule_zm_napsa" model="deployfleet.payroll.rule">
+        <field name="code">NAPSA</field>
+        <field name="name">NAPSA Contribution</field>
+        <field name="sequence">10</field>
+        <field name="category">deduction</field>
+        <field name="amount_type">percentage</field>
+        <field name="amount_percentage">5.0</field>
+        <field name="percentage_base_code">BASIC</field>
+        <field name="country_code">ZM</field>
+    </record>
+
+    <record id="payroll_rule_zm_nhima" model="deployfleet.payroll.rule">
+        <field name="code">NHIMA</field>
+        <field name="name">NHIMA Contribution</field>
+        <field name="sequence">20</field>
+        <field name="category">deduction</field>
+        <field name="amount_type">percentage</field>
+        <field name="amount_percentage">1.0</field>
+        <field name="percentage_base_code">BASIC</field>
+        <field name="country_code">ZM</field>
+    </record>
+
+    <record id="payroll_rule_zm_paye" model="deployfleet.payroll.rule">
+        <field name="code">PAYE</field>
+        <field name="name">PAYE Income Tax</field>
+        <field name="sequence">30</field>
+        <field name="category">deduction</field>
+        <field name="amount_type">formula</field>
+        <field name="formula">(0 if (BASIC - NAPSA) &lt;= 5100 else ((BASIC - NAPSA - 5100) * 0.2 if (BASIC - NAPSA) &lt;= 7100 else ((7100 - 5100) * 0.2 + (BASIC - NAPSA - 7100) * 0.3 if (BASIC - NAPSA) &lt;= 9200 else (7100 - 5100) * 0.2 + (9200 - 7100) * 0.3 + (BASIC - NAPSA - 9200) * 0.375)))</field>
+        <field name="country_code">ZM</field>
+    </record>
+</odoo>
