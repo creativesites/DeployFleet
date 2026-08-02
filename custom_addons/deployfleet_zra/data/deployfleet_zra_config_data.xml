@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Placeholder per-company record - tpin/branch_id/device_serial_no/
+        base_url are all blank on purpose and MUST be filled in with the
+        company's real ZRA-issued values before "Initialize Device" is
+        ever clicked. Shipping this with fake-looking defaults would be
+        worse than shipping it empty for a real fiscal integration.
+    -->
+    <record id="zra_config_default_company" model="deployfleet.zra.config">
+        <field name="company_id" ref="base.main_company"/>
+        <field name="environment">sandbox</field>
+        <field name="base_url"></field>
+        <field name="tpin"></field>
+        <field name="branch_id">000</field>
+        <field name="device_serial_no"></field>
+    </record>
+</odoo>
