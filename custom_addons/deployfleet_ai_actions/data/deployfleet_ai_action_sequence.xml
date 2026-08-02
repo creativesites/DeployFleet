@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_deployfleet_ai_action_request" model="ir.sequence">
+        <field name="name">DeployFleet AI Action Request</field>
+        <field name="code">deployfleet.ai.action.request</field>
+        <field name="prefix">AIA</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>
