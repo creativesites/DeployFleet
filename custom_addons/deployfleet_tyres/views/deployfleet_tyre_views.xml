@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_tyre_form" model="ir.ui.view">
+        <field name="name">deployfleet.tyre.form</field>
+        <field name="model">deployfleet.tyre</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_retread" type="object" string="Retread" invisible="state != 'fitted'"/>
+                    <button name="action_scrap" type="object" string="Scrap" class="btn-danger"
+                            invisible="state == 'scrapped'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="fitted,retreaded,scrapped"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="position"/>
+                            <field name="part_id"/>
+                            <field name="serial_number"/>
+                        </group>
+                        <group>
+                            <field name="fitted_date"/>
+                            <field name="tread_depth_mm"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tread Depth Readings">
+                            <field name="reading_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="tread_depth_mm"/>
+                                    <field name="odometer"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="History">
+                            <field name="event_ids" readonly="1">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="event_type"/>
+                                    <field name="from_position"/>
+                                    <field name="to_position"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_tyre_list" model="ir.ui.view">
+        <field name="name">deployfleet.tyre.list</field>
+        <field name="model">deployfleet.tyre</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="vehicle_id"/>
+                <field name="position"/>
+                <field name="tread_depth_mm"/>
+                <field name="fitted_date"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'fitted'"
+                       decoration-warning="state == 'retreaded'"
+                       decoration-danger="state == 'scrapped'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_tyre" model="ir.actions.act_window">
+        <field name="name">Tyres</field>
+        <field name="res_model">deployfleet.tyre</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_tyre"
+              name="Tyres"
+              parent="deployfleet_parts.menu_deployfleet_parts_root"
+              action="action_deployfleet_tyre"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="30"/>
+</odoo>
