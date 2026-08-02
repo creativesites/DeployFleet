@@ -1,6 +1,6 @@
 # 04 — Proposed DeployFleet Module Structure
 
-*Revision 2 — adopts the `deployfleet_*` namespace throughout, the domain-grouping structure from architecture review (Foundation / People / Fleet Assets / Operations / Finance / Reporting / Mobile / Intelligence), the vehicle-delegation pattern from [03-refactoring-roadmap.md](03-refactoring-roadmap.md), the event bus as a foundation-layer module, the 3-way equipment split (parts/tyres/assets), the 3-way mobile split, and the MVP-12 first-release scope — reconciled against the more granular bridge/localization modules this document already had in v1 where the two didn't conflict.*
+*Revision 2 — adopts the `deployfleet_*` namespace throughout, the domain-grouping structure from architecture review (Foundation / People / Fleet Assets / Operations / Finance / Reporting / Mobile / Intelligence), the vehicle-delegation pattern from [03-refactoring-roadmap.md](03-refactoring-roadmap.md), the event bus as a foundation-layer module, the 3-way equipment split (parts/tyres/assets), the 3-way mobile split, and the MVP-12 first-release scope — reconciled against the more granular bridge/localization modules this document already had in v1 where the two didn't conflict. Revision 3 — the Intelligence layer below is superseded by the dedicated AI architecture in [08-ai-architecture.md](08-ai-architecture.md); the module list here now reflects that document's 4-module split instead of the single `deployfleet_ai` originally proposed.*
 
 ## Design principles
 
@@ -104,10 +104,15 @@
 
 ### Intelligence
 
+*Full design in [08-ai-architecture.md](08-ai-architecture.md). The single `deployfleet_ai` module from revision 2 is now four, splitting the ~70% of `security_ai_engine` that's already reusable as-is from the ~30% that's genuinely new engineering (permission scoping and action-approval), so a customer can run AI analysis without necessarily enabling AI-initiated writes.*
+
 | Module | Depends | Purpose |
 |---|---|---|
-| `deployfleet_ai` | `deployfleet_billing`, `deployfleet_dispatch`, `deployfleet_trip`, `deployfleet_driver_performance`, `deployfleet_compliance`, `deployfleet_payroll`, `deployfleet_vehicle`, `deployfleet_event_bus`, `web` | Multi-provider AI facade + fleet-relevant features (fuel anomaly, predictive maintenance, dispatch assistant, driver risk, payment-risk) — see [02-reuse-strategy.md](02-reuse-strategy.md) |
-| `deployfleet_ai_whatsapp` | `deployfleet_hr`, `deployfleet_customer`, `deployfleet_trip`, `deployfleet_ai` | WhatsApp check-in / breakdown reporting / dispatcher alerts |
+| `deployfleet_ai_core` | `deployfleet_event_bus`, `web` | Provider router (Claude/OpenAI/Gemini/**DeepSeek**, cheap/reasoning tiers), config + per-feature toggles, response + context caching, usage/cost tracking, assistant chat panel — see [08-ai-architecture.md](08-ai-architecture.md) §0–§3 |
+| `deployfleet_ai_permissions` | `deployfleet_ai_core`, `deployfleet_security` | New: per-role/per-user AI feature access scoping, row-level data-access limits, token/cost budgets — see §9 |
+| `deployfleet_ai_actions` | `deployfleet_ai_core`, `deployfleet_ai_permissions`, `deployfleet_event_bus` | New: the suggestion → permission-check → approval → execute → audit pipeline for any AI-initiated write — see §5 |
+| `deployfleet_ai_agents` | `deployfleet_ai_core` | Six agent personas (Fleet Analyst, Dispatch, Maintenance, Finance, Compliance, Customer) as configuration data, not separate modules — see §6 |
+| `deployfleet_ai_whatsapp` | `deployfleet_hr`, `deployfleet_customer`, `deployfleet_trip`, `deployfleet_ai_core`, `deployfleet_ai_agents` | WhatsApp check-in / breakdown reporting / dispatcher alerts, now action-capable via `deployfleet_ai_actions` |
 
 ### Meta & demo
 
@@ -117,7 +122,7 @@
 | `deployfleet_demo_data_zm` | core operational + payroll modules | Zambia trucking demo dataset — written fresh |
 | `deployfleet_demo_site` | `web`, `base`, `deployfleet_theme`, `deployfleet_suite` | Demo login panel / sandbox management |
 
-**Total: ~48 modules** across 8 groupings, matching the audit in [01-module-audit.md](01-module-audit.md).
+**Total: ~50 modules** across 8 groupings, matching the audit in [01-module-audit.md](01-module-audit.md).
 
 ## Dependency graph (simplified)
 
@@ -170,17 +175,20 @@ graph TD
     CUST --> MOBCUST[deployfleet_mobile_customer]
     BUS --> MOBPUSH[deployfleet_mobile_push_bridge]
 
-    BILL --> AI[deployfleet_ai]
-    DISP --> AI
-    TRIP --> AI
-    PAY --> AI
-    VEH --> AI
-    BUS --> AI
+    BUS --> AICORE[deployfleet_ai_core]
+    AICORE --> AIPERM[deployfleet_ai_permissions]
+    AIPERM --> AIACT[deployfleet_ai_actions]
+    AICORE --> AIAGENT[deployfleet_ai_agents]
+    BILL --> AICORE
+    DISP --> AICORE
+    TRIP --> AICORE
+    PAY --> AICORE
+    VEH --> AICORE
 ```
 
 ## First commercial release: MVP-12
 
-Per architecture review: **do not build all ~48 modules before the first sale.** The first sellable product is a focused 12-module set — plus the infrastructure substrate every install needs regardless (principle 4 above), which isn't counted against the "12" the same way Postgres isn't:
+Per architecture review: **do not build all ~50 modules before the first sale.** The first sellable product is a focused 12-module set — plus the infrastructure substrate every install needs regardless (principle 4 above), which isn't counted against the "12" the same way Postgres isn't:
 
 | # | Module | Why it's in the MVP |
 |---|---|---|
@@ -201,5 +209,6 @@ Per architecture review: **do not build all ~48 modules before the first sale.**
 
 - **Shipment/load** is a first-class *entity* from day one (see [07-domain-model-erd.md](07-domain-model-erd.md)) — the review's core point that "a trip without cargo is meaningless" stands regardless of MVP scope. For the MVP, its models simply live inside `deployfleet_dispatch`'s manifest rather than a separate `deployfleet_shipment` module, to keep the *module count* at 12 without losing the *concept*. Split it into its own module once contract/load complexity (multi-leg shipments, consolidated loads) grows enough to justify independent versioning.
 - **The event bus** ships as part of `deployfleet_core` for the MVP, for the same reason — it's substrate, not a sales-pitch line item, but per [02-reuse-strategy.md](02-reuse-strategy.md) §0 it should still be designed and built as the generalized, subscriber-registry version from day one, not the source's hardcoded-if-chain version. Split it into its own `deployfleet_event_bus` module once enough subscribers exist (compliance, maintenance, AI, notifications) to justify independent lifecycle.
+- **AI foundation** (`deployfleet_ai_core`'s provider router, caching, usage tracking, and basic assistant chat) is not in the 12-module sellable list above, but per [08-ai-architecture.md](08-ai-architecture.md) §11 should still be built alongside `deployfleet_core` in Phase 0–1 rather than waiting for Phase 5 — it's substrate for the same reason the event bus is, and roughly 70% of it already exists in the DeployGuard source, so building it early is cheap. The customer-visible AI *features* (agents, actions, WhatsApp) remain later-phase, sellable additions, not part of the MVP-12.
 
-Everything else — workshop, tyres, parts, assets, insurance, driver performance, payroll/l10n, dispatcher and customer mobile, CRM/Sales/Accounting bridges, AI, WhatsApp — is a deliberate **expansion module**, sequenced in [05-implementation-roadmap.md](05-implementation-roadmap.md), not a "we'll get to it eventually, undated" backlog.
+Everything else — workshop, tyres, parts, assets, insurance, driver performance, payroll/l10n, dispatcher and customer mobile, CRM/Sales/Accounting bridges, AI agents/actions/WhatsApp — is a deliberate **expansion module**, sequenced in [05-implementation-roadmap.md](05-implementation-roadmap.md), not a "we'll get to it eventually, undated" backlog.

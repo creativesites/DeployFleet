@@ -1,6 +1,6 @@
 # 05 — Phased Implementation Roadmap
 
-*Revision 2 — replaces the original 7-phase sequence with the 5-phase order from architecture review (Operational Foundation → Cost Control → Compliance → Customer Platform → Intelligence), which is a clearer story to sell internally and to a first customer than the earlier phase split. Phase 0 (foundation decisions) is kept as an explicit prerequisite gate, since none of the 5 phases below should start before it's resolved. Module names updated to `deployfleet_*`.*
+*Revision 2 — replaces the original 7-phase sequence with the 5-phase order from architecture review (Operational Foundation → Cost Control → Compliance → Customer Platform → Intelligence), which is a clearer story to sell internally and to a first customer than the earlier phase split. Phase 0 (foundation decisions) is kept as an explicit prerequisite gate, since none of the 5 phases below should start before it's resolved. Module names updated to `deployfleet_*`. Revision 3 — Phase 0 now includes building `deployfleet_ai_core`'s foundation alongside the event bus, and Phase 5 is updated per the dedicated AI architecture in [08-ai-architecture.md](08-ai-architecture.md).*
 
 ## Phase 0 — Foundation decisions & repo scaffolding
 
@@ -11,8 +11,9 @@
 - Scaffold the repo: CI (Odoo `--test-enable`, mobile typecheck), linters, `mobile/package-lock.json` committed from the first mobile commit, Docker Compose dev stack.
 - Build `deployfleet_core` (identity, shared mixins) and `deployfleet_security` (role groups + licensing).
 - Build `deployfleet_event_bus` as its generalized, subscriber-registry form (not the source's hardcoded if-chain) — see [02-reuse-strategy.md](02-reuse-strategy.md) §0 and [03-refactoring-roadmap.md](03-refactoring-roadmap.md). Every module from Phase 1 onward should publish onto it from the start.
+- Build `deployfleet_ai_core`'s foundation (provider router with DeepSeek added, config/feature-toggle model, caching, usage tracking) — per [08-ai-architecture.md](08-ai-architecture.md) §0 and §11, roughly 70% of this already exists in the DeployGuard source, so it's cheap to build now rather than wait for Phase 5. The genuinely new AI pieces (`deployfleet_ai_permissions`, `deployfleet_ai_actions`) still wait for their respective later phases — this is specifically about not re-deferring the *foundation* the way the event bus wasn't re-deferred.
 
-**Exit criteria:** a running Odoo instance with `deployfleet_core`/`deployfleet_security`/`deployfleet_event_bus` installed, one test company, CI green on an empty test suite, and the vehicle-delegation decision written down as an ADR.
+**Exit criteria:** a running Odoo instance with `deployfleet_core`/`deployfleet_security`/`deployfleet_event_bus`/`deployfleet_ai_core` installed, one test company, CI green on an empty test suite, and the vehicle-delegation decision written down as an ADR.
 
 ---
 
@@ -38,7 +39,7 @@
 
 **Modules:** `deployfleet_fuel`, `deployfleet_maintenance`, `deployfleet_tyres`, `deployfleet_parts`, `deployfleet_workshop`, `deployfleet_assets`.
 
-- Fuel logs, consumption analytics, and the first real AI hook (fuel-anomaly detection) once there's enough trip/fuel data flowing from Phase 1 to make it useful — even a simple threshold rule is worth shipping before the full AI engine lands in Phase 5.
+- Fuel logs, consumption analytics, and the first real AI hook (Fleet Analyst agent, fuel-anomaly detection per [08-ai-architecture.md](08-ai-architecture.md) §6/§11) once there's enough trip/fuel data flowing from Phase 1 to make it useful — even a simple threshold rule is worth shipping before the predictive version lands in Phase 5.
 - Parts before tyres before workshop, in that dependency order (parts are consumed by both tyre replacement and job cards).
 - Preventive maintenance scheduling and workshop job cards, both riding on the same open→diagnose→repair→close state machine inherited from the source's equipment-damage pattern.
 - Non-vehicle asset register (trailers, containers, tools, safety equipment) — independent of the vehicle/workshop chain, can be built in parallel.
@@ -56,6 +57,7 @@
 - Polymorphic document/expiry engine generalized correctly the first time — both driver documents (license, medical) and vehicle documents (registration, insurance, roadworthiness) build on the same base per [02-reuse-strategy.md](02-reuse-strategy.md) §1.
 - Dispatch-blocking enforcement (`deployfleet_dispatch_compliance`) against expired documents, with the emergency-override + audit-trail pattern carried from `security_compliance_roster` — and driver rest-hour / consecutive-driving-day hard constraints added to `deployfleet_dispatch`'s scoring engine. Per [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #3, this is core scope here, not a deferred nice-to-have, given the regulatory/safety stakes of trucking.
 - Zambian payroll (NAPSA/NHIMA/WCF/PAYE) computed correctly from logged trips, loan/performance deductions applied.
+- The Compliance Agent (read-only: expired documents, upcoming inspection/renewal alerts) goes live here too, per [08-ai-architecture.md](08-ai-architecture.md) §11 — this is analysis, not action; the agent can flag an expiring insurance policy, but `deployfleet_ai_actions`' approval pipeline (Phase 4) is what would let it draft or trigger a renewal action.
 
 **Exit criteria:** a vehicle with expired insurance cannot be dispatched without a logged override; a driver assignment that violates rest-hour rules is flagged or blocked; a Zambian driver's payslip computes correctly.
 
@@ -65,26 +67,40 @@
 
 **Goal:** differentiate from spreadsheets, WhatsApp, and paper trip sheets — the customer-facing proof that this is a real operations platform, not just an internal tool.
 
-**Modules:** `deployfleet_billing`, `deployfleet_accounting`, `deployfleet_zra`, `deployfleet_client_reports`, `deployfleet_customer_portal`, `deployfleet_mobile_dispatcher`, `deployfleet_mobile_customer`, `deployfleet_mobile_push_bridge`, `deployfleet_notifications` (fully wired as an event-bus subscriber).
+**Modules:** `deployfleet_billing`, `deployfleet_accounting`, `deployfleet_zra`, `deployfleet_client_reports`, `deployfleet_customer_portal`, `deployfleet_mobile_dispatcher`, `deployfleet_mobile_customer`, `deployfleet_mobile_push_bridge`, `deployfleet_notifications` (fully wired as an event-bus subscriber), `deployfleet_ai_permissions`, `deployfleet_ai_actions`, `deployfleet_ai_whatsapp`.
 
 - Rate cards per trip/tonnage/distance/lane; ZRA Smart Invoice wired to the renamed billing model — a legal requirement for the Zambia launch market, not optional.
 - Customer portal: shipment status, active trips, proof-of-delivery — this is what makes DeployFleet visibly better than a WhatsApp group and a paper trip sheet.
 - Dispatcher and customer mobile apps follow the driver app shipped in the MVP; push notifications wired end-to-end (dispatch alerts, breakdown reports) rather than left as the source's unwired device-token field.
+- The AI approval pipeline (§5 of [08-ai-architecture.md](08-ai-architecture.md)) and per-role AI permission scoping (§9) ship here — this is genuinely new engineering, not a port, and it's what turns the read-only agents live since Phase 2–3 into action-capable ones (e.g., a WhatsApp-reported breakdown creating a real ticket). Treat the human-approval gate as non-negotiable scope, not something deferred under schedule pressure — see [08-ai-architecture.md](08-ai-architecture.md) §5.
 
-**Exit criteria:** a completed trip generates an invoice automatically and submits successfully to ZRA VSDC in a test environment; a customer can see their shipment's live status; a dispatcher gets a push alert on a breakdown report.
+**Exit criteria:** a completed trip generates an invoice automatically and submits successfully to ZRA VSDC in a test environment; a customer can see their shipment's live status; a dispatcher gets a push alert on a breakdown report; an AI-proposed action (e.g., a maintenance reminder) requires and receives explicit human approval before it writes anything, and that approval is visible in the audit log.
 
 ---
 
 ## Phase 5 — Intelligence
 
-**Goal:** become the "smart logistics operating system" — differentiated AI value, sequenced last because it needs Phases 1–4's real operational data to be useful rather than a demo running on seed data.
+**Goal:** become the "smart logistics operating system" — differentiated *advanced* AI value, sequenced last because it needs Phases 1–4's real operational data to be useful rather than a demo running on seed data. Full design in [08-ai-architecture.md](08-ai-architecture.md); this phase is narrower than revision 2's version of it, because the AI *foundation* moved to Phase 0 and AI *operational analysis*/*automation* are now attached to Phases 2–4 below, per [08-ai-architecture.md](08-ai-architecture.md) §11's phase-mapping table.
 
-**Modules:** `deployfleet_ai`, `deployfleet_ai_whatsapp`.
+**Modules:** the *advanced-intelligence* slice of `deployfleet_ai_agents` — predictive maintenance (ML-based failure forecasting, distinct from the rule-based scheduling `deployfleet_maintenance` already shipped in Phase 2), fuel/fraud anomaly detection, dispatch/route optimization, financial forecasting.
 
-- Port the provider-abstraction/config/cache/chat infrastructure verbatim; reframe the feature set per [02-reuse-strategy.md](02-reuse-strategy.md): fuel/fraud anomaly detection, predictive maintenance ("service likely required within 800km"), dispatch assistant (recommend truck X over truck Y with a stated reason), driver risk scoring, freight billing audit, payment-risk intelligence (late-paying customers), license/insurance-renewal nudges, driver performance review, payslip explanation, WhatsApp-based check-in and breakdown reporting.
+- These are enhancements layered onto agents whose *basic* read-only versions already went live earlier (Fleet Analyst and Maintenance Agent in Phase 2–3, per [08-ai-architecture.md](08-ai-architecture.md) §11) — Phase 5 is where they get genuinely predictive rather than just descriptive, once there's enough historical data across Phases 1–4 for a prediction to beat the rule-based baseline it's improving on.
 - AI features should read from `deployfleet_event_bus` where practical (a stream of fuel, breakdown, and delivery events) rather than only batch-querying tables, so they benefit from the same real-time signal dispatch and notifications already use.
 
-**Exit criteria:** at least 3 of the AI features are live against real (not seeded-only) operational data from a pilot customer.
+**Exit criteria:** at least one predictive (not just descriptive) AI feature is live against real (not seeded-only) operational data from a pilot customer, and demonstrably outperforming the rule-based baseline it augments.
+
+---
+
+### Where the rest of the AI architecture actually lands
+
+Per [08-ai-architecture.md](08-ai-architecture.md) §11, the AI work is not all in this phase — most of it is threaded through the phases above:
+
+| AI-track element | Actually lands in |
+|---|---|
+| `deployfleet_ai_core` foundation (provider router + DeepSeek, caching, usage tracking, basic chat) | **Phase 0**, not here |
+| Fleet Analyst / Maintenance Agent read-only analysis, Compliance Agent alerts | **Phase 2–3** |
+| `deployfleet_ai_permissions`, `deployfleet_ai_actions` (the approval pipeline), action-capable WhatsApp | **Phase 4** |
+| Predictive maintenance, fuel/fraud anomaly detection, dispatch optimization, financial forecasting | **Phase 5** (this phase) |
 
 ---
 

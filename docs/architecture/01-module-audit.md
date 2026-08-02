@@ -101,10 +101,12 @@ Complete inventory of the 45 custom modules in `DogFrce-Security-Services-Custom
 
 ## AI
 
+*Revision 3 — see [08-ai-architecture.md](08-ai-architecture.md) for the full design; this table now reflects a verified re-check of `security_ai_engine`'s actual model code (config/cache/log), not just its manifest summary. One module splits into four.*
+
 | Module | Size (py/xml) | Classification | Proposed name | Rationale |
 |--------|---------------|-----------------|---------------|-----------|
-| `security_ai_engine` | 3,422 / 1,820 | **Keep + heavy refactor** | `deployfleet_ai` | Multi-provider AI facade (provider abstraction, config, cache, chat) 100% reusable. Features reframe to fuel/fraud anomaly detection, driver risk scoring, freight billing audit, dispatch optimizer, trip-fill, breakdown advisor, license/insurance-renewal nudges, performance review, payslip explanation. See [02-reuse-strategy.md](02-reuse-strategy.md) for concrete examples from review. Should consume `deployfleet_event_bus` as a data source, not just direct model queries. |
-| `security_ai_whatsapp_bridge` | 1,464 / 821 | **Keep + heavy refactor** | `deployfleet_ai_whatsapp` | WhatsApp check-in/breakdown-reporting/dispatcher-alert bridge. |
+| `security_ai_engine` | 3,422 / 1,820 | **Keep + heavy refactor, split** | `deployfleet_ai_core` (provider router, config, cache, usage log, chat) + `deployfleet_ai_permissions` (new) + `deployfleet_ai_actions` (new) + `deployfleet_ai_agents` (agent personas as data) | **Correction from revision 2:** re-reading the actual model code (not just the manifest summary) shows the provider-router shape, per-feature toggles, response cache, and usage/cost logging are already substantially built — verified against [08-ai-architecture.md](08-ai-architecture.md) §0 line by line. What's genuinely missing is granular per-role AI permission scoping and an action-approval pipeline (AI that writes, not just reads) — neither exists in the source at all. The single `deployfleet_ai` module proposed in revision 2 is now four: `deployfleet_ai_core` (the verified-reusable 70%), `deployfleet_ai_permissions` and `deployfleet_ai_actions` (the genuinely new 30%, kept separate specifically so a customer can run AI analysis without AI write-actions), and `deployfleet_ai_agents` (the six-agent catalog as configuration data, not new code). |
+| `security_ai_whatsapp_bridge` | 1,464 / 821 | **Keep + heavy refactor** | `deployfleet_ai_whatsapp` | WhatsApp check-in/breakdown-reporting/dispatcher-alert bridge, now also capable of triggering `deployfleet_ai_actions` for driver-reported breakdowns — see [08-ai-architecture.md](08-ai-architecture.md) §8. |
 
 ## Meta-installers, demo data & migration tooling
 
@@ -120,14 +122,16 @@ Complete inventory of the 45 custom modules in `DogFrce-Security-Services-Custom
 
 ## Summary counts
 
+These are planning-level groupings, not an audited ledger — treat the final count as "roughly 50," not a number to reconcile to the digit:
+
 | Classification | Count |
 |---|---|
 | Keep unchanged (package rename only) | 7 |
 | Keep + rename (views/dashboards rebuilt, no logic change) | 8 |
-| Keep + heavy refactor (engine reusable, domain surface redesigned) | 19 |
-| Split | 3 → 9 new modules (`security_operations` → 2, `security_fleet` → 4, `security_equipment` → 3) |
+| Keep + heavy refactor (engine reusable, domain surface redesigned) | 18 |
+| Split — source module becomes 2+ output modules, at least one genuinely new | `security_base` → `deployfleet_core` + `deployfleet_event_bus`; `security_operations` → `deployfleet_customer` + `deployfleet_dispatch`; `security_fleet` → 4 (`deployfleet_vehicle`, `deployfleet_route`, `deployfleet_fuel`, `deployfleet_inspection`, plus `deployfleet_workshop` seeded from it); `security_equipment` → 3 (`deployfleet_parts`, `deployfleet_tyres`, `deployfleet_assets`); `security_ai_engine` → 4 (`deployfleet_ai_core`, `deployfleet_ai_permissions`, `deployfleet_ai_actions`, `deployfleet_ai_agents`) — 5 source modules producing roughly 16 output modules between them |
 | Remove, replace with fresh module | 1 (`security_suite` → `deployfleet_suite`) |
 | Remove, no replacement in scope | 6 |
-| Net-new (no DeployGuard source) | 8: `deployfleet_event_bus` (extracted rather than fully net-new), `deployfleet_shipment`, `deployfleet_delivery`, `deployfleet_maintenance`, `deployfleet_breakdown`, `deployfleet_insurance`, `deployfleet_assets`, `deployfleet_training` |
+| Net-new, no split lineage at all (no DeployGuard source module to point to) | 5: `deployfleet_shipment`, `deployfleet_delivery`, `deployfleet_maintenance`, `deployfleet_breakdown`, `deployfleet_insurance`, `deployfleet_training` |
 
-Net result: **45 source modules → roughly 48 DeployFleet modules**, reflecting four changes from v1: the event bus promoted to its own module, `security_operations` splitting into three pieces instead of two (customer, dispatch, plus the new shipment module), the mobile split going from one module to three, and the addition of shipment/delivery/assets/training the review correctly identified as missing. See [04-module-structure.md](04-module-structure.md) for the finalized list, dependency graph, and MVP scoping.
+Net result: **45 source modules → roughly 50 DeployFleet modules.** The biggest structural change across all three revisions is that five source modules (`security_base`, `security_operations`, `security_fleet`, `security_equipment`, `security_ai_engine`) — the ones doing the most work in DeployGuard — each become multiple, more focused DeployFleet modules, reflecting that fleet, dispatch, and AI-with-guardrails are the product's new center of gravity rather than supporting cast. See [04-module-structure.md](04-module-structure.md) for the finalized list and dependency graph, and [08-ai-architecture.md](08-ai-architecture.md) for why `security_ai_engine` split the way it did.
