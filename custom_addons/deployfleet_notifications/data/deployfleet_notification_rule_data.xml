@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="subscription_notifications_on_any_deployfleet_event" model="deployfleet.event.subscription">
+        <field name="event_pattern">deployfleet.*</field>
+        <field name="model_name">deployfleet.notification.log</field>
+        <field name="method_name">_handle_bus_event</field>
+    </record>
+
+    <record id="rule_trip_delayed_notify_customer" model="deployfleet.notification.rule">
+        <field name="name">Trip Delayed — Notify Customer</field>
+        <field name="event_pattern">deployfleet.trip.delayed</field>
+        <field name="recipient_type">shipment_customer</field>
+        <field name="message_template">Your shipment has been delayed: {reason}</field>
+    </record>
+
+    <record id="rule_trip_delayed_notify_dispatchers" model="deployfleet.notification.rule">
+        <field name="name">Trip Delayed — Notify Dispatchers</field>
+        <field name="event_pattern">deployfleet.trip.delayed</field>
+        <field name="recipient_type">dispatchers</field>
+        <field name="message_template">A trip has been delayed: {reason}</field>
+    </record>
+
+    <record id="rule_delivery_completed_notify_customer" model="deployfleet.notification.rule">
+        <field name="name">Delivery Completed — Notify Customer</field>
+        <field name="event_pattern">deployfleet.delivery.completed</field>
+        <field name="recipient_type">shipment_customer</field>
+        <field name="message_template">Your shipment has been delivered.</field>
+    </record>
+
+    <record id="rule_dispatch_assigned_notify_driver" model="deployfleet.notification.rule">
+        <field name="name">Dispatch Assigned — Notify Driver</field>
+        <field name="event_pattern">deployfleet.dispatch.assigned</field>
+        <field name="recipient_type">assigned_driver</field>
+        <field name="message_template">You've been assigned to a new shipment.</field>
+    </record>
+</odoo>

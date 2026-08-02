@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_notification_rule_list" model="ir.ui.view">
+        <field name="name">deployfleet.notification.rule.list</field>
+        <field name="model">deployfleet.notification.rule</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="event_pattern"/>
+                <field name="recipient_type"/>
+                <field name="message_template"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_notification_rule" model="ir.actions.act_window">
+        <field name="name">Notification Rules</field>
+        <field name="res_model">deployfleet.notification.rule</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_deployfleet_notification_log_list" model="ir.ui.view">
+        <field name="name">deployfleet.notification.log.list</field>
+        <field name="model">deployfleet.notification.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="event_name"/>
+                <field name="recipient_partner_id"/>
+                <field name="message"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_notification_log" model="ir.actions.act_window">
+        <field name="name">Notification Log</field>
+        <field name="res_model">deployfleet.notification.log</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_notifications_root"
+              name="Notifications"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="70"/>
+    <menuitem id="menu_deployfleet_notification_rule"
+              name="Rules"
+              parent="menu_deployfleet_notifications_root"
+              action="action_deployfleet_notification_rule"
+              sequence="10"/>
+    <menuitem id="menu_deployfleet_notification_log"
+              name="Log"
+              parent="menu_deployfleet_notifications_root"
+              action="action_deployfleet_notification_log"
+              sequence="20"/>
+</odoo>
