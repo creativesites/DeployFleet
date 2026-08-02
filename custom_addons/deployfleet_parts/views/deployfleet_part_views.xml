@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_part_form" model="ir.ui.view">
+        <field name="name">deployfleet.part.form</field>
+        <field name="model">deployfleet.part</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="reference"/>
+                            <field name="category_id"/>
+                        </group>
+                        <group>
+                            <field name="quantity_on_hand"/>
+                            <field name="reorder_level"/>
+                            <field name="unit_cost"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="is_low_stock"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_part_list" model="ir.ui.view">
+        <field name="name">deployfleet.part.list</field>
+        <field name="model">deployfleet.part</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="reference"/>
+                <field name="category_id"/>
+                <field name="quantity_on_hand"/>
+                <field name="reorder_level"/>
+                <field name="is_low_stock" widget="boolean_toggle" decoration-danger="is_low_stock"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_part" model="ir.actions.act_window">
+        <field name="name">Parts</field>
+        <field name="res_model">deployfleet.part</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_deployfleet_part_category_list" model="ir.ui.view">
+        <field name="name">deployfleet.part.category.list</field>
+        <field name="model">deployfleet.part.category</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="parent_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_part_category" model="ir.actions.act_window">
+        <field name="name">Part Categories</field>
+        <field name="res_model">deployfleet.part.category</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_parts_root"
+              name="Parts"
+              parent="deployfleet_core.menu_deployfleet_root"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="35"/>
+    <menuitem id="menu_deployfleet_part"
+              name="Parts"
+              parent="menu_deployfleet_parts_root"
+              action="action_deployfleet_part"
+              sequence="10"/>
+    <menuitem id="menu_deployfleet_part_category"
+              name="Part Categories"
+              parent="menu_deployfleet_parts_root"
+              action="action_deployfleet_part_category"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="20"/>
+</odoo>
