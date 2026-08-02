@@ -55,16 +55,16 @@
 
 ---
 
-## Phase 3 — Compliance
+## Phase 3 — Compliance ✅ delivered (operational modules; AI agent piece still open)
 
 **Goal:** become mission-critical — the point where a customer can't easily go back to spreadsheets and paper trip sheets, because the platform is now where legal/safety liability is tracked and enforced, not just recorded.
 
-**Modules:** `deployfleet_compliance`, `deployfleet_vehicle_compliance`, `deployfleet_dispatch_compliance`, `deployfleet_insurance`, `deployfleet_payroll` (with the country-pack decoupling fix implemented, not just planned), `deployfleet_l10n_zm`, `deployfleet_leave`, `deployfleet_loans`, `deployfleet_driver_performance`.
+**Status: the nine operational modules are implemented, tested, lint-clean, and committed.** `deployfleet_compliance`, `deployfleet_vehicle_compliance`, `deployfleet_dispatch_compliance`, `deployfleet_insurance`, `deployfleet_payroll` (country-pack decoupling fix implemented, not just planned — confirmed by building `deployfleet_l10n_zm` immediately after with zero reverse dependency), `deployfleet_l10n_zm`, `deployfleet_leave`, `deployfleet_loans`, `deployfleet_driver_performance`. **Not yet built**: the Compliance Agent (last bullet below) — that's AI-agent-catalog work per [08-ai-architecture.md](08-ai-architecture.md), out of scope for this pass, which built the operational/compliance data model and enforcement logic only.
 
 - Polymorphic document/expiry engine generalized correctly the first time — both driver documents (license, medical) and vehicle documents (registration, insurance, roadworthiness) build on the same base per [02-reuse-strategy.md](02-reuse-strategy.md) §1.
-- Dispatch-blocking enforcement (`deployfleet_dispatch_compliance`) against expired documents, with the emergency-override + audit-trail pattern carried from `security_compliance_roster` — and driver rest-hour / consecutive-driving-day hard constraints added to `deployfleet_dispatch`'s scoring engine. Per [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #3, this is core scope here, not a deferred nice-to-have, given the regulatory/safety stakes of trucking.
-- Zambian payroll (NAPSA/NHIMA/WCF/PAYE) computed correctly from logged trips, loan/performance deductions applied.
-- The Compliance Agent (read-only: expired documents, upcoming inspection/renewal alerts) goes live here too, per [08-ai-architecture.md](08-ai-architecture.md) §11 — this is analysis, not action; the agent can flag an expiring insurance policy, but `deployfleet_ai_actions`' approval pipeline (Phase 4) is what would let it draft or trigger a renewal action.
+- Dispatch-blocking enforcement (`deployfleet_dispatch_compliance`) against expired documents, with the emergency-override + audit-trail pattern (a dedicated `deployfleet.dispatch.compliance.override.log`, not just a generic event-bus entry) — and driver rest-hour / consecutive-driving-day hard constraints added to `deployfleet_dispatch`'s scoring engine. Per [06-risks-and-recommendations.md](06-risks-and-recommendations.md) risk #3, this was built as core scope, not a deferred nice-to-have, given the regulatory/safety stakes of trucking.
+- Zambian payroll (NAPSA/NHIMA/PAYE) computed correctly from a country-neutral rule engine, loan/performance deductions applied via one-way `_inherit` extensions. WCF is deliberately not modeled as a payslip deduction — it's an employer-borne contribution in Zambia, not a deduction from the employee's own pay.
+- The Compliance Agent (read-only: expired documents, upcoming inspection/renewal alerts) is **not yet built** — still Phase 3/4 scope per [08-ai-architecture.md](08-ai-architecture.md) §11; the agent can flag an expiring insurance policy once built, but `deployfleet_ai_actions`' approval pipeline (Phase 4) is what would let it draft or trigger a renewal action.
 
 **Exit criteria:** a vehicle with expired insurance cannot be dispatched without a logged override; a driver assignment that violates rest-hour rules is flagged or blocked; a Zambian driver's payslip computes correctly.
 
