@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_driver_performance_event_dispatcher,deployfleet.driver.performance.event dispatcher,model_deployfleet_driver_performance_event,deployfleet_security.group_deployfleet_dispatcher,1,1,1,0
+access_deployfleet_driver_performance_event_manager,deployfleet.driver.performance.event manager,model_deployfleet_driver_performance_event,deployfleet_security.group_deployfleet_manager,1,1,1,1

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_driver_performance_event_form" model="ir.ui.view">
+        <field name="name">deployfleet.driver.performance.event.form</field>
+        <field name="model">deployfleet.driver.performance.event</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="driver_id"/>
+                            <field name="event_type"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="score_impact"/>
+                            <field name="payroll_deduction_amount"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="payroll_deduction_applied" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Description..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_driver_performance_event_list" model="ir.ui.view">
+        <field name="name">deployfleet.driver.performance.event.list</field>
+        <field name="model">deployfleet.driver.performance.event</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="driver_id"/>
+                <field name="event_type"/>
+                <field name="date"/>
+                <field name="score_impact"/>
+                <field name="payroll_deduction_amount"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_driver_performance_event" model="ir.actions.act_window">
+        <field name="name">Driver Performance Events</field>
+        <field name="res_model">deployfleet.driver.performance.event</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver_performance_event"
+              name="Driver Performance"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver_performance_event"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="15"/>
+</odoo>

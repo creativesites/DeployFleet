@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Same reasoning as deployfleet_loans' LOAN placeholder rule:
+         deliberately inactive so deployfleet_payroll's own rule search
+         doesn't also create a second, always-zero line for it. -->
+    <record id="payroll_rule_driver_performance_deduction" model="deployfleet.payroll.rule">
+        <field name="code">DRIVER_PERF</field>
+        <field name="name">Driver Performance Deduction</field>
+        <field name="sequence">95</field>
+        <field name="category">deduction</field>
+        <field name="amount_type">fixed</field>
+        <field name="amount_fixed">0.0</field>
+        <field name="active">False</field>
+    </record>
+</odoo>
