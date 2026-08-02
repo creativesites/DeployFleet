@@ -47,6 +47,8 @@
 
 **Candidate addition, recommended for this phase**: `deployfleet_freight_calculator` (per [14-freight-calculator-engine.md](14-freight-calculator-engine.md)) — the calculation-rule engine plus calculators #1, #2, #5, #6, #7, #10 (profit, cost/km, break-even, fuel, trip time, tyre cost). Unlike everything else proposed in the freight-intelligence document set, it needs no historical trip/billing data and no AI, only `deployfleet_vehicle`/`deployfleet_route` (both shipped) plus company-configured parameters — it fits this phase's "product visibly pays for itself" goal directly and doubles as strong demo material for the incoming real customer. Bundle its `gross_vehicle_weight_kg`/`tare_weight_kg` vehicle-field addition (doc 14 §5) into the same migration as the `max_weight_kg`/`max_volume_m3` patch above rather than touching `deployfleet_vehicle` twice.
 
+**Also recommended for this phase**: `deployfleet.load.expense` and `deployfleet.driver.advance` (per [15-load-sheet-architecture.md](15-load-sheet-architecture.md) §5–§7) — the actuals-tracking companion to `deployfleet_freight_calculator`'s estimates, and, per that document, the strongest standalone idea in the load-sheet proposal it reconciles. Same profile as doc 14: deterministic, no historical data or AI dependency. The advance model's payroll-deduction transition stays inert until `deployfleet_payroll` lands in Phase 3, same as `deployfleet_loans`.
+
 **Exit criteria:** a job card can be opened from a maintenance-due alert, consume tracked parts, and close; fuel consumption per vehicle/route is visible and flags outliers.
 
 ---
