@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_vehicle_form" model="ir.ui.view">
+        <field name="name">deployfleet.vehicle.form</field>
+        <field name="model">deployfleet.vehicle</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_set_available" type="object" string="Set Available"
+                            invisible="status == 'available'"/>
+                    <button name="action_set_maintenance" type="object" string="Send to Maintenance"
+                            invisible="status == 'maintenance'"/>
+                    <button name="action_set_breakdown" type="object" string="Report Breakdown"
+                            class="btn-danger" invisible="status == 'breakdown'"/>
+                    <button name="action_set_retired" type="object" string="Retire"
+                            invisible="status == 'retired'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="available,assigned,maintenance,breakdown,retired"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Identity">
+                            <field name="license_plate"/>
+                            <field name="model_id"/>
+                            <field name="vehicle_type_id"/>
+                        </group>
+                        <group string="Operations">
+                            <field name="current_driver_id"/>
+                            <field name="odometer"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_vehicle_list" model="ir.ui.view">
+        <field name="name">deployfleet.vehicle.list</field>
+        <field name="model">deployfleet.vehicle</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="license_plate"/>
+                <field name="model_id"/>
+                <field name="vehicle_type_id"/>
+                <field name="current_driver_id"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'available'"
+                       decoration-info="status == 'assigned'"
+                       decoration-warning="status == 'maintenance'"
+                       decoration-danger="status == 'breakdown'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_vehicle_kanban" model="ir.ui.view">
+        <field name="name">deployfleet.vehicle.kanban</field>
+        <field name="model">deployfleet.vehicle</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status">
+                <templates>
+                    <t t-name="card">
+                        <field name="license_plate"/>
+                        <div><field name="model_id"/></div>
+                        <div><field name="current_driver_id"/></div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_vehicle" model="ir.actions.act_window">
+        <field name="name">Vehicles</field>
+        <field name="res_model">deployfleet.vehicle</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_vehicle"
+              name="Vehicles"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_vehicle"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="20"/>
+</odoo>

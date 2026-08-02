@@ -26,3 +26,13 @@ class TestDeployfleetCore(TransactionCase):
         mixin = self.env["deployfleet.sequence.mixin"]
         with self.assertRaises(ValueError):
             mixin._deployfleet_next_reference("deployfleet.does.not.exist")
+
+    def test_seed_vehicle_types_installed(self):
+        rigid = self.env.ref("deployfleet_core.vehicle_type_rigid")
+        self.assertEqual(rigid.code, "rigid")
+        articulated = self.env.ref("deployfleet_core.vehicle_type_articulated")
+        self.assertEqual(articulated.code, "articulated")
+
+    def test_vehicle_type_name_must_be_unique(self):
+        with self.assertRaises(Exception):
+            self.env["deployfleet.vehicle.type"].create({"name": "Rigid Truck"})

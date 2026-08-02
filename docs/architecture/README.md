@@ -38,6 +38,7 @@ Target repository: `creativesites/DeployFleet`.
 | [06-risks-and-recommendations.md](06-risks-and-recommendations.md) | Risks, this architect's recommendations, and the remaining open questions for sign-off |
 | [07-domain-model-erd.md](07-domain-model-erd.md) | The entity model, relationships, and key workflows Phase 1 implementation builds against |
 | [08-ai-architecture.md](08-ai-architecture.md) | How AI is embedded platform-wide while staying modular, permissioned, measurable, and optional — provider strategy, cost control, the agent catalog, and the mandatory action-approval pipeline |
+| [09-dispatch-module-design.md](09-dispatch-module-design.md) | The dispatch module's entities, scoring function, workflow states, and the deliberate scope call to ship standard views before a custom OWL board |
 
 ## Executive summary
 

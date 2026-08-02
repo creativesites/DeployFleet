@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_trip_form" model="ir.ui.view">
+        <field name="name">deployfleet.trip.form</field>
+        <field name="model">deployfleet.trip</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_depart" type="object" string="Depart"
+                            invisible="state != 'planned'" class="btn-primary"/>
+                    <button name="action_complete" type="object" string="Complete"
+                            invisible="state != 'departed'" class="btn-primary"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state in ('completed', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="planned,departed,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Assignment">
+                            <field name="dispatch_assignment_id" readonly="1"/>
+                            <field name="vehicle_id"/>
+                            <field name="driver_id"/>
+                            <field name="route_id"/>
+                        </group>
+                        <group string="Timing">
+                            <field name="planned_departure"/>
+                            <field name="planned_arrival"/>
+                            <field name="actual_departure"/>
+                            <field name="actual_arrival"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Odometer">
+                            <field name="odometer_start"/>
+                            <field name="odometer_end"/>
+                        </group>
+                        <group string="Exceptions">
+                            <field name="delay_reason"/>
+                        </group>
+                    </group>
+                    <field name="shipment_line_ids">
+                        <list editable="bottom">
+                            <field name="shipment_id"/>
+                            <field name="weight_portion_kg"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_trip_list" model="ir.ui.view">
+        <field name="name">deployfleet.trip.list</field>
+        <field name="model">deployfleet.trip</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="planned_departure"/>
+                <field name="actual_departure"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'completed'"
+                       decoration-warning="state == 'departed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_trip" model="ir.actions.act_window">
+        <field name="name">Trips</field>
+        <field name="res_model">deployfleet.trip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_trip"
+              name="Trips"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_trip"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="7"/>
+</odoo>

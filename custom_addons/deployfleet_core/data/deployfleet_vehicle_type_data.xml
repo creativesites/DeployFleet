@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="vehicle_type_rigid" model="deployfleet.vehicle.type">
+        <field name="name">Rigid Truck</field>
+        <field name="code">rigid</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="vehicle_type_articulated" model="deployfleet.vehicle.type">
+        <field name="name">Articulated / Trailer</field>
+        <field name="code">articulated</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="vehicle_type_tanker" model="deployfleet.vehicle.type">
+        <field name="name">Tanker</field>
+        <field name="code">tanker</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="vehicle_type_flatbed" model="deployfleet.vehicle.type">
+        <field name="name">Flatbed</field>
+        <field name="code">flatbed</field>
+        <field name="sequence">40</field>
+    </record>
+</odoo>

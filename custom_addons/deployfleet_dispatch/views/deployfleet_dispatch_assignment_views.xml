@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Per docs/architecture/09-dispatch-module-design.md §5, Phase 1
+        ships this kanban-by-state view rather than a custom OWL drag-drop
+        board — the daily workflow (review ranked candidates, confirm one)
+        is fully covered by it. Build the custom board once real usage
+        shows the volume that justifies it.
+    -->
+    <record id="view_deployfleet_dispatch_assignment_kanban" model="ir.ui.view">
+        <field name="name">deployfleet.dispatch.assignment.kanban</field>
+        <field name="model">deployfleet.dispatch.assignment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <templates>
+                    <t t-name="card">
+                        <field name="shipment_id"/>
+                        <div><field name="driver_id"/></div>
+                        <div><field name="vehicle_id"/></div>
+                        <div>Score: <field name="score"/></div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_dispatch_assignment_list" model="ir.ui.view">
+        <field name="name">deployfleet.dispatch.assignment.list</field>
+        <field name="model">deployfleet.dispatch.assignment</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="shipment_id"/>
+                <field name="driver_id"/>
+                <field name="vehicle_id"/>
+                <field name="score"/>
+                <field name="state" widget="badge"/>
+                <button name="action_confirm" type="object" string="Confirm" invisible="state != 'proposed'"/>
+                <button name="action_cancel" type="object" string="Cancel" invisible="state not in ('proposed', 'confirmed')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_dispatch_assignment" model="ir.actions.act_window">
+        <field name="name">Dispatch Board</field>
+        <field name="res_model">deployfleet.dispatch.assignment</field>
+        <field name="view_mode">kanban,list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_dispatch_assignment"
+              name="Dispatch Board"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_dispatch_assignment"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="6"/>
+</odoo>

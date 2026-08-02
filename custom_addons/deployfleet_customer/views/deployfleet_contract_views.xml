@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_contract_form" model="ir.ui.view">
+        <field name="name">deployfleet.contract.form</field>
+        <field name="model">deployfleet.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_activate" type="object" string="Activate"
+                            invisible="state != 'draft'" class="btn-primary"/>
+                    <button name="action_terminate" type="object" string="Terminate"
+                            invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_id"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="rate_basis"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_contract_list" model="ir.ui.view">
+        <field name="name">deployfleet.contract.list</field>
+        <field name="model">deployfleet.contract</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="rate_basis"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_contract" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">deployfleet.contract</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_contract"
+              name="Contracts"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_contract"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="30"/>
+</odoo>

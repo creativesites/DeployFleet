@@ -1,5 +1,24 @@
 # Changelog
 
+## Phase 1 — Operational Foundation
+
+Full design for the centerpiece module: [docs/architecture/09-dispatch-module-design.md](docs/architecture/09-dispatch-module-design.md), written before implementation, same discipline as the AI architecture in Phase 0.
+
+**Added**, in dependency order:
+
+- `deployfleet_driver` — driver profile on `hr.employee` (license class/number/expiry, endorsements, qualified vehicle types, experience, risk score). Deliberately skips the `deployfleet_hr` module from the original module structure doc — no content exists for it yet; see the module's README.
+- `deployfleet_vehicle` — `deployfleet.vehicle` delegating Odoo's native `fleet.vehicle` via `_inherits`, per the resolved risk #2 decision. Operational `status`, `current_driver_id`, `vehicle_type_id`.
+- `deployfleet_customer` — `deployfleet.contract` (optional on a shipment — spot loads have none) and `deployfleet.depot`.
+- `deployfleet_route` — `deployfleet.route` and `deployfleet.route.stop`.
+- `deployfleet_dispatch` — `deployfleet.shipment` and `deployfleet.dispatch.assignment`, with a weighted-heuristic scoring function (not a solver) that hard-disqualifies unavailable vehicles and vehicle-type mismatches, and requires an override reason to confirm a lower-scored candidate over a higher-scored one. Ships kanban-by-state views rather than a custom OWL drag-drop board — a deliberate Phase 1 scope call under real time pressure (a real company is about to use this), not an oversight; see the design doc §1/§5.
+- `deployfleet_trip` — `deployfleet.trip`, created automatically via an event-bus subscription when a dispatch assignment is confirmed (not a direct module dependency, to keep the dependency graph one-way). Adds `current_trip_id` to `deployfleet.vehicle` via `_inherit`. `deployfleet.trip.shipment.line` — the shipment↔trip many-to-many join from the domain model, built from day one even though Phase 1's common case is one line per trip.
+- `deployfleet_delivery` — `deployfleet.delivery`, proof of delivery keyed to (trip, shipment); creating one is the completion event (marks the shipment delivered, publishes `deployfleet.delivery.completed`).
+- Also extended `deployfleet_core` with `deployfleet.vehicle.type` (shared master data — trailers/tankers/etc. — needed by both driver qualifications and vehicle records, so it lives in the foundation module rather than creating a spurious cross-dependency between driver and vehicle).
+
+Every module ships a test suite; the dispatch and trip modules' tests specifically verify the scoring function's disqualification rules, the override-reason requirement, and the event-bus-driven trip creation.
+
+**Deviations from `docs/architecture/04-module-structure.md`**, each documented in the affected module's README rather than silently diverging: `deployfleet_hr` skipped (no content yet), `deployfleet_route`'s dependency on `deployfleet_vehicle` dropped (nothing in the Phase 1 design needs it).
+
 ## Phase 0 — repo scaffolding and foundation modules (first implementation)
 
 All 8 hard risks in [docs/architecture/06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md) except #5 (real-world domain validation, still pending) were formally resolved and approved, unblocking implementation.

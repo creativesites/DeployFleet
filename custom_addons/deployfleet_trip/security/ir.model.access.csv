@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployfleet_trip_dispatcher,deployfleet.trip dispatcher,model_deployfleet_trip,deployfleet_security.group_deployfleet_dispatcher,1,1,1,0
+access_deployfleet_trip_driver,deployfleet.trip driver,model_deployfleet_trip,deployfleet_security.group_deployfleet_driver,1,1,0,0
+access_deployfleet_trip_shipment_line_dispatcher,deployfleet.trip.shipment.line dispatcher,model_deployfleet_trip_shipment_line,deployfleet_security.group_deployfleet_dispatcher,1,1,1,0
+access_deployfleet_trip_shipment_line_driver,deployfleet.trip.shipment.line driver,model_deployfleet_trip_shipment_line,deployfleet_security.group_deployfleet_driver,1,0,0,0

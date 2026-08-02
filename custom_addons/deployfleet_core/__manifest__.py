@@ -9,6 +9,9 @@
     "data": [
         "data/deployfleet_module_category.xml",
         "views/deployfleet_menus.xml",
+        "security/ir.model.access.csv",
+        "data/deployfleet_vehicle_type_data.xml",
+        "views/deployfleet_vehicle_type_views.xml",
     ],
     "application": True,
 }

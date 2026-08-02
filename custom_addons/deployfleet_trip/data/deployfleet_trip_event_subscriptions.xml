@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="subscription_trip_on_dispatch_assigned" model="deployfleet.event.subscription">
+        <field name="event_pattern">deployfleet.dispatch.assigned</field>
+        <field name="model_name">deployfleet.trip</field>
+        <field name="method_name">_handle_bus_event</field>
+    </record>
+</odoo>

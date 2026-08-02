@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_form_deployfleet_driver" model="ir.ui.view">
+        <field name="name">hr.employee.form.deployfleet.driver</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Driver" name="deployfleet_driver">
+                    <group>
+                        <group>
+                            <field name="deployfleet_is_driver"/>
+                        </group>
+                    </group>
+                    <group invisible="not deployfleet_is_driver">
+                        <group string="License">
+                            <field name="deployfleet_license_class"/>
+                            <field name="deployfleet_license_number"/>
+                            <field name="deployfleet_license_expiry"/>
+                            <field name="deployfleet_license_is_expired" invisible="1"/>
+                        </group>
+                        <group string="Qualifications">
+                            <field name="deployfleet_endorsements"/>
+                            <field name="deployfleet_qualified_vehicle_type_ids" widget="many2many_tags"/>
+                            <field name="deployfleet_years_experience"/>
+                        </group>
+                        <group string="Performance">
+                            <field name="deployfleet_risk_score"/>
+                            <field name="deployfleet_accident_count"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_list_deployfleet_driver" model="ir.ui.view">
+        <field name="name">hr.employee.list.deployfleet.driver</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <list string="Drivers">
+                <field name="name"/>
+                <field name="deployfleet_license_class"/>
+                <field name="deployfleet_license_expiry"/>
+                <field name="deployfleet_license_is_expired" widget="badge" decoration-danger="deployfleet_license_is_expired"/>
+                <field name="deployfleet_risk_score"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_driver" model="ir.actions.act_window">
+        <field name="name">Drivers</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("deployfleet_is_driver", "=", True)]</field>
+        <field name="context">{"default_deployfleet_is_driver": True}</field>
+        <field name="view_id" ref="view_hr_employee_list_deployfleet_driver"/>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver"
+              name="Drivers"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="10"/>
+</odoo>
