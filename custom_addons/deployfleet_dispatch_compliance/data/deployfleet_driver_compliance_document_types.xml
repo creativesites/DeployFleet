@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="doc_type_driver_license" model="deployfleet.compliance.document.type">
+        <field name="name">Driver's License</field>
+        <field name="code">driver_license</field>
+        <field name="applies_to_model">hr.employee</field>
+    </record>
+    <record id="doc_type_driver_medical" model="deployfleet.compliance.document.type">
+        <field name="name">Medical Certificate</field>
+        <field name="code">driver_medical</field>
+        <field name="applies_to_model">hr.employee</field>
+    </record>
+</odoo>

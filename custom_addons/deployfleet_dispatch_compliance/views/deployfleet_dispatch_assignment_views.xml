@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_shipment_form_compliance" model="ir.ui.view">
+        <field name="name">deployfleet.shipment.form.compliance</field>
+        <field name="model">deployfleet.shipment</field>
+        <field name="inherit_id" ref="deployfleet_dispatch.view_deployfleet_shipment_form"/>
+        <field name="arch" type="xml">
+            <field name="override_reason" position="after">
+                <field name="compliance_override_reason"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_dispatch_assignment_list_compliance" model="ir.ui.view">
+        <field name="name">deployfleet.dispatch.assignment.list.compliance</field>
+        <field name="model">deployfleet.dispatch.assignment</field>
+        <field name="inherit_id" ref="deployfleet_dispatch.view_deployfleet_dispatch_assignment_list"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="compliance_override_reason"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_dispatch_compliance_override_log_list" model="ir.ui.view">
+        <field name="name">deployfleet.dispatch.compliance.override.log.list</field>
+        <field name="model">deployfleet.dispatch.compliance.override.log</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="create_date" string="Date"/>
+                <field name="assignment_id"/>
+                <field name="overridden_by"/>
+                <field name="reason"/>
+                <field name="vehicle_had_expired_documents"/>
+                <field name="driver_had_expired_documents"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_dispatch_compliance_override_log" model="ir.actions.act_window">
+        <field name="name">Compliance Overrides</field>
+        <field name="res_model">deployfleet.dispatch.compliance.override.log</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_dispatch_compliance_override_log"
+              name="Compliance Overrides"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_dispatch_compliance_override_log"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="56"/>
+</odoo>
