@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_driver_advance_form" model="ir.ui.view">
+        <field name="name">deployfleet.driver.advance.form</field>
+        <field name="model">deployfleet.driver.advance</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_mark_reconciled" type="object" string="Mark Reconciled"
+                            invisible="state != 'issued'"/>
+                    <button name="action_mark_deducted" type="object" string="Mark Deducted from Payroll"
+                            invisible="state != 'reconciled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="issued,reconciled,deducted"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="driver_id"/>
+                            <field name="trip_id"/>
+                            <field name="purpose"/>
+                            <field name="issued_date"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="reconciled_amount"/>
+                            <field name="outstanding_amount"/>
+                        </group>
+                    </group>
+                    <field name="reconciled_expense_ids">
+                        <list>
+                            <field name="expense_type"/>
+                            <field name="amount"/>
+                            <field name="shipment_id"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_driver_advance_list" model="ir.ui.view">
+        <field name="name">deployfleet.driver.advance.list</field>
+        <field name="model">deployfleet.driver.advance</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="driver_id"/>
+                <field name="issued_date"/>
+                <field name="purpose"/>
+                <field name="amount"/>
+                <field name="outstanding_amount"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'issued'"
+                       decoration-warning="state == 'reconciled'"
+                       decoration-success="state == 'deducted'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_driver_advance" model="ir.actions.act_window">
+        <field name="name">Driver Advances</field>
+        <field name="res_model">deployfleet.driver.advance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver_advance"
+              name="Driver Advances"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver_advance"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="66"/>
+</odoo>
