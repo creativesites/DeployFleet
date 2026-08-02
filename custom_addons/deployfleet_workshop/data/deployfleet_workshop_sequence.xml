@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_deployfleet_workshop_job_card" model="ir.sequence">
+        <field name="name">DeployFleet Workshop Job Card</field>
+        <field name="code">deployfleet.workshop.job.card</field>
+        <field name="prefix">JOB</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

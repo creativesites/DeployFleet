@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_workshop_job_card_form" model="ir.ui.view">
+        <field name="name">deployfleet.workshop.job.card.form</field>
+        <field name="model">deployfleet.workshop.job.card</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start_diagnosis" type="object" string="Start Diagnosis"
+                            invisible="state != 'open'" class="btn-primary"/>
+                    <button name="action_start_repair" type="object" string="Start Repair"
+                            invisible="state != 'diagnosis'" class="btn-primary"/>
+                    <button name="action_submit_for_approval" type="object" string="Submit for Approval"
+                            invisible="state != 'repair'" class="btn-primary"/>
+                    <button name="action_close" type="object" string="Close"
+                            invisible="state != 'approval'" class="btn-primary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,diagnosis,repair,approval,closed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="vehicle_id"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="opened_date"/>
+                            <field name="closed_date" readonly="1"/>
+                            <field name="total_cost"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="line_type"/>
+                            <field name="part_id"/>
+                            <field name="description"/>
+                            <field name="quantity"/>
+                            <field name="unit_cost"/>
+                            <field name="subtotal" readonly="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_workshop_job_card_list" model="ir.ui.view">
+        <field name="name">deployfleet.workshop.job.card.list</field>
+        <field name="model">deployfleet.workshop.job.card</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="vehicle_id"/>
+                <field name="opened_date"/>
+                <field name="total_cost"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('open', 'diagnosis')"
+                       decoration-warning="state in ('repair', 'approval')"
+                       decoration-success="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_workshop_job_card" model="ir.actions.act_window">
+        <field name="name">Job Cards</field>
+        <field name="res_model">deployfleet.workshop.job.card</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_workshop_job_card"
+              name="Workshop"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_workshop_job_card"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="40"/>
+</odoo>
