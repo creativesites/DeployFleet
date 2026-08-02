@@ -4,3 +4,21 @@ data_dir = /var/lib/odoo
 admin_passwd = ${DEPLOYFLEET_ODOO_MASTER_PASSWORD}
 list_db = False
 proxy_mode = True
+
+; Production worker configuration — without this, Odoo falls back to its
+; single-threaded dev-mode werkzeug server, which can only handle ONE
+; request at a time. Every other request (including a plain login-page
+; GET) queues behind whatever is currently running, which is exactly
+; what a 35s registry-load-then-everything-stalls symptom looks like.
+; workers=2 is a conservative starting point given this host also runs
+; two other Odoo instances (see DEPLOYMENT.md's hard rule) — the usual
+; Odoo sizing formula is roughly (cpu_cores * 2) + 1, minus headroom for
+; the other instances and for max_cron_threads below. Tune upward only
+; after confirming the host has spare CPU via the pre-flight inventory
+; commands, not by guessing.
+workers = 2
+max_cron_threads = 1
+limit_time_cpu = 600
+limit_time_real = 1200
+limit_request = 8192
+db_maxconn = 32
