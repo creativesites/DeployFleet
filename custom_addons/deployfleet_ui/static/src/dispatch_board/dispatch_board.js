@@ -60,7 +60,12 @@ function extractErrorMessage(error) {
 export class DeployfleetDispatchBoard extends Component {
     static template = "deployfleet_ui.DispatchBoard";
     static components = { DeployfleetButton, DeployfleetStatusBadge };
-    static props = {};
+    // No `static props` declaration, deliberately — see the identical
+    // comment in mission_control.js: this is an `ir.actions.client` root
+    // component, and declaring an empty props schema here made OWL
+    // reject the standard props (`action`, `actionId`,
+    // `updateActionState`, `className`, ...) Odoo's action manager always
+    // injects, crashing on mount.
 
     setup() {
         this.orm = useService("orm");

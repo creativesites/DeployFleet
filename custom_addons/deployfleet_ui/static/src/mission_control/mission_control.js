@@ -82,7 +82,17 @@ const DOMAIN_QUICK_LINKS = [
 export class DeployfleetMissionControl extends Component {
     static template = "deployfleet_ui.MissionControl";
     static components = { DeployfleetStatusPill, DeployfleetMetricCard };
-    static props = {};
+    // No `static props` declaration, deliberately: this is an
+    // `ir.actions.client` root component, and Odoo's action manager
+    // always injects standard props (`action`, `actionId`,
+    // `updateActionState`, `className`, ...) into whatever component it
+    // mounts. Declaring `static props = {}` here previously told OWL
+    // this component accepts zero props, which made it reject every one
+    // of those injected props and crash on mount
+    // ("Invalid props ... unknown key 'action'..."). Omitting `props`
+    // entirely (the same pattern already used by the working Component
+    // Showcase and Domain Mega Menu actions) skips prop validation for
+    // this component instead.
 
     setup() {
         this.orm = useService("orm");

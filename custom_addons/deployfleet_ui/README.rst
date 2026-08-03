@@ -206,3 +206,28 @@ shorter viewport instead. Fixed with an explicit ``height: 100%; overflow-y:
 auto`` on the container — every future client-action-rooted screen
 (Launcher, Mega Menus, flagship command centers) needs this same treatment,
 not just this one.
+
+A second real bug, caught the same way (click-testing on a real device, not
+by the syntax-only checks above): Mission Control, the Dispatch Board, and
+the Fleet Command Center all crashed immediately on open with
+``OwlError: Invalid props ... unknown key 'action', unknown key 'actionId',
+unknown key 'updateActionState', unknown key 'className'``. All three
+declared ``static props = {};``, which tells OWL "this component accepts
+zero props" and enables strict validation — but Odoo's action manager
+always injects standard props (``action``, ``actionId``,
+``updateActionState``, ``className``, ...) into any ``ir.actions.client``
+root component it mounts, regardless of what that component declares. The
+Component Showcase and the Domain Mega Menu action never hit this because
+neither declares ``static props`` at all — omitting it skips prop
+validation entirely, rather than declaring an empty schema that rejects
+everything. Fixed by removing the ``static props = {};`` line from all
+three files. The Launcher and Copilot Rail keep their own ``static props =
+{};`` unchanged and correctly, since both are ``main_components`` mounted
+with the literal ``{}`` props their registry entry specifies, not the
+action manager's injected props — this bug is specific to
+``ir.actions.client`` root components. Neither ``node --check`` nor XML
+well-formedness would ever catch this class of bug, since the code is
+syntactically valid OWL; only rendering it against Odoo's real action
+manager surfaces it. Any future ``ir.actions.client`` component in this
+module should either omit ``static props`` entirely or declare it with the
+actual injected keys marked optional — never an empty object.
