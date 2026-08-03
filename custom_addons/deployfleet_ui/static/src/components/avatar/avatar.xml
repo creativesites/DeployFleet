@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.Avatar">
+        <span t-attf-class="df-avatar df-avatar--{{ props.size }}">
+            <img t-if="props.imageUrl" t-att-src="props.imageUrl" class="df-avatar__image" t-att-alt="props.name"/>
+            <span t-else="" class="df-avatar__initials" t-esc="initials"/>
+            <span t-if="props.statusDot" t-attf-class="df-avatar__status df-avatar__status--{{ props.statusDot }}"/>
+        </span>
+    </t>
+</templates>

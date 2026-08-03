@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ComponentShowcase">
+        <div class="df-showcase">
+            <h2 class="df-showcase__title">DeployFleet UI — Component Showcase</h2>
+            <p class="df-showcase__subtitle">
+                Living reference for docs/architecture/16-19. Every component here
+                consumes design-system tokens only — see tokens.scss. Debug-mode only,
+                not part of the product's real navigation.
+            </p>
+
+            <section class="df-showcase__section">
+                <h3>Buttons</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetButton label="'Primary'" variant="'primary'"/>
+                    <DeployfleetButton label="'Secondary'" variant="'secondary'"/>
+                    <DeployfleetButton label="'Ghost'" variant="'ghost'"/>
+                    <DeployfleetButton label="'Destructive'" variant="'destructive'"/>
+                    <DeployfleetButton label="'Disabled'" variant="'primary'" disabled="true"/>
+                    <DeployfleetButton
+                        label="'Loading demo'"
+                        variant="'primary'"
+                        loading="state.loadingDemo"
+                        onClick="() => this.onLoadingDemoClick()"/>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>Cards</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetCard layer="'workspace'">
+                        <p>Workspace Layer card — flat, high-contrast.</p>
+                    </DeployfleetCard>
+                    <DeployfleetCard layer="'command'">
+                        <p>Command Layer card — glass, dark, Command Layer only.</p>
+                    </DeployfleetCard>
+                    <DeployfleetCard layer="'workspace'" interactive="true">
+                        <p>Interactive workspace card — hover to lift.</p>
+                    </DeployfleetCard>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>Avatars</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetAvatar name="'Jane Banda'" size="'sm'"/>
+                    <DeployfleetAvatar name="'Jane Banda'" size="'md'" statusDot="'on-duty'"/>
+                    <DeployfleetAvatar name="'Jane Banda'" size="'lg'" statusDot="'off-duty'"/>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>Status badges</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetStatusBadge label="'On time'" status="'success'"/>
+                    <DeployfleetStatusBadge label="'Expiring soon'" status="'warning'"/>
+                    <DeployfleetStatusBadge label="'Expired'" status="'danger'"/>
+                    <DeployfleetStatusBadge label="'In transit'" status="'info'"/>
+                    <DeployfleetStatusBadge label="'AI suggested'" status="'ai'"/>
+                    <DeployfleetStatusBadge label="'On time'" status="'success'" variant="'outline'"/>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>Status pills (attention-strip pattern, doc 16 §3.3)</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetStatusPill
+                        label="'Unassigned shipments'"
+                        count="3"
+                        status="'danger'"
+                        onClick="() => this.onPillClick()"/>
+                    <DeployfleetStatusPill label="'Expiring documents'" count="5" status="'warning'"/>
+                    <span t-esc="'Pill clicks: ' + state.pillClicks"/>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>AI badge</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetAiBadge/>
+                    <DeployfleetAiBadge label="'Predicted by Maintenance Agent'"/>
+                </div>
+            </section>
+
+            <section class="df-showcase__section">
+                <h3>Metric cards</h3>
+                <div class="df-showcase__row">
+                    <DeployfleetMetricCard
+                        label="'Active vehicles'"
+                        value="18"
+                        icon="'fa fa-truck'"
+                        status="'success'"
+                        caption="'of 20 in fleet'"/>
+                    <DeployfleetMetricCard
+                        label="'Fuel cost this month'"
+                        value="'K42,300'"
+                        icon="'fa fa-tint'"
+                        status="'danger'"
+                        trend="{ direction: 'up', percent: 12, isGood: false }"
+                        caption="'vs last month'"/>
+                    <DeployfleetMetricCard
+                        label="'On-time delivery'"
+                        value="'94%'"
+                        icon="'fa fa-clock-o'"
+                        status="'success'"
+                        trend="{ direction: 'up', percent: 3, isGood: true }"/>
+                </div>
+            </section>
+        </div>
+    </t>
+</templates>

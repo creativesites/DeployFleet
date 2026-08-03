@@ -1,0 +1,101 @@
+// DeployFleet UI — design-system tokens.
+// See docs/architecture/17-design-system.md. Every value here is
+// referenced by name elsewhere in this module and in every consuming
+// module's own component CSS — never hardcode a hex/px/duration value in
+// a component file; extend this file instead (doc 17 §12/§13).
+
+:root {
+    // ---- Brand palette (§2.1) — deliberately distinct from DeployGuard's
+    // navy, per CLAUDE.md's "not a re-skin" instruction. ----
+    --df-color-primary: #0f4c5c;
+    --df-color-primary-dark: #0a3540;
+    --df-color-primary-light: #3d7a8a;
+    --df-color-accent: #f5940a;
+    --df-color-accent-dark: #c9750a;
+
+    // ---- Neutral scale (Workspace Layer surfaces, body text, borders) ----
+    --df-color-neutral-900: #10161c;
+    --df-color-neutral-700: #33404a;
+    --df-color-neutral-500: #64748b;
+    --df-color-neutral-300: #cbd5e1;
+    --df-color-neutral-100: #f1f5f9;
+    --df-color-neutral-0: #ffffff;
+
+    // ---- Status semantics (§2.2) — platform-wide, not per-dashboard.
+    // Color follows business meaning, not metric direction: decide the
+    // "good"/"bad" direction explicitly per metric at the call site,
+    // never assume "up = green". ----
+    --df-color-success: #16a34a;
+    --df-color-success-bg: #eafaf0;
+    --df-color-warning: #d97706;
+    --df-color-warning-bg: #fef6e7;
+    --df-color-danger: #dc2626;
+    --df-color-danger-dark: #b91c1c;
+    --df-color-danger-bg: #fdecec;
+    --df-color-info: #2563eb;
+    --df-color-info-bg: #eaf1fd;
+
+    // ---- AI-content convention (§2.3) — reserved exclusively for
+    // AI-authored/AI-suggested content, everywhere in the product, before
+    // human approval. Must not appear anywhere else in the palette. ----
+    --df-color-ai: #7c3aed;
+    --df-color-ai-bg: #f4effd;
+
+    // ---- Spacing (§4) — 8px base unit ----
+    --df-space-1: 8px;
+    --df-space-2: 16px;
+    --df-space-3: 24px;
+    --df-space-4: 32px;
+    --df-space-6: 48px;
+    --df-space-8: 64px;
+
+    // ---- Typography (§3) ----
+    --df-font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    --df-font-size-sm: 12px;
+    --df-font-size-base: 14px;
+    --df-font-size-md: 16px;
+    --df-font-size-lg: 20px;
+    --df-font-size-xl: 28px;
+    --df-font-size-display: 40px;
+    --df-font-weight-regular: 400;
+    --df-font-weight-medium: 500;
+    --df-font-weight-bold: 700;
+
+    // ---- Elevation & radius (§5) ----
+    --df-radius-sm: 6px;
+    --df-radius-md: 10px;
+    --df-radius-lg: 20px;
+    --df-shadow-resting: 0 1px 2px rgba(15, 76, 92, 0.06);
+    --df-shadow-hover: 0 6px 16px rgba(15, 76, 92, 0.12);
+    --df-shadow-modal: 0 32px 80px -20px rgba(15, 76, 92, 0.35);
+
+    // ---- Command Layer glass recipe (§6) — Command Layer surfaces only;
+    // Workspace Layer surfaces never use blur. ----
+    --df-glass-blur: 26px;
+    --df-glass-saturate: 135%;
+    --df-glass-border: rgba(255, 255, 255, 0.14);
+}
+
+// ---- Dark mode (§2.4) — luminance shifts, not hue shifts. Status colors
+// keep their hue across modes; only the neutral scale and shadow depth
+// change. Explicit data-theme wins over the OS preference in either
+// direction, matching this environment's own theming convention. ----
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --df-color-neutral-0: #10161c;
+        --df-color-neutral-100: #1a2229;
+        --df-color-neutral-300: #33404a;
+        --df-color-neutral-900: #f1f5f9;
+        --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+}
+
+:root[data-theme="dark"] {
+    --df-color-neutral-0: #10161c;
+    --df-color-neutral-100: #1a2229;
+    --df-color-neutral-300: #33404a;
+    --df-color-neutral-900: #f1f5f9;
+    --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
+}

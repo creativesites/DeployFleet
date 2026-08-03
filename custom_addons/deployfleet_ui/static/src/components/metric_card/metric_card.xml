@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.MetricCard">
+        <div t-att-class="classes" t-on-click="onClickCard">
+            <div class="df-metric-card__header">
+                <i t-if="props.icon" t-att-class="props.icon" class="df-metric-card__icon"/>
+                <span class="df-metric-card__label" t-esc="props.label"/>
+            </div>
+            <div class="df-metric-card__value" t-esc="props.value"/>
+            <div t-if="props.trend" t-att-class="trendClasses">
+                <i t-attf-class="fa fa-arrow-{{ props.trend.direction }}"/>
+                <span t-esc="props.trend.percent + '%'"/>
+            </div>
+            <div t-if="props.caption" class="df-metric-card__caption" t-esc="props.caption"/>
+        </div>
+    </t>
+</templates>

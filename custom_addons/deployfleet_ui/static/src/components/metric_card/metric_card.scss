@@ -1,0 +1,107 @@
+.df-metric-card {
+    position: relative;
+    padding: var(--df-space-2);
+    padding-left: calc(var(--df-space-2) + 4px);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    box-shadow: var(--df-shadow-resting);
+    font-family: var(--df-font-family);
+    min-width: 180px;
+}
+
+.df-metric-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: var(--df-radius-md) 0 0 var(--df-radius-md);
+    background: var(--df-color-info);
+}
+
+.df-metric-card--success::before {
+    background: var(--df-color-success);
+}
+
+.df-metric-card--warning::before {
+    background: var(--df-color-warning);
+}
+
+.df-metric-card--danger::before {
+    background: var(--df-color-danger);
+}
+
+.df-metric-card--info::before {
+    background: var(--df-color-info);
+}
+
+.df-metric-card--ai::before {
+    background: var(--df-color-ai);
+}
+
+.df-metric-card--clickable {
+    cursor: pointer;
+    transition:
+        transform var(--df-duration-standard) var(--df-ease-standard),
+        box-shadow var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-metric-card--clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--df-shadow-hover);
+}
+
+.df-metric-card__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--df-color-neutral-500);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.df-metric-card__value {
+    margin-top: 4px;
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+    font-variant-numeric: tabular-nums;
+    color: var(--df-color-neutral-900);
+    transition: color var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-metric-card__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+}
+
+.df-metric-card__trend--good {
+    color: var(--df-color-success);
+}
+
+.df-metric-card__trend--bad {
+    color: var(--df-color-danger);
+}
+
+.df-metric-card__caption {
+    margin-top: 4px;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-metric-card--clickable {
+        transition: none;
+    }
+
+    .df-metric-card--clickable:hover {
+        transform: none;
+    }
+}

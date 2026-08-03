@@ -1,0 +1,52 @@
+.df-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px var(--df-space-1);
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-status-pill:hover {
+    transform: scale(1.02);
+}
+
+.df-status-pill:active {
+    transform: scale(0.98);
+}
+
+.df-status-pill--success {
+    background: var(--df-color-success-bg);
+    color: var(--df-color-success);
+}
+
+.df-status-pill--warning {
+    background: var(--df-color-warning-bg);
+    color: var(--df-color-warning);
+}
+
+.df-status-pill--danger {
+    background: var(--df-color-danger-bg);
+    color: var(--df-color-danger);
+}
+
+.df-status-pill--info {
+    background: var(--df-color-info-bg);
+    color: var(--df-color-info);
+}
+
+.df-status-pill__count {
+    font-weight: var(--df-font-weight-bold);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-status-pill {
+        transition: none;
+    }
+}

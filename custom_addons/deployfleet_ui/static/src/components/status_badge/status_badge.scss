@@ -1,0 +1,65 @@
+.df-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    line-height: 1.6;
+}
+
+.df-status-badge--solid.df-status-badge--success {
+    background: var(--df-color-success-bg);
+    color: var(--df-color-success);
+}
+
+.df-status-badge--solid.df-status-badge--warning {
+    background: var(--df-color-warning-bg);
+    color: var(--df-color-warning);
+}
+
+.df-status-badge--solid.df-status-badge--danger {
+    background: var(--df-color-danger-bg);
+    color: var(--df-color-danger);
+}
+
+.df-status-badge--solid.df-status-badge--info {
+    background: var(--df-color-info-bg);
+    color: var(--df-color-info);
+}
+
+.df-status-badge--solid.df-status-badge--ai {
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
+}
+
+.df-status-badge--outline.df-status-badge--success {
+    background: transparent;
+    color: var(--df-color-success);
+    border: 1px solid var(--df-color-success);
+}
+
+.df-status-badge--outline.df-status-badge--warning {
+    background: transparent;
+    color: var(--df-color-warning);
+    border: 1px solid var(--df-color-warning);
+}
+
+.df-status-badge--outline.df-status-badge--danger {
+    background: transparent;
+    color: var(--df-color-danger);
+    border: 1px solid var(--df-color-danger);
+}
+
+.df-status-badge--outline.df-status-badge--info {
+    background: transparent;
+    color: var(--df-color-info);
+    border: 1px solid var(--df-color-info);
+}
+
+.df-status-badge--outline.df-status-badge--ai {
+    background: transparent;
+    color: var(--df-color-ai);
+    border: 1px solid var(--df-color-ai);
+}

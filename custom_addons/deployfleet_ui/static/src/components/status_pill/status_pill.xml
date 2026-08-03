@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.StatusPill">
+        <button type="button" t-att-class="classes" t-on-click="onClickPill">
+            <span class="df-status-pill__count" t-esc="props.count"/>
+            <span class="df-status-pill__label" t-esc="props.label"/>
+        </button>
+    </t>
+</templates>

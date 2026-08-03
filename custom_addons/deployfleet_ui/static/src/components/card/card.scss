@@ -1,0 +1,41 @@
+.df-card {
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-2);
+}
+
+.df-card--workspace {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-card--command {
+    background: linear-gradient(145deg, rgba(20, 40, 46, 0.96), rgba(10, 24, 28, 0.96));
+    border: 1px solid var(--df-glass-border);
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    color: var(--df-color-neutral-0);
+    box-shadow: var(--df-shadow-modal);
+    border-radius: var(--df-radius-lg);
+}
+
+.df-card--interactive {
+    cursor: pointer;
+    transition:
+        transform var(--df-duration-standard) var(--df-ease-standard),
+        box-shadow var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-card--interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--df-shadow-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-card--interactive {
+        transition: none;
+    }
+
+    .df-card--interactive:hover {
+        transform: none;
+    }
+}

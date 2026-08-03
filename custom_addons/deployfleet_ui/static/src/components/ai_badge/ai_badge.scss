@@ -1,0 +1,23 @@
+.df-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    animation: df-pulse-once var(--df-duration-standard) var(--df-ease-standard) 1;
+}
+
+.df-ai-badge__icon {
+    font-size: var(--df-font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-ai-badge {
+        animation: none;
+    }
+}

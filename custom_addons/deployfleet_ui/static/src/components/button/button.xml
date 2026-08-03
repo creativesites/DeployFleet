@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.Button">
+        <button type="button"
+                t-att-class="classes"
+                t-att-disabled="props.disabled || props.loading"
+                t-on-click="onClickButton">
+            <i t-if="props.loading" class="fa fa-circle-o-notch fa-spin df-button__spinner"/>
+            <i t-elif="props.icon" t-att-class="props.icon"/>
+            <span t-if="props.label" class="df-button__label" t-esc="props.label"/>
+            <t t-slot="default"/>
+        </button>
+    </t>
+</templates>

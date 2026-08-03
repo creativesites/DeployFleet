@@ -1,0 +1,100 @@
+// DeployFleet UI — motion tokens and shared keyframes.
+// See docs/architecture/19-animation-guidelines.md. Motion communicates
+// state change, never ambient decoration — every keyframe below maps to
+// a specific, named interaction in that document's §2 spec table, and
+// every one of them has a reduced-motion fallback (§4).
+
+:root {
+    --df-duration-micro: 120ms;
+    --df-duration-standard: 180ms;
+    --df-duration-entrance: 240ms;
+    --df-duration-ambient: 2s;
+    --df-ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+    --df-ease-micro: ease-in-out;
+}
+
+// AI content appearing (doc 19 §2) — a single gentle pulse on arrival,
+// never continuous. Used by the AI Badge and AI Recommendation Card.
+@keyframes df-pulse-once {
+    0% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.35);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(124, 58, 237, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+    }
+}
+
+// The one deliberate Ambient-band exception (doc 19 §1/§2): an unresolved
+// critical urgency indicator. Never used for anything else.
+@keyframes df-pulse-ambient {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.15);
+    }
+}
+
+@keyframes df-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes df-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20%,
+    60% {
+        transform: translateX(-4px);
+    }
+    40%,
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+@keyframes df-success-sweep {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+// Reusable card-lift utility (doc 19 §2's "card hover/lift" row) — shared
+// so every component that needs it applies the exact same recipe rather
+// than a slightly different one per component file.
+.df-motion-card-lift {
+    transition:
+        transform var(--df-duration-standard) var(--df-ease-standard),
+        box-shadow var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-motion-card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--df-shadow-hover);
+}
+
+// doc 19 §4 — every animation in this file has a static equivalent.
+@media (prefers-reduced-motion: reduce) {
+    .df-motion-card-lift,
+    [class*="df-anim-"] {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .df-motion-card-lift:hover {
+        transform: none;
+    }
+}

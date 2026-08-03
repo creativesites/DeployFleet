@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.AiBadge">
+        <span class="df-ai-badge">
+            <i class="fa fa-magic df-ai-badge__icon"/>
+            <span class="df-ai-badge__label" t-esc="props.label"/>
+        </span>
+    </t>
+</templates>
