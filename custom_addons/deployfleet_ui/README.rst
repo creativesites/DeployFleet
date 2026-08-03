@@ -180,6 +180,38 @@ never actually defined in ``tokens.scss`` — added to the neutral scale.
 See doc 16 Principle 1 / doc 17 §6's changelog notes for the full
 rationale.
 
+**Launcher/Copilot Rail glassmorphism and mobile polish pass** (following
+user feedback that the light retrofit above needed to look genuinely
+"glassy," not just like a light modal, and be more mobile-friendly): the
+Launcher and Copilot Rail are the only two true overlay surfaces in this
+module (scrim + panel on top of other page content, as opposed to
+Mission Control/Mega Menus/Copilot Console, which are full-page screens
+with nothing behind them to blur). Both previously applied
+``backdrop-filter`` only to the full-screen scrim, never to the panel
+itself, so the panel read as a mostly-opaque light card rather than
+frosted glass. Fixed by giving both panels their own
+``backdrop-filter`` (plus the ``-webkit-backdrop-filter`` prefix Safari/
+iOS still requires — without it, blur silently does nothing on a large
+share of the mobile-first target market), an inset top/edge highlight
+for the light-catching-glass look, and lowering ``--df-glass-panel-bg``
+from 0.92 to 0.82 opacity (0.85 → 0.78 in dark mode) so the blur
+actually reads through instead of being nearly opaque. Also fixed a
+real mobile *functional* bug, not just a visual one: the Launcher's
+per-tile favorite-star button was hidden behind ``:hover``, with no
+fallback — on a touchscreen there is no hover state, so the button was
+permanently unreachable on the phones/tablets this product is built
+mobile-first for. Now scoped to ``@media (hover: hover)`` so the
+hover-to-reveal behavior only applies on genuinely hover-capable
+pointers, and the star is always visible by default on touch. Other
+mobile fixes in the same pass: the search input, close button, chips,
+and priority-strip pills were all bumped to the established 44px touch
+target minimum (previously as small as 26–36px); the header forces the
+search box onto its own full-width row below 640px instead of an
+arbitrary flex-wrap point; the destination grid drops to a single
+column below 400px, since two 160px-minimum columns don't comfortably
+fit a narrow phone; and the overlay's padding tightens on mobile with a
+``env(safe-area-inset-bottom)`` allowance for notched devices.
+
 - **Copilot Console** (Phase D / Slice 1): the destination screen for
   working the AI investment in bulk
   (``static/src/copilot_console/copilot_console.js``), complementing the

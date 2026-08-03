@@ -53,6 +53,8 @@
     inset: 0;
     z-index: 1150;
     background: var(--df-glass-scrim);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     display: flex;
     align-items: stretch;
     justify-content: flex-end;
@@ -79,8 +81,10 @@
     box-sizing: border-box;
     padding: var(--df-space-3);
     background: linear-gradient(160deg, var(--df-color-ai-bg), var(--df-color-neutral-0) 60%);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     border-left: 1px solid var(--df-glass-border);
-    box-shadow: var(--df-shadow-modal);
+    box-shadow: var(--df-shadow-modal), inset 1px 0 0 rgba(255, 255, 255, 0.6);
     color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
 }

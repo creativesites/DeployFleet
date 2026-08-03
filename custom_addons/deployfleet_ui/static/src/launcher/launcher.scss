@@ -26,6 +26,7 @@
     inset: 0;
     z-index: 1050;
     background: var(--df-glass-scrim);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     display: flex;
     align-items: center;
@@ -33,8 +34,16 @@
     padding: var(--df-space-3);
 }
 
-// Light frosted-glass panel (doc 17 §6's revised recipe) — the scrim
-// above stays a dark dimming backdrop; the panel itself is light.
+// Light frosted-glass panel (doc 17 §6's revised recipe). Genuinely
+// glassmorphic, not just a light modal: the panel carries its own
+// backdrop-filter (with the -webkit- prefix Safari/iOS still requires —
+// without it, blur silently does nothing on a large share of the
+// mobile-first target market) so content directly behind the panel
+// blurs through it too, not just behind the full-screen scrim; a
+// slightly lower fill opacity than a plain card lets that blur read;
+// and an inset top highlight (a bright hairline along the top edge)
+// gives the panel the light-catching-an-edge look real frosted glass
+// has, rather than a flat translucent rectangle.
 .df-launcher {
     width: 100%;
     max-width: 1180px;
@@ -46,10 +55,24 @@
     padding: var(--df-space-4);
     border-radius: var(--df-radius-lg);
     background: var(--df-glass-panel-bg);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     border: 1px solid var(--df-glass-border);
-    box-shadow: var(--df-shadow-modal);
+    box-shadow: var(--df-shadow-modal), inset 0 1px 0 rgba(255, 255, 255, 0.6);
     color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
+}
+
+@media (max-width: 640px) {
+    .df-launcher__scrim {
+        padding: var(--df-space-1);
+        padding-bottom: max(var(--df-space-1), env(safe-area-inset-bottom));
+    }
+
+    .df-launcher {
+        max-height: 94vh;
+        padding: var(--df-space-2);
+    }
 }
 
 .df-launcher__header {
@@ -93,6 +116,8 @@
 
 .df-launcher__search {
     flex: 1 1 260px;
+    min-height: 44px;
+    box-sizing: border-box;
     padding: 8px var(--df-space-2);
     border-radius: var(--df-radius-sm);
     border: 1px solid var(--df-color-neutral-300);
@@ -107,14 +132,25 @@
 }
 
 .df-launcher__close {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
     border-radius: 50%;
     border: none;
     background: var(--df-color-neutral-100);
     color: var(--df-color-neutral-700);
     cursor: pointer;
     transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+@media (max-width: 640px) {
+    // Search wants a 260px flex-basis on desktop; on a phone-width
+    // viewport that basis alone can still leave it squeezed next to the
+    // brand row before wrapping arbitrarily. Force it onto its own full
+    // row instead of leaving the wrap point to chance.
+    .df-launcher__search {
+        flex-basis: 100%;
+    }
 }
 
 .df-launcher__close:hover {
@@ -147,7 +183,8 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px var(--df-space-1);
+    min-height: 44px;
+    padding: 6px var(--df-space-2);
     border-radius: 999px;
     border: 1px solid var(--df-color-neutral-300);
     background: var(--df-color-neutral-100);
@@ -168,6 +205,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    min-height: 44px;
     padding: 8px var(--df-space-2);
     border-radius: 999px;
     border: none;
@@ -249,27 +287,39 @@
     color: var(--df-color-neutral-600);
 }
 
+// Sized and always-visible-by-default on touch devices — the hover-only
+// reveal below is a real functional bug on a touchscreen: there is no
+// hover state to trigger it, so the star would be permanently
+// unreachable on the phones/tablets this product is built mobile-first
+// for. `(hover: hover)` scopes the hidden-until-hover treatment to
+// devices that genuinely have a hover-capable pointer (mouse/trackpad).
 .df-launcher__favorite {
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: var(--df-color-neutral-100);
     color: var(--df-color-neutral-500);
-    opacity: 0;
+    opacity: 1;
     cursor: pointer;
     transition: opacity var(--df-duration-micro) var(--df-ease-micro);
 }
 
-.df-launcher__tile:hover .df-launcher__favorite,
-.df-launcher__favorite--active {
-    opacity: 1;
+@media (hover: hover) {
+    .df-launcher__favorite {
+        opacity: 0;
+    }
+
+    .df-launcher__tile:hover .df-launcher__favorite {
+        opacity: 1;
+    }
 }
 
 .df-launcher__favorite--active {
+    opacity: 1;
     color: var(--df-color-accent);
 }
 
@@ -314,6 +364,17 @@
 @media (max-width: 640px) {
     .df-launcher__grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--df-space-1);
+    }
+}
+
+// Two columns of a 160px minimum still doesn't comfortably fit a
+// narrow phone (~360px viewport minus panel padding and the gap) —
+// drop to one column rather than letting tiles get uncomfortably
+// cramped or overflow.
+@media (max-width: 400px) {
+    .df-launcher__grid {
+        grid-template-columns: 1fr;
     }
 }
 

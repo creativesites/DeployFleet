@@ -81,7 +81,14 @@
     --df-glass-blur: 26px;
     --df-glass-saturate: 135%;
     --df-glass-border: rgba(15, 76, 92, 0.12);
-    --df-glass-panel-bg: rgba(255, 255, 255, 0.92);
+    // 0.82, not near-opaque — low enough that a genuinely blurred
+    // backdrop (applied via `backdrop-filter` on the panel itself, not
+    // just the surrounding scrim) still visibly reads through the
+    // panel. Matters most on the true overlay surfaces (Launcher,
+    // Copilot Rail) that sit on top of other page content; harmless on
+    // the full-page Command Layer screens (Mission Control, Mega Menus,
+    // Copilot Console) since there's nothing behind a full page to blur.
+    --df-glass-panel-bg: rgba(255, 255, 255, 0.82);
     --df-glass-scrim: rgba(15, 23, 42, 0.45);
 }
 
@@ -98,7 +105,7 @@
         --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
         --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
         --df-glass-border: rgba(255, 255, 255, 0.14);
-        --df-glass-panel-bg: rgba(16, 22, 28, 0.85);
+        --df-glass-panel-bg: rgba(16, 22, 28, 0.78);
     }
 }
 
@@ -110,5 +117,5 @@
     --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
     --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
     --df-glass-border: rgba(255, 255, 255, 0.14);
-    --df-glass-panel-bg: rgba(16, 22, 28, 0.85);
+    --df-glass-panel-bg: rgba(16, 22, 28, 0.78);
 }
