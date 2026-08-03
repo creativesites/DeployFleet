@@ -23,6 +23,8 @@ class DeployfleetInvoice(models.Model):
     def _create_account_move(self):
         self.ensure_one()
         product = self.env.ref("deployfleet_accounting.product_deployfleet_freight_service")
+        self._ensure_income_account(product)
+        self._ensure_receivable_account(self.customer_id)
         move = self.env["account.move"].create({
             "move_type": "out_invoice",
             "partner_id": self.customer_id.id,
@@ -45,3 +47,36 @@ class DeployfleetInvoice(models.Model):
             {"account_move_id": move.id, "customer_id": self.customer_id.id},
         )
         return move
+
+    def _ensure_income_account(self, product):
+        """A fresh company with no chart of accounts installed has no
+        account.account records at all, so account.move.line's account_id
+        would end up NULL and violate its accountable-fields check
+        constraint. Lazily provisions one dedicated income account the
+        first time any invoice is posted, rather than requiring every new
+        DeployFleet company to run Odoo's full accounting-onboarding wizard
+        before its first invoice."""
+        if product.property_account_income_id:
+            return
+        product.property_account_income_id = self._get_or_create_account(
+            "400100", "Freight Service Income", "income",
+        )
+
+    def _ensure_receivable_account(self, partner):
+        if partner.property_account_receivable_id:
+            return
+        partner.property_account_receivable_id = self._get_or_create_account(
+            "100100", "Accounts Receivable", "asset_receivable", reconcile=True,
+        )
+
+    def _get_or_create_account(self, code, name, account_type, reconcile=False):
+        account_model = self.env["account.account"]
+        account = account_model.search([("code", "=", code)], limit=1)
+        if account:
+            return account
+        vals = {"name": name, "code": code, "account_type": account_type, "reconcile": reconcile}
+        if "company_ids" in account_model._fields:
+            vals["company_ids"] = [(6, 0, [self.env.company.id])]
+        elif "company_id" in account_model._fields:
+            vals["company_id"] = self.env.company.id
+        return account_model.create(vals)
