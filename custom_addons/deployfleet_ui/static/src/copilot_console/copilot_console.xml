@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.CopilotConsole">
+        <div class="df-copilot-console">
+            <header class="df-copilot-console__header">
+                <h1 class="df-copilot-console__title"><i class="fa fa-magic"/> Copilot Console</h1>
+                <p class="df-copilot-console__subtitle">The agent catalog and the AI investment's usage and cost, in one place.</p>
+            </header>
+
+            <p t-if="state.loading" class="df-copilot-console__loading">Loading...</p>
+
+            <t t-if="!state.loading">
+                <section class="df-copilot-console__section">
+                    <h2>Usage &amp; Cost</h2>
+                    <div class="df-copilot-console__kpis">
+                        <DeployfleetMetricCard label="'Cost This Month'" value="'$' + formattedCostThisMonth" icon="'fa fa-money'" status="'ai'"/>
+                        <DeployfleetMetricCard label="'Tokens This Month'" value="formattedTokensThisMonth" icon="'fa fa-th-large'" status="'ai'"/>
+                        <DeployfleetMetricCard label="'Cache Hit Rate (all time)'" value="formattedCacheHitRate" icon="'fa fa-bolt'" status="'ai'"/>
+                        <DeployfleetMetricCard label="'Total Calls (all time)'" value="state.totalCallsAllTime" icon="'fa fa-list'" status="'ai'"/>
+                    </div>
+
+                    <h3 class="df-copilot-console__subheading">Cost by feature (all time)</h3>
+                    <p t-if="state.featureBreakdown.length === 0" class="df-copilot-console__muted">No AI calls logged yet.</p>
+                    <table t-if="state.featureBreakdown.length > 0" class="df-copilot-console__table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Calls</th>
+                                <th>Tokens In</th>
+                                <th>Tokens Out</th>
+                                <th>Cost (USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.featureBreakdown" t-as="row" t-key="row.feature">
+                                <td t-esc="row.feature"/>
+                                <td t-esc="row.__count"/>
+                                <td t-esc="row.tokens_in"/>
+                                <td t-esc="row.tokens_out"/>
+                                <td t-esc="row.estimated_cost_usd.toFixed(4)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="df-copilot-console__subheading">Recent calls</h3>
+                    <p t-if="state.recentCalls.length === 0" class="df-copilot-console__muted">No AI calls logged yet.</p>
+                    <table t-if="state.recentCalls.length > 0" class="df-copilot-console__table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Feature</th>
+                                <th>Provider</th>
+                                <th>Tokens</th>
+                                <th>Cost</th>
+                                <th>Cache</th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.recentCalls" t-as="call" t-key="call.id">
+                                <td t-esc="call.call_date"/>
+                                <td t-esc="call.feature"/>
+                                <td t-esc="call.provider"/>
+                                <td><t t-esc="call.tokens_in"/> / <t t-esc="call.tokens_out"/></td>
+                                <td t-esc="call.estimated_cost_usd.toFixed(4)"/>
+                                <td>
+                                    <DeployfleetStatusBadge t-if="call.cache_hit" label="'Hit'" status="'success'"/>
+                                    <DeployfleetStatusBadge t-if="!call.cache_hit" label="'Miss'" status="'info'"/>
+                                </td>
+                                <td>
+                                    <DeployfleetStatusBadge t-if="call.state === 'success'" label="'Success'" status="'success'"/>
+                                    <DeployfleetStatusBadge t-if="call.state === 'error'" label="'Error'" status="'danger'"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="df-copilot-console__section">
+                    <h2>Agent Catalog</h2>
+                    <div class="df-copilot-console__agents">
+                        <div t-foreach="state.agents" t-as="agent" t-key="agent.id" class="df-copilot-console__agent-card">
+                            <div class="df-copilot-console__agent-header">
+                                <span class="df-copilot-console__agent-name" t-esc="agent.name"/>
+                                <DeployfleetStatusBadge
+                                    t-if="state.featureById[agent.feature_id[0]].enabled"
+                                    label="'Enabled'" status="'success'"/>
+                                <DeployfleetStatusBadge
+                                    t-if="!state.featureById[agent.feature_id[0]].enabled"
+                                    label="'Disabled'" status="'danger'"/>
+                            </div>
+                            <p class="df-copilot-console__agent-description" t-esc="agent.description"/>
+                            <div class="df-copilot-console__agent-meta">
+                                <span class="df-copilot-console__agent-tag" t-esc="this.modelTierLabel(state.featureById[agent.feature_id[0]].model_tier)"/>
+                                <span class="df-copilot-console__agent-tag" t-esc="this.dataCategoryLabel(state.featureById[agent.feature_id[0]].data_category)"/>
+                            </div>
+                            <div t-if="this.relatedModelsList(agent.related_models).length" class="df-copilot-console__agent-models">
+                                <span t-foreach="this.relatedModelsList(agent.related_models)" t-as="modelName" t-key="modelName"
+                                      class="df-copilot-console__agent-model-chip" t-esc="modelName"/>
+                            </div>
+                            <DeployfleetButton
+                                label="state.featureById[agent.feature_id[0]].enabled ? 'Disable' : 'Enable'"
+                                variant="state.featureById[agent.feature_id[0]].enabled ? 'destructive' : 'primary'"
+                                loading="state.togglingFeatureId === agent.feature_id[0]"
+                                onClick="() => this.onToggleFeature(agent.feature_id[0])"/>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </div>
+    </t>
+</templates>

@@ -25,7 +25,7 @@
     position: fixed;
     inset: 0;
     z-index: 1050;
-    background: rgba(2, 6, 23, 0.7);
+    background: var(--df-glass-scrim);
     backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
     display: flex;
     align-items: center;
@@ -33,6 +33,8 @@
     padding: var(--df-space-3);
 }
 
+// Light frosted-glass panel (doc 17 §6's revised recipe) — the scrim
+// above stays a dark dimming backdrop; the panel itself is light.
 .df-launcher {
     width: 100%;
     max-width: 1180px;
@@ -43,10 +45,10 @@
     box-sizing: border-box;
     padding: var(--df-space-4);
     border-radius: var(--df-radius-lg);
-    background: linear-gradient(145deg, rgba(20, 31, 54, 0.98), rgba(10, 18, 34, 0.98));
+    background: var(--df-glass-panel-bg);
     border: 1px solid var(--df-glass-border);
     box-shadow: var(--df-shadow-modal);
-    color: var(--df-color-neutral-0);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
 }
 
@@ -86,22 +88,22 @@
 .df-launcher__subtitle {
     margin: 2px 0 0;
     font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
 }
 
 .df-launcher__search {
     flex: 1 1 260px;
     padding: 8px var(--df-space-2);
     border-radius: var(--df-radius-sm);
-    border: 1px solid var(--df-glass-border);
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
     font-size: var(--df-font-size-base);
 }
 
 .df-launcher__search::placeholder {
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-500);
 }
 
 .df-launcher__close {
@@ -109,8 +111,8 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--df-color-neutral-0);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-700);
     cursor: pointer;
     transition: transform var(--df-duration-micro) var(--df-ease-micro);
 }
@@ -131,7 +133,7 @@
     font-size: var(--df-font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
     margin-bottom: 6px;
 }
 
@@ -147,9 +149,9 @@
     gap: 6px;
     padding: 6px var(--df-space-1);
     border-radius: 999px;
-    border: 1px solid var(--df-glass-border);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
     font-size: var(--df-font-size-sm);
     cursor: pointer;
@@ -197,7 +199,7 @@
     font-size: var(--df-font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
     margin-bottom: var(--df-space-1);
 }
 
@@ -211,8 +213,8 @@
     position: relative;
     padding: var(--df-space-2);
     border-radius: var(--df-radius-md);
-    border: 1px solid var(--df-glass-border);
-    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
     cursor: pointer;
     transition:
         transform var(--df-duration-standard) var(--df-ease-standard),
@@ -221,7 +223,7 @@
 
 .df-launcher__tile:hover {
     transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--df-color-neutral-300);
 }
 
 .df-launcher__tile-icon {
@@ -244,7 +246,7 @@
 .df-launcher__tile-subtitle {
     margin-top: 2px;
     font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
 }
 
 .df-launcher__favorite {
@@ -255,8 +257,8 @@
     height: 26px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-500);
     opacity: 0;
     cursor: pointer;
     transition: opacity var(--df-duration-micro) var(--df-ease-micro);

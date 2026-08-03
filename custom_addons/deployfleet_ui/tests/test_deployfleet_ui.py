@@ -60,3 +60,11 @@ class TestDeployfleetUi(TransactionCase):
     def test_fleet_command_center_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_fleet_command_center")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_copilot_console_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_copilot_console")
+        self.assertEqual(action.tag, "deployfleet_ui.copilot_console")
+
+    def test_copilot_console_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_copilot_console")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

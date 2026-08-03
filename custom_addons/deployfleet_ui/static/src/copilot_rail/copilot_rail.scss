@@ -1,7 +1,10 @@
 // Command Layer, violet-accented per doc 17's AI-content convention — the
 // Copilot Rail is an orientation/ambient surface (doc 16 Principle 1),
 // not a sustained-work one, so it earns the glass treatment the Dispatch
-// Board and Fleet Command Center deliberately avoid.
+// Board and Fleet Command Center deliberately avoid. Light panel per the
+// project's light-background-first revision: a soft violet-tinted
+// gradient (reusing the existing --df-color-ai-bg AI-content token) with
+// dark text, not the earlier dark violet gradient.
 .df-copilot-rail__trigger {
     position: fixed;
     right: 0;
@@ -49,7 +52,7 @@
     position: fixed;
     inset: 0;
     z-index: 1150;
-    background: rgba(2, 6, 23, 0.6);
+    background: var(--df-glass-scrim);
     display: flex;
     align-items: stretch;
     justify-content: flex-end;
@@ -75,10 +78,10 @@
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     padding: var(--df-space-3);
-    background: linear-gradient(160deg, rgba(45, 24, 74, 0.98), rgba(20, 12, 36, 0.98));
+    background: linear-gradient(160deg, var(--df-color-ai-bg), var(--df-color-neutral-0) 60%);
     border-left: 1px solid var(--df-glass-border);
     box-shadow: var(--df-shadow-modal);
-    color: var(--df-color-neutral-0);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
 }
 
@@ -104,20 +107,20 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--df-color-neutral-0);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-700);
     cursor: pointer;
 }
 
 .df-copilot-rail__subtitle {
     margin: 0 0 var(--df-space-3);
     font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
 }
 
 .df-copilot-rail__loading,
 .df-copilot-rail__empty {
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
 }
 
 .df-copilot-rail__list {
@@ -132,8 +135,8 @@
 .df-copilot-rail__item {
     padding: var(--df-space-2);
     border-radius: var(--df-radius-md);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--df-glass-border);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
 }
 
 .df-copilot-rail__item-header {
@@ -155,16 +158,21 @@
 .df-copilot-rail__item-action {
     margin: 4px 0;
     font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
 }
 
+// Deliberately kept as a dark code block even on this light panel — a
+// dark, monospace payload viewer is the familiar convention for raw
+// JSON/code (editors, diffs, terminals), and reads clearly regardless of
+// the surrounding panel's theme.
 .df-copilot-rail__item-payload {
     max-height: 140px;
     overflow-y: auto;
     margin: 0 0 var(--df-space-2);
     padding: 6px var(--df-space-1);
     border-radius: var(--df-radius-sm);
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--df-color-neutral-900);
+    color: var(--df-color-neutral-100);
     font-size: 11px;
     white-space: pre-wrap;
     word-break: break-word;

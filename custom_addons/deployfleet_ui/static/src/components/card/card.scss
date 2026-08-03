@@ -9,11 +9,14 @@
     box-shadow: var(--df-shadow-resting);
 }
 
+// Light frosted-glass panel per the project's light-background-first
+// revision (see doc 16 Principle 1 / doc 17 §6's changelog note) —
+// superseding the earlier dark-gradient Command Layer recipe.
 .df-card--command {
-    background: linear-gradient(145deg, rgba(20, 40, 46, 0.96), rgba(10, 24, 28, 0.96));
+    background: var(--df-glass-panel-bg);
     border: 1px solid var(--df-glass-border);
     backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
-    color: var(--df-color-neutral-0);
+    color: var(--df-color-neutral-900);
     box-shadow: var(--df-shadow-modal);
     border-radius: var(--df-radius-lg);
 }

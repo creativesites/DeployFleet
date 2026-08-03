@@ -1,5 +1,7 @@
 // Command Layer treatment (doc 17 §6) — this is an orientation screen,
-// not sustained work, per doc 16 Principle 1.
+// not sustained work, per doc 16 Principle 1 — a light frosted-glass
+// panel per the project's light-background-first revision, not the
+// earlier dark gradient.
 .df-mission-control {
     height: 100%;
     overflow-y: auto;
@@ -7,8 +9,8 @@
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     padding: var(--df-space-3);
-    background: linear-gradient(160deg, rgba(10, 20, 24, 0.98), rgba(6, 12, 16, 0.98));
-    color: var(--df-color-neutral-0);
+    background: var(--df-glass-panel-bg);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
 }
 
@@ -24,7 +26,7 @@
 
 .df-mission-control__subtitle {
     margin: 4px 0 0;
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
     font-size: var(--df-font-size-base);
 }
 
@@ -57,29 +59,17 @@
     }
 }
 
-// MetricCard is a Workspace Layer component by default (white surface) —
-// mounting it on this Command Layer dark background needs its own
-// override so the cards still read clearly, per doc 16 Principle 1's
-// warning against mixing the two layers' treatments unintentionally.
-.df-mission-control__kpis .df-metric-card {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: var(--df-glass-border);
-}
-
-.df-mission-control__kpis .df-metric-card__header,
-.df-mission-control__kpis .df-metric-card__caption {
-    color: var(--df-color-neutral-300);
-}
-
-.df-mission-control__kpis .df-metric-card__value {
-    color: var(--df-color-neutral-0);
-}
+// MetricCard's own default Workspace Layer styling (white surface, dark
+// text, a hairline border and resting shadow) now reads correctly against
+// this Command Layer's own light panel background without an override —
+// the earlier override existed only to keep it legible against the
+// previous dark-gradient panel, which no longer applies.
 
 .df-mission-control__quick-links h2 {
     font-size: var(--df-font-size-sm);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--df-color-neutral-300);
+    color: var(--df-color-neutral-600);
     margin-bottom: var(--df-space-2);
 }
 
@@ -99,9 +89,9 @@
     min-height: 44px;
     padding: 8px var(--df-space-2);
     border-radius: 999px;
-    border: 1px solid var(--df-glass-border);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-900);
     font-family: var(--df-font-family);
     font-size: var(--df-font-size-base);
     cursor: pointer;

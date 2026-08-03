@@ -161,6 +161,47 @@ Implemented so far
   on other flagship screens — is explicitly Phase D, not a gap in this
   slice.
 
+**Command Layer retrofitted from dark glass to light glass** (mid-Phase-D
+design-system revision, applied retroactively): the Launcher, Mega Menus,
+Mission Control, and the Copilot Rail all originally shipped with a dark
+translucent gradient panel (light text on near-black glass). An explicit
+product decision — "only light backgrounds, as much as possible" —
+retrofitted all four, plus the shared ``Card`` atom's ``command`` variant,
+to a light, near-white translucent panel (``--df-glass-panel-bg``) with
+dark text, keeping the rest of the glass recipe (scrim, blur, saturation
+boost, hairline border) unchanged. Two new theme-aware tokens now live in
+``tokens.scss``: ``--df-glass-panel-bg`` and a lightened ``--df-glass-
+border``, both flipping back to their original dark-panel values under
+``prefers-color-scheme: dark``/``data-theme="dark"``, the same way the
+rest of the neutral scale already does. Also fixed in the same pass: a
+latent bug where ``--df-color-neutral-600`` was already referenced
+throughout the Dispatch Board and Fleet Command Center's SCSS but was
+never actually defined in ``tokens.scss`` — added to the neutral scale.
+See doc 16 Principle 1 / doc 17 §6's changelog notes for the full
+rationale.
+
+- **Copilot Console** (Phase D / Slice 1): the destination screen for
+  working the AI investment in bulk
+  (``static/src/copilot_console/copilot_console.js``), complementing the
+  Copilot Rail's ambient approval queue. An **Agent Catalog** (all six
+  ``deployfleet.ai.agent`` personas, each showing description, related
+  models, model tier, and data category, plus a real, working
+  Enable/Disable toggle wired to the underlying ``deployfleet.ai.
+  feature.enabled`` field) and a **Usage & Cost Dashboard** over
+  ``deployfleet.ai.usage`` (this month's cost/tokens via the model's own
+  ``total_cost_this_month()``, an all-time cache-hit rate, a per-feature
+  cost/token breakdown via ``read_group``, and a recent-calls log) — real
+  ORM queries and a real field write, not mockup data. Command Layer,
+  light glass per the retrofit above, since doc 16 §7.16 calls this a
+  command-center-class destination screen, the same category as Mission
+  Control. **Deferred, same transparency discipline as every prior
+  slice:** per-agent "recent output"/"confidence" (the four Phase 5
+  prediction models each use a different schema for their own risk/
+  confidence metric — unifying that into one generic display needs
+  per-agent custom rendering logic, not a generic read), per-record
+  contextual awareness, the natural-language query interface, and AI
+  Recommendation Cards inline on other flagship screens.
+
 Not yet built
 =============
 

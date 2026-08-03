@@ -16,6 +16,7 @@
     // ---- Neutral scale (Workspace Layer surfaces, body text, borders) ----
     --df-color-neutral-900: #10161c;
     --df-color-neutral-700: #33404a;
+    --df-color-neutral-600: #475569;
     --df-color-neutral-500: #64748b;
     --df-color-neutral-300: #cbd5e1;
     --df-color-neutral-100: #f1f5f9;
@@ -70,10 +71,18 @@
     --df-shadow-modal: 0 32px 80px -20px rgba(15, 76, 92, 0.35);
 
     // ---- Command Layer glass recipe (§6) — Command Layer surfaces only;
-    // Workspace Layer surfaces never use blur. ----
+    // Workspace Layer surfaces never use blur. Light frosted-glass panel
+    // on a dimmed scrim — the project's light-background-first
+    // revision, superseding the earlier dark-gradient-panel recipe (see
+    // doc 16 Principle 1 / doc 17 §6's changelog note). `--df-glass-
+    // scrim` stays a dark dimming backdrop in both themes since its job
+    // is to dim the page behind the panel, not to match the panel's own
+    // (now light) surface color. ----
     --df-glass-blur: 26px;
     --df-glass-saturate: 135%;
-    --df-glass-border: rgba(255, 255, 255, 0.14);
+    --df-glass-border: rgba(15, 76, 92, 0.12);
+    --df-glass-panel-bg: rgba(255, 255, 255, 0.92);
+    --df-glass-scrim: rgba(15, 23, 42, 0.45);
 }
 
 // ---- Dark mode (§2.4) — luminance shifts, not hue shifts. Status colors
@@ -88,6 +97,8 @@
         --df-color-neutral-900: #f1f5f9;
         --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
         --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
+        --df-glass-border: rgba(255, 255, 255, 0.14);
+        --df-glass-panel-bg: rgba(16, 22, 28, 0.85);
     }
 }
 
@@ -98,4 +109,6 @@
     --df-color-neutral-900: #f1f5f9;
     --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
     --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
+    --df-glass-border: rgba(255, 255, 255, 0.14);
+    --df-glass-panel-bg: rgba(16, 22, 28, 0.85);
 }

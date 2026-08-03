@@ -1,0 +1,172 @@
+// Command Layer treatment (doc 17 §6) — a command-center-class
+// destination screen per doc 16 §7.16, the same category as Mission
+// Control, not a sustained-work Workspace screen. Light frosted-glass
+// panel per the project's light-background-first revision.
+.df-copilot-console {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-glass-panel-bg);
+    color: var(--df-color-neutral-900);
+    font-family: var(--df-font-family);
+}
+
+.df-copilot-console__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-copilot-console__title {
+    margin: 0;
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-1);
+    color: var(--df-color-ai);
+}
+
+.df-copilot-console__subtitle {
+    margin: 4px 0 0;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-base);
+}
+
+.df-copilot-console__loading,
+.df-copilot-console__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-copilot-console__section {
+    margin-bottom: var(--df-space-4);
+}
+
+.df-copilot-console__section h2 {
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-console__subheading {
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    margin: var(--df-space-3) 0 var(--df-space-1);
+}
+
+// Mobile-first: single-column stacking is the default, matching Mission
+// Control's own KPI grid convention.
+.df-copilot-console__kpis {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--df-space-2);
+}
+
+@media (min-width: 641px) {
+    .df-copilot-console__kpis {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+.df-copilot-console__table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-copilot-console__table th {
+    text-align: left;
+    padding: var(--df-space-1) var(--df-space-2);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-medium);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+}
+
+.df-copilot-console__table td {
+    padding: var(--df-space-1) var(--df-space-2);
+    border-top: 1px solid var(--df-color-neutral-300);
+    color: var(--df-color-neutral-900);
+}
+
+.df-copilot-console__agents {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--df-space-2);
+}
+
+@media (min-width: 641px) {
+    .df-copilot-console__agents {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+}
+
+.df-copilot-console__agent-card {
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    box-shadow: var(--df-shadow-resting);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-console__agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-console__agent-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-copilot-console__agent-description {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-copilot-console__agent-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.df-copilot-console__agent-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
+    font-size: 11px;
+    font-weight: var(--df-font-weight-medium);
+}
+
+.df-copilot-console__agent-models {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.df-copilot-console__agent-model-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-600);
+    font-size: 11px;
+    font-family: monospace;
+}

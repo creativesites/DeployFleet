@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Copilot Console (doc 16 §7.16/§8, Phase D / Slice 1) - the
+        destination screen for the AI agent catalog and usage/cost
+        dashboard, complementing the Copilot Rail's ambient approval
+        queue (Phase C / Slice 4). Placed at sequence 9, after the Fleet
+        Command Center (8).
+    -->
+    <record id="action_deployfleet_copilot_console" model="ir.actions.client">
+        <field name="name">Copilot Console</field>
+        <field name="tag">deployfleet_ui.copilot_console</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_copilot_console"
+              name="Copilot Console"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_copilot_console"
+              sequence="9"/>
+</odoo>
