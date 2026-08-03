@@ -49,7 +49,7 @@ class DeployfleetAIPermission(models.Model):
         permissions = self.search([("feature_id", "=", feature.id)])
         if not permissions:
             return  # no rows configured for this feature - open to everyone, see class docstring
-        if not user.groups_id & permissions.group_id:
+        if not user.group_ids & permissions.group_id:
             raise UserError(
                 self.env._(
                     "You do not have permission to use the AI feature '%(feature)s'.",

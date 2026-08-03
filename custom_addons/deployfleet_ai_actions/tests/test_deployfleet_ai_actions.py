@@ -17,12 +17,12 @@ class TestDeployfleetAIActionRequestBase(TransactionCase):
         cls.manager_user = cls.env["res.users"].create({
             "name": "AI Actions Manager", "login": "ai_actions_manager@example.com",
             "email": "ai_actions_manager@example.com",
-            "groups_id": [(6, 0, [cls.manager_group.id])],
+            "group_ids": [(6, 0, [cls.manager_group.id])],
         })
         cls.dispatcher_user = cls.env["res.users"].create({
             "name": "AI Actions Dispatcher", "login": "ai_actions_dispatcher@example.com",
             "email": "ai_actions_dispatcher@example.com",
-            "groups_id": [(6, 0, [cls.dispatcher_group.id])],
+            "group_ids": [(6, 0, [cls.dispatcher_group.id])],
         })
 
     def _create_request(self, **extra):

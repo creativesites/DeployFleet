@@ -38,7 +38,7 @@ class TestDeployfleetAIPermissions(TransactionCase):
         })
         driver_only_user = self.env["res.users"].create({
             "name": "Driver Only", "login": "driver_only@example.com", "email": "driver_only@example.com",
-            "groups_id": [(6, 0, [self.driver_group.id])],
+            "group_ids": [(6, 0, [self.driver_group.id])],
         })
         with self.assertRaises(UserError):
             self.env["deployfleet.ai.permission"]._check_user_allowed(driver_only_user, self.feature.key)
@@ -49,7 +49,7 @@ class TestDeployfleetAIPermissions(TransactionCase):
         })
         manager_user = self.env["res.users"].create({
             "name": "Manager User", "login": "manager_user@example.com", "email": "manager_user@example.com",
-            "groups_id": [(6, 0, [self.manager_group.id])],
+            "group_ids": [(6, 0, [self.manager_group.id])],
         })
         # Should not raise.
         self.env["deployfleet.ai.permission"]._check_user_allowed(manager_user, self.feature.key)
@@ -60,7 +60,7 @@ class TestDeployfleetAIPermissions(TransactionCase):
         })
         driver_only_user = self.env["res.users"].create({
             "name": "Driver Only 2", "login": "driver_only_2@example.com", "email": "driver_only_2@example.com",
-            "groups_id": [(6, 0, [self.driver_group.id])],
+            "group_ids": [(6, 0, [self.driver_group.id])],
         })
         with self._mock_provider_call() as mocked_provider:
             with self.assertRaises(UserError):

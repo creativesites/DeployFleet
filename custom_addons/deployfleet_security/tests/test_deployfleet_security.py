@@ -22,9 +22,9 @@ class TestDeployfleetSecurityGroups(TransactionCase):
         user = self.env["res.users"].create({
             "name": "Test Fleet Manager",
             "login": "test_fleet_manager@example.com",
-            "groups_id": [(6, 0, [manager.id])],
+            "group_ids": [(6, 0, [manager.id])],
         })
-        self.assertIn(driver, user.groups_id)
+        self.assertIn(driver, user.group_ids)
 
 
 @tagged("post_install", "-at_install")

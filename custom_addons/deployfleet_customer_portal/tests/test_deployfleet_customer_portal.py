@@ -13,7 +13,7 @@ class TestDeployfleetCustomerPortal(TransactionCase):
             "login": "portal_a@example.com",
             "email": "portal_a@example.com",
             "partner_id": self.customer_a.id,
-            "groups_id": [(6, 0, [self.env.ref("base.group_portal").id])],
+            "group_ids": [(6, 0, [self.env.ref("base.group_portal").id])],
         })
         pickup = self.env["deployfleet.depot"].create({"name": "Portal Pickup"})
         dropoff = self.env["deployfleet.depot"].create({"name": "Portal Dropoff"})

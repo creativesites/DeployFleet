@@ -15,7 +15,7 @@ class TestDeployfleetMobileCustomerController(HttpCase):
             "email": "mobile_customer_a@example.com",
             "password": "Test1234!",
             "partner_id": self.customer_a.id,
-            "groups_id": [(6, 0, [self.env.ref("base.group_portal").id])],
+            "group_ids": [(6, 0, [self.env.ref("base.group_portal").id])],
         })
         pickup = self.env["deployfleet.depot"].create({"name": "Mobile Pickup"})
         dropoff = self.env["deployfleet.depot"].create({"name": "Mobile Dropoff"})

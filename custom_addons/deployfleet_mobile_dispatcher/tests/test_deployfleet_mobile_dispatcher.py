@@ -12,7 +12,7 @@ class TestDeployfleetMobileDispatcherController(HttpCase):
             "login": "mobile_dispatcher@example.com",
             "email": "mobile_dispatcher@example.com",
             "password": "Test1234!",
-            "groups_id": [(4, self.env.ref("deployfleet_security.group_deployfleet_dispatcher").id)],
+            "group_ids": [(4, self.env.ref("deployfleet_security.group_deployfleet_dispatcher").id)],
         })
 
     def test_dashboard_denied_without_dispatcher_group(self):

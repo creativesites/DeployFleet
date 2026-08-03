@@ -58,5 +58,5 @@
         at all and actually runs every time this module installs/updates.
     -->
     <function model="res.users" name="write"
-              eval="[[ref('base.user_admin')], {'groups_id': [(4, ref('group_deployfleet_owner'))]}]"/>
+              eval="[[ref('base.user_admin')], {'group_ids': [(4, ref('group_deployfleet_owner'))]}]"/>
 </odoo>
