@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Driver Scorecards (doc 16 §11, Phase E / Slice 1) - a
+        score-filterable driver review list. Placed at sequence 10,
+        after the Copilot Console (9).
+    -->
+    <record id="action_deployfleet_driver_scorecards" model="ir.actions.client">
+        <field name="name">Driver Scorecards</field>
+        <field name="tag">deployfleet_ui.driver_scorecards</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver_scorecards"
+              name="Driver Scorecards"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver_scorecards"
+              sequence="10"/>
+</odoo>

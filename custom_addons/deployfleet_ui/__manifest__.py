@@ -13,6 +13,7 @@
         "views/deployfleet_ui_dispatch_board_views.xml",
         "views/deployfleet_ui_fleet_command_center_views.xml",
         "views/deployfleet_ui_copilot_console_views.xml",
+        "views/deployfleet_ui_driver_scorecards_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -46,6 +47,9 @@
             "deployfleet_ui/static/src/copilot_console/*.scss",
             "deployfleet_ui/static/src/copilot_console/*.js",
             "deployfleet_ui/static/src/copilot_console/*.xml",
+            "deployfleet_ui/static/src/driver_scorecards/*.scss",
+            "deployfleet_ui/static/src/driver_scorecards/*.js",
+            "deployfleet_ui/static/src/driver_scorecards/*.xml",
         ],
     },
 }

@@ -1,0 +1,164 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as the
+// Dispatch Board and Fleet Command Center (doc 16 Principle 1): a
+// manager reviewing driver scorecards is doing sustained review work,
+// not launching/orienting.
+.df-driver-scorecards {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-driver-scorecards__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-scorecards__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-scorecards__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-scorecards__loading,
+.df-driver-scorecards__empty,
+.df-driver-scorecards__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-driver-scorecards__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-driver-scorecards__card--good {
+    border-left-color: var(--df-color-success);
+}
+
+.df-driver-scorecards__card--watch {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-driver-scorecards__card--at_risk {
+    border-left-color: var(--df-color-danger);
+}
+
+.df-driver-scorecards__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-driver-scorecards__card-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--df-space-2);
+    min-width: 0;
+}
+
+.df-driver-scorecards__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-scorecards__card-experience {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__card-detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-driver-scorecards__accident-count {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-driver-scorecards__event-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-scorecards__event-main {
+    display: flex;
+    gap: var(--df-space-2);
+}
+
+.df-driver-scorecards__event-impact {
+    color: var(--df-color-danger);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+    .df-driver-scorecards__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-driver-scorecards__card-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DriverScorecards">
+        <div class="df-driver-scorecards">
+            <header class="df-driver-scorecards__header">
+                <h1 class="df-driver-scorecards__title">Driver Scorecards</h1>
+                <p class="df-driver-scorecards__subtitle">Reliability score and recent performance events, worst first.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-driver-scorecards__filters">
+                <DeployfleetStatusPill t-foreach="scoreFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.scoreFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.scoreFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-driver-scorecards__loading">Loading drivers...</p>
+            <p t-if="!state.loading and filteredDrivers.length === 0" class="df-driver-scorecards__empty">
+                No drivers match this filter.
+            </p>
+
+            <div t-if="!state.loading" class="df-driver-scorecards__list">
+                <div t-foreach="filteredDrivers" t-as="driver" t-key="driver.id"
+                     t-attf-class="df-driver-scorecards__card df-driver-scorecards__card--{{ driver.band }}">
+                    <div class="df-driver-scorecards__card-summary" t-on-click="() => this.onSelectDriver(driver.id)">
+                        <div class="df-driver-scorecards__card-main">
+                            <span class="df-driver-scorecards__card-name" t-esc="driver.name"/>
+                            <span class="df-driver-scorecards__card-experience">
+                                <t t-esc="driver.deployfleet_years_experience"/> yrs experience
+                            </span>
+                        </div>
+                        <div class="df-driver-scorecards__card-meta">
+                            <DeployfleetStatusBadge t-if="driver.deployfleet_license_is_expired" label="'License expired'" status="'danger'"/>
+                            <DeployfleetStatusBadge
+                                label="Math.round(driver.deployfleet_reliability_score) + ''"
+                                status="this.scoreBadgeVariant(driver.band)"/>
+                            <i t-attf-class="fa {{ state.selectedDriverId === driver.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedDriverId === driver.id" class="df-driver-scorecards__card-detail">
+                        <p class="df-driver-scorecards__accident-count">
+                            <t t-esc="driver.deployfleet_accident_count"/> recorded accident(s) on file.
+                        </p>
+
+                        <t t-set="events" t-value="state.eventsByDriverId[driver.id]"/>
+                        <p t-if="events and events.length === 0" class="df-driver-scorecards__muted">
+                            No performance events in the last 365 days.
+                        </p>
+                        <ul t-if="events and events.length > 0" class="df-driver-scorecards__event-list">
+                            <li t-foreach="events" t-as="event" t-key="event.id">
+                                <div class="df-driver-scorecards__event-main">
+                                    <span t-esc="event.date"/>
+                                    <span t-esc="this.eventTypeLabel(event.event_type)"/>
+                                </div>
+                                <span t-if="event.score_impact" class="df-driver-scorecards__event-impact" t-esc="event.score_impact"/>
+                            </li>
+                        </ul>
+
+                        <DeployfleetButton
+                            label="'Open full record'"
+                            variant="'ghost'"
+                            onClick="() => this.onOpenDriverForm(driver.id)"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

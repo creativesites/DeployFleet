@@ -257,6 +257,31 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   does — see doc 18's own implementation note for the full reasoning.
   Not yet wired into the Dispatch Board or Billing — Fleet Command Center
   is the first consumer, not the last.
+- **Driver Scorecards** (Phase E / Slice 1): a score-filterable driver
+  review list (``static/src/driver_scorecards/driver_scorecards.js`` —
+  chips: All/Good 80+/Watch 50-79/At Risk <50, live counts), ordered
+  worst-score-first. Tapping a driver reuses the same accordion pattern
+  as the Dispatch Board and Fleet Command Center to show their real
+  recent ``deployfleet.driver.performance.event`` history alongside
+  ``deployfleet_driver_performance``'s genuine computed
+  ``hr.employee.deployfleet_reliability_score``, years of experience,
+  accident count, and license-expiry status — all real fields, not
+  placeholders. Workspace Layer, same reasoning as the Dispatch Board and
+  Fleet Command Center (sustained review work, not a launch screen).
+  Chosen as the first Phase E deliverable after checking which of doc 16
+  §11's Phase E items are actually backed by real data today: Live Fleet
+  Map/Fleet Heat Map need a GPS/position feed that doesn't exist anywhere
+  in ``deployfleet.vehicle``/``deployfleet.trip``; Load Builder is
+  explicitly gated on a multi-stop shipment model that hasn't matured yet;
+  "mobile refinement across all three apps" belongs to the separate React
+  Native codebase in the root ``MOBILE_ARCHITECTURE.md``, not this module.
+  Driver Scorecards is the one item with a complete backend already
+  built. **Deliberately not the full driver-360** doc 16 §7.14 describes:
+  no consolidated trip/current-assignment view, no compliance
+  traffic-light chips beyond the license-expiry badge, and no Driver
+  Performance Radar multi-axis chart (that needs a real charting-library
+  evaluation, one of the few places doc 18 itself calls for a real
+  charting primitive over a hand-rolled visual).
 
 Not yet built
 =============
@@ -272,10 +297,15 @@ Fleet Globe). Phase B (Foundation navigation) and Phase C (flagship
 screens) are both complete; **the Phase D Copilot Console is also built**
 (agent catalog, usage/cost dashboard, natural-language query interface,
 and the AI Recommendation Card atom with its first consumer wired into
-the Fleet Command Center). Still open: per-record contextual awareness
-for the Rail/Console, and AI Recommendation Cards on the remaining
-flagship screens (Dispatch Board, Billing) — see doc 16 §11's phased
-rollout.
+the Fleet Command Center). Still open from Phase D: per-record
+contextual awareness for the Rail/Console, and AI Recommendation Cards
+on the remaining flagship screens (Dispatch Board, Billing). **Phase E
+is now underway**: Driver Scorecards (Slice 1) is built; Live Fleet Map,
+Fleet Heat Map, Load Builder, and Animated Route Timeline all remain
+genuinely blocked on backend capabilities that don't exist yet (a GPS/
+position feed, a matured multi-stop shipment model) rather than simply
+unbuilt — see doc 16 §11's phased rollout and CLAUDE.md's Phase E status
+note for the full reasoning on what's buildable now versus blocked.
 
 A note on verification
 =======================
