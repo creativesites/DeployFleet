@@ -29,19 +29,28 @@ Implemented so far
   variants, as a living reference and the practical way to visually QA an
   OWL component library given this repository's CI has no headless-browser
   test step.
+- **Command Palette record search** (Phase B / Slice 1): extends Odoo's own
+  built-in Ctrl+K command palette — rather than building a second, competing
+  overlay on the same shortcut — with DeployFleet record search. Typing 2+
+  characters searches shipment reference numbers, vehicle license
+  plates/names, and driver names; selecting a result opens that record's
+  form view directly. See ``docs/architecture/18-component-library.md``'s
+  "Implementation note on the global Command Palette" for why this extends
+  Odoo's palette instead of reimplementing one.
 
 Not yet built
 =============
 
 See ``docs/architecture/18-component-library.md`` for the full catalog:
 Toast, Alert, Search Box, Filters, Tables, Skeleton Loaders, Context Menu,
-Progress Ring, Command Panel, Quick Action Bar, AI Recommendation Card, the
-layout/navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet,
-Split View, Master Detail, Copilot Rail), and every signature "wow" widget
-(Live Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
-Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
-Calendar, Load Builder, Fleet Heat Map, Fleet Globe). These land in
-subsequent slices per doc 16 §11's phased rollout.
+Progress Ring, Quick Action Bar, AI Recommendation Card, the layout/
+navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet, Split
+View, Master Detail, Copilot Rail), the Domain Mega Menus and DeployFleet
+Launcher (Phase B, Slices 2-3), and every signature "wow" widget (Live Fleet
+Map, Truck Health Ring, Driver Performance Radar, Revenue River, Profit
+Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet Calendar,
+Load Builder, Fleet Heat Map, Fleet Globe). These land in subsequent slices
+per doc 16 §11's phased rollout.
 
 A note on verification
 =======================
@@ -58,3 +67,15 @@ this session was validated by installing on the live demo server and
 reading the resulting log. Report back anything the showcase screen
 doesn't render or style correctly — that is expected of a first frontend
 slice, not a sign anything was done carelessly.
+
+That check already caught one real bug: the showcase screen didn't scroll
+on mobile. Odoo's mobile action-manager layout gives a client action a
+fixed-height slot and expects the action's own root element to provide its
+own scroll, rather than the page/body scrolling — the original
+``.df-showcase`` container had no explicit ``height``/``overflow``, which
+worked on desktop (where there's usually enough viewport height that no
+scrolling is needed at all) and silently clipped content on mobile's
+shorter viewport instead. Fixed with an explicit ``height: 100%; overflow-y:
+auto`` on the container — every future client-action-rooted screen
+(Launcher, Mega Menus, flagship command centers) needs this same treatment,
+not just this one.

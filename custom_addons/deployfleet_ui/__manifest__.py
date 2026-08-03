@@ -19,6 +19,7 @@
             "deployfleet_ui/static/src/showcase/*.scss",
             "deployfleet_ui/static/src/showcase/*.js",
             "deployfleet_ui/static/src/showcase/*.xml",
+            "deployfleet_ui/static/src/command_palette/*.js",
         ],
     },
 }

@@ -1,4 +1,16 @@
 .df-showcase {
+    // Odoo's mobile action-manager layout gives a client action a
+    // fixed-height slot and expects the action's own root to provide
+    // its scroll, rather than the page/body scrolling — a bare padded
+    // div with no explicit overflow (as this was) works on desktop,
+    // where there's usually enough viewport height to avoid needing to
+    // scroll at all, but silently clips content on mobile's shorter
+    // viewport instead of scrolling to it.
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
     padding: var(--df-space-3);
     font-family: var(--df-font-family);
     color: var(--df-color-neutral-900);
@@ -30,4 +42,5 @@
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--df-space-2);
+    max-width: 100%;
 }
