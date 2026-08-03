@@ -122,6 +122,23 @@ Implemented so far
   context actions, and the ambient AI Recommendation Card doc 16 describes
   alongside the rule-based suggestions (gated on the Copilot Rail/Console
   work).
+- **Fleet Command Center** (Phase C / Slice 3): the fleet manager's
+  consolidated vehicle view (``static/src/fleet_command_center/
+  fleet_command_center.js``) — a status-filterable vehicle list (chips
+  with live counts: All/Available/Assigned/Maintenance/Breakdown), each
+  card expanding on tap into a genuine consolidated read across four
+  models: current trip, compliance documents (color-coded valid/
+  expiring/expired), maintenance schedules (due vs. on-schedule), and the
+  last 5 fuel logs (anomalies flagged) — plus working one-tap status
+  actions (Mark Available / Send to Maintenance / Report Breakdown)
+  wired to the vehicle's real ``action_set_*`` methods. Same transparency
+  discipline as the Dispatch Board: this reuses the same tap-to-expand
+  accordion pattern rather than doc 16's originally-described sidebar +
+  tabbed table + slide-in Inspector, since no Drawer/Inspector component
+  exists yet; no Truck Health Ring or Profit Waterfall yet either (both
+  still "Aspirational" in doc 18 — no Fleet Score/per-vehicle revenue
+  computation exists yet to back them). Workspace Layer, same reasoning
+  as the Dispatch Board (sustained-work screen, not a launch screen).
 
 Not yet built
 =============
@@ -135,8 +152,8 @@ Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
 Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
 Calendar, Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
 navigation) is complete; Phase C (flagship screens) is underway — Mission
-Control and the Dispatch Board are built, Fleet Command Center and the
-Copilot Rail remain, per doc 16 §11's phased rollout.
+Control, the Dispatch Board, and the Fleet Command Center are built; only
+the Copilot Rail remains, per doc 16 §11's phased rollout.
 
 A note on verification
 =======================

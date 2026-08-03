@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Fleet Command Center (doc 16 §3.7/§7.10, Phase C / Slice 3) - the
+        fleet manager's consolidated vehicle view. Placed at sequence 8,
+        after the Dispatch Board (1) and the six Mega Menu domains (2-7).
+    -->
+    <record id="action_deployfleet_fleet_command_center" model="ir.actions.client">
+        <field name="name">Fleet Command Center</field>
+        <field name="tag">deployfleet_ui.fleet_command_center</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_fleet_command_center"
+              name="Fleet Command Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_fleet_command_center"
+              sequence="8"/>
+</odoo>

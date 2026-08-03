@@ -52,3 +52,11 @@ class TestDeployfleetUi(TransactionCase):
             [("parent_id", "=", dispatch_board_menu.parent_id.id)], order="sequence"
         )
         self.assertEqual(list(siblings[:2]), [mission_control_menu, dispatch_board_menu])
+
+    def test_fleet_command_center_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_fleet_command_center")
+        self.assertEqual(action.tag, "deployfleet_ui.fleet_command_center")
+
+    def test_fleet_command_center_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_fleet_command_center")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

@@ -11,6 +11,7 @@
         "views/deployfleet_ui_mega_menu_views.xml",
         "views/deployfleet_ui_mission_control_views.xml",
         "views/deployfleet_ui_dispatch_board_views.xml",
+        "views/deployfleet_ui_fleet_command_center_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -35,6 +36,9 @@
             "deployfleet_ui/static/src/dispatch_board/*.scss",
             "deployfleet_ui/static/src/dispatch_board/*.js",
             "deployfleet_ui/static/src/dispatch_board/*.xml",
+            "deployfleet_ui/static/src/fleet_command_center/*.scss",
+            "deployfleet_ui/static/src/fleet_command_center/*.js",
+            "deployfleet_ui/static/src/fleet_command_center/*.xml",
         ],
     },
 }

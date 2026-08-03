@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.FleetCommandCenter">
+        <div class="df-fleet-cc">
+            <header class="df-fleet-cc__header">
+                <h1 class="df-fleet-cc__title">Fleet Command Center</h1>
+                <p class="df-fleet-cc__subtitle">Which trucks are making money?</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-fleet-cc__filters">
+                <DeployfleetStatusPill t-foreach="statusFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.statusFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.statusFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-fleet-cc__loading">Loading vehicles...</p>
+            <p t-if="!state.loading and filteredVehicles.length === 0" class="df-fleet-cc__empty">
+                No vehicles match this filter.
+            </p>
+
+            <div t-if="!state.loading" class="df-fleet-cc__list">
+                <div t-foreach="filteredVehicles" t-as="vehicle" t-key="vehicle.id"
+                     t-attf-class="df-fleet-cc__card df-fleet-cc__card--{{ vehicle.status }}">
+                    <div class="df-fleet-cc__card-summary" t-on-click="() => this.onSelectVehicle(vehicle.id)">
+                        <div class="df-fleet-cc__card-main">
+                            <span class="df-fleet-cc__card-plate" t-esc="vehicle.license_plate or vehicle.name"/>
+                            <span t-if="vehicle.current_driver_id" class="df-fleet-cc__card-driver">
+                                <i class="fa fa-user"/> <t t-esc="vehicle.current_driver_id[1]"/>
+                            </span>
+                            <span t-if="vehicle.current_trip_id" class="df-fleet-cc__card-trip">
+                                <i class="fa fa-road"/> <t t-esc="vehicle.current_trip_id[1]"/>
+                            </span>
+                        </div>
+                        <div class="df-fleet-cc__card-meta">
+                            <DeployfleetStatusBadge label="this.statusLabel(vehicle.status)" status="this.statusBadgeVariant(vehicle.status)"/>
+                            <i t-attf-class="fa {{ state.selectedVehicleId === vehicle.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedVehicleId === vehicle.id" class="df-fleet-cc__card-detail">
+                        <t t-set="detail" t-value="state.detailByVehicleId[vehicle.id]"/>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Current trip</h3>
+                            <p t-if="!detail.trip" class="df-fleet-cc__muted">No active trip.</p>
+                            <p t-if="detail.trip">
+                                <t t-esc="detail.trip.name"/> — <t t-esc="detail.trip.state"/>
+                                <t t-if="detail.trip.planned_arrival">
+                                    , ETA <t t-esc="detail.trip.planned_arrival"/>
+                                </t>
+                            </p>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Compliance</h3>
+                            <p t-if="detail.documents.length === 0" class="df-fleet-cc__muted">No documents on file.</p>
+                            <ul t-if="detail.documents.length > 0" class="df-fleet-cc__detail-list">
+                                <li t-foreach="detail.documents" t-as="document" t-key="document.id">
+                                    <span t-esc="document.document_type_id[1]"/>
+                                    <DeployfleetStatusBadge
+                                        label="this.documentStateLabel(document.state)"
+                                        status="document.state === 'expired' ? 'danger' : (document.state === 'expiring_soon' ? 'warning' : 'success')"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Maintenance</h3>
+                            <p t-if="detail.maintenanceSchedules.length === 0" class="df-fleet-cc__muted">No schedules configured.</p>
+                            <ul t-if="detail.maintenanceSchedules.length > 0" class="df-fleet-cc__detail-list">
+                                <li t-foreach="detail.maintenanceSchedules" t-as="schedule" t-key="schedule.id">
+                                    <span t-esc="schedule.name"/>
+                                    <DeployfleetStatusBadge t-if="schedule.is_due" label="'Due'" status="'warning'"/>
+                                    <DeployfleetStatusBadge t-if="!schedule.is_due" label="'On schedule'" status="'success'"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Recent fuel</h3>
+                            <p t-if="detail.fuelLogs.length === 0" class="df-fleet-cc__muted">No fuel logs yet.</p>
+                            <ul t-if="detail.fuelLogs.length > 0" class="df-fleet-cc__detail-list">
+                                <li t-foreach="detail.fuelLogs" t-as="log" t-key="log.id">
+                                    <span t-esc="log.date"/> — <t t-esc="log.liters"/> L
+                                    <DeployfleetStatusBadge t-if="log.is_anomaly" label="'Anomaly'" status="'danger'"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="df-fleet-cc__detail-actions">
+                            <DeployfleetButton
+                                t-if="vehicle.status !== 'available'"
+                                label="'Mark Available'"
+                                variant="'primary'"
+                                loading="state.transitioningVehicleId === vehicle.id"
+                                onClick="() => this.onSetStatus(vehicle.id, 'action_set_available')"/>
+                            <DeployfleetButton
+                                t-if="vehicle.status !== 'maintenance'"
+                                label="'Send to Maintenance'"
+                                variant="'secondary'"
+                                loading="state.transitioningVehicleId === vehicle.id"
+                                onClick="() => this.onSetStatus(vehicle.id, 'action_set_maintenance')"/>
+                            <DeployfleetButton
+                                t-if="vehicle.status !== 'breakdown'"
+                                label="'Report Breakdown'"
+                                variant="'destructive'"
+                                loading="state.transitioningVehicleId === vehicle.id"
+                                onClick="() => this.onSetStatus(vehicle.id, 'action_set_breakdown')"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenVehicleForm(vehicle.id)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
