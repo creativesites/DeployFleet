@@ -139,6 +139,27 @@ Implemented so far
   still "Aspirational" in doc 18 — no Fleet Score/per-vehicle revenue
   computation exists yet to back them). Workspace Layer, same reasoning
   as the Dispatch Board (sustained-work screen, not a launch screen).
+- **Copilot Rail** (Phase C / Slice 4 — the ambient half only, by design):
+  a persistent, collapsed-by-default docked tab on the right edge
+  (``static/src/copilot_rail/copilot_rail.js``), violet-accented Command
+  Layer glass, present globally across every workspace via
+  ``main_components`` (like the Launcher), toggled with ``Alt+A`` or the
+  tab itself. Shows a live badge count of pending
+  ``deployfleet.ai.action.request`` records; expanding it opens a real
+  approval queue with working Approve/Reject buttons wired directly to
+  the existing, unmodified ``action_approve()``/``action_reject()``
+  pipeline — this UI adds no new execution path, it only calls the same
+  methods a human could otherwise reach via the standard list/form view.
+  Reject requires a typed reason in this UI (a deliberate product
+  decision for a better audit trail — the backend's own ``reason``
+  parameter is optional). Doc 16 §11 places the Copilot Console
+  deliberately at the Phase C/D boundary: the *ambient* half (this rail)
+  is Phase C; the *destination* half — a dedicated Copilot Console
+  screen with an agent catalog, a usage/cost dashboard over
+  ``deployfleet.ai.usage``, per-record contextual awareness, a
+  natural-language query interface, and AI Recommendation Cards inline
+  on other flagship screens — is explicitly Phase D, not a gap in this
+  slice.
 
 Not yet built
 =============
@@ -147,13 +168,16 @@ See ``docs/architecture/18-component-library.md`` for the full catalog:
 Toast, Alert, Search Box, Filters, Tables, Skeleton Loaders, Context Menu,
 Progress Ring, Quick Action Bar, AI Recommendation Card, the layout/
 navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet, Split
-View, Master Detail, Copilot Rail), and every signature "wow" widget (Live
-Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
-Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
-Calendar, Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
-navigation) is complete; Phase C (flagship screens) is underway — Mission
-Control, the Dispatch Board, and the Fleet Command Center are built; only
-the Copilot Rail remains, per doc 16 §11's phased rollout.
+View, Master Detail), and every signature "wow" widget (Live Fleet Map,
+Truck Health Ring, Driver Performance Radar, Revenue River, Profit
+Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet Calendar,
+Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
+navigation) is complete; **Phase C (flagship screens) is complete**:
+Mission Control, the Dispatch Board, the Fleet Command Center, and the
+Copilot Rail's ambient half are all built. Only the Phase D Copilot
+Console (agent catalog, usage/cost dashboard, per-record contextual
+awareness, AI Recommendation Cards inline on other screens) remains, per
+doc 16 §11's phased rollout.
 
 A note on verification
 =======================

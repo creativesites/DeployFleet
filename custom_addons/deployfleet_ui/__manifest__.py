@@ -39,6 +39,9 @@
             "deployfleet_ui/static/src/fleet_command_center/*.scss",
             "deployfleet_ui/static/src/fleet_command_center/*.js",
             "deployfleet_ui/static/src/fleet_command_center/*.xml",
+            "deployfleet_ui/static/src/copilot_rail/*.scss",
+            "deployfleet_ui/static/src/copilot_rail/*.js",
+            "deployfleet_ui/static/src/copilot_rail/*.xml",
         ],
     },
 }

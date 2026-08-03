@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.CopilotRail">
+        <div>
+            <button type="button" class="df-copilot-rail__trigger" t-on-click="() => this.toggleOpen()">
+                <i class="fa fa-magic"/>
+                <span class="df-copilot-rail__trigger-label">Copilot</span>
+                <span t-if="pendingCount > 0" class="df-copilot-rail__badge" t-esc="pendingCount"/>
+            </button>
+
+            <div t-if="state.open" class="df-copilot-rail__scrim" t-on-click="() => this.close()">
+                <div class="df-copilot-rail__panel" t-on-click="(ev) => ev.stopPropagation()">
+                    <header class="df-copilot-rail__header">
+                        <h2><i class="fa fa-magic"/> AI Copilot</h2>
+                        <button type="button" class="df-copilot-rail__close" t-on-click="() => this.close()">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </header>
+                    <p class="df-copilot-rail__subtitle">Pending AI-proposed actions awaiting your approval.</p>
+
+                    <p t-if="state.loading" class="df-copilot-rail__loading">Loading...</p>
+                    <p t-if="!state.loading and pendingCount === 0" class="df-copilot-rail__empty">
+                        <i class="fa fa-check-circle"/> Nothing waiting on you right now.
+                    </p>
+
+                    <ul t-if="!state.loading and pendingCount > 0" class="df-copilot-rail__list">
+                        <li t-foreach="state.pendingApprovals" t-as="request" t-key="request.id" class="df-copilot-rail__item">
+                            <div class="df-copilot-rail__item-header">
+                                <span class="df-copilot-rail__item-name" t-esc="request.name"/>
+                                <span class="df-copilot-rail__item-feature" t-esc="request.feature_id[1]"/>
+                            </div>
+                            <p class="df-copilot-rail__item-action">
+                                <t t-esc="request.action_type"/> on <t t-esc="request.target_model"/>
+                            </p>
+                            <pre class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                            <div class="df-copilot-rail__item-actions">
+                                <DeployfleetButton
+                                    label="'Approve'"
+                                    variant="'primary'"
+                                    loading="state.actingRequestId === request.id"
+                                    onClick="() => this.onApprove(request.id)"/>
+                                <DeployfleetButton
+                                    label="'Reject'"
+                                    variant="'destructive'"
+                                    loading="state.actingRequestId === request.id"
+                                    onClick="() => this.onOpenRejectDialog(request.id)"/>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div t-if="state.rejectDialog" class="df-copilot-rail__scrim df-copilot-rail__scrim--center">
+                <div class="df-copilot-rail__reject-dialog">
+                    <h3>Reason for rejecting</h3>
+                    <textarea
+                        class="df-copilot-rail__reject-textarea"
+                        placeholder="Why is this action being rejected?"
+                        t-att-value="state.rejectDialog.reasonText"
+                        t-on-input="onRejectReasonInput"/>
+                    <div class="df-copilot-rail__reject-actions">
+                        <DeployfleetButton label="'Cancel'" variant="'ghost'" onClick="() => this.onCancelReject()"/>
+                        <DeployfleetButton
+                            label="'Confirm rejection'"
+                            variant="'destructive'"
+                            disabled="!state.rejectDialog.reasonText.trim()"
+                            onClick="() => this.onConfirmReject()"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,219 @@
+// Command Layer, violet-accented per doc 17's AI-content convention — the
+// Copilot Rail is an orientation/ambient surface (doc 16 Principle 1),
+// not a sustained-work one, so it earns the glass treatment the Dispatch
+// Board and Fleet Command Center deliberately avoid.
+.df-copilot-rail__trigger {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--df-space-2) 6px;
+    min-height: 44px;
+    border: none;
+    border-radius: var(--df-radius-md) 0 0 var(--df-radius-md);
+    background: linear-gradient(180deg, var(--df-color-ai), #5b21b6);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    cursor: pointer;
+    box-shadow: var(--df-shadow-hover);
+}
+
+.df-copilot-rail__trigger-label {
+    letter-spacing: 0.04em;
+}
+
+.df-copilot-rail__badge {
+    writing-mode: horizontal-tb;
+    transform: rotate(180deg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--df-color-neutral-0);
+    color: var(--df-color-ai);
+    font-size: 11px;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-copilot-rail__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1150;
+    background: rgba(2, 6, 23, 0.6);
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+// The reject-reason dialog is a separate, centered modal above the panel
+// (higher z-index), not the docked side panel above — reuses the scrim
+// backdrop with an explicit modifier class rather than the docked-panel
+// alignment.
+.df-copilot-rail__scrim--center {
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+    padding: var(--df-space-3);
+}
+
+.df-copilot-rail__panel {
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: linear-gradient(160deg, rgba(45, 24, 74, 0.98), rgba(20, 12, 36, 0.98));
+    border-left: 1px solid var(--df-glass-border);
+    box-shadow: var(--df-shadow-modal);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+}
+
+.df-copilot-rail__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.df-copilot-rail__header h2 {
+    margin: 0;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--df-color-ai);
+}
+
+.df-copilot-rail__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--df-color-neutral-0);
+    cursor: pointer;
+}
+
+.df-copilot-rail__subtitle {
+    margin: 0 0 var(--df-space-3);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-300);
+}
+
+.df-copilot-rail__loading,
+.df-copilot-rail__empty {
+    color: var(--df-color-neutral-300);
+}
+
+.df-copilot-rail__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-copilot-rail__item {
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--df-glass-border);
+}
+
+.df-copilot-rail__item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-rail__item-name {
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-copilot-rail__item-feature {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-ai);
+}
+
+.df-copilot-rail__item-action {
+    margin: 4px 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-300);
+}
+
+.df-copilot-rail__item-payload {
+    max-height: 140px;
+    overflow-y: auto;
+    margin: 0 0 var(--df-space-2);
+    padding: 6px var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.df-copilot-rail__item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-rail__reject-dialog {
+    width: 100%;
+    max-width: 420px;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-neutral-0);
+    box-shadow: var(--df-shadow-modal);
+}
+
+.df-copilot-rail__reject-dialog h3 {
+    margin: 0 0 var(--df-space-2);
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-copilot-rail__reject-textarea {
+    width: 100%;
+    min-height: 80px;
+    box-sizing: border-box;
+    padding: var(--df-space-1) var(--df-space-2);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    margin-bottom: var(--df-space-2);
+    resize: vertical;
+}
+
+.df-copilot-rail__reject-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-copilot-rail__panel {
+        max-width: 100%;
+    }
+}
