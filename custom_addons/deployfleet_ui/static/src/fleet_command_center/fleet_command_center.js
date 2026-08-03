@@ -41,6 +41,38 @@ const DOCUMENT_STATE_LABEL = {
     expired: "Expired",
 };
 
+const TYRE_POSITION_LABEL = {
+    front_left: "Front Left",
+    front_right: "Front Right",
+    rear_left_outer: "Rear Left Outer",
+    rear_left_inner: "Rear Left Inner",
+    rear_right_outer: "Rear Right Outer",
+    rear_right_inner: "Rear Right Inner",
+    spare: "Spare",
+};
+
+const TYRE_STATE_LABEL = {
+    fitted: "Fitted",
+    retreaded: "Retreaded",
+    scrapped: "Scrapped",
+};
+
+const JOB_CARD_STATE_LABEL = {
+    open: "Open",
+    diagnosis: "Diagnosis",
+    repair: "Repair",
+    approval: "Pending Approval",
+    closed: "Closed",
+};
+
+const JOB_CARD_STATE_BADGE_VARIANT = {
+    open: "info",
+    diagnosis: "info",
+    repair: "warning",
+    approval: "warning",
+    closed: "success",
+};
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -143,6 +175,26 @@ export class DeployfleetFleetCommandCenter extends Component {
         return DOCUMENT_STATE_LABEL[state] || state;
     }
 
+    tyrePositionLabel(position) {
+        return TYRE_POSITION_LABEL[position] || position;
+    }
+
+    tyreStateLabel(state) {
+        return TYRE_STATE_LABEL[state] || state;
+    }
+
+    jobCardStateLabel(state) {
+        return JOB_CARD_STATE_LABEL[state] || state;
+    }
+
+    jobCardStateBadgeVariant(state) {
+        return JOB_CARD_STATE_BADGE_VARIANT[state] || "info";
+    }
+
+    fuelAnomalyLabel(log) {
+        return log.anomalyZScore !== null ? `Anomaly (z=${log.anomalyZScore.toFixed(1)})` : "Anomaly";
+    }
+
     predictionTitle(prediction) {
         const levelLabel = prediction.risk_level === "high" ? "High" : "Medium";
         return `${levelLabel} predicted maintenance risk`;
@@ -176,32 +228,90 @@ export class DeployfleetFleetCommandCenter extends Component {
     }
 
     async loadVehicleDetail(vehicleId) {
-        const [documents, fuelLogs, maintenanceSchedules, predictions] = await Promise.all([
-            this.orm.searchRead(
-                "deployfleet.compliance.document",
-                [["res_model", "=", "deployfleet.vehicle"], ["res_id", "=", vehicleId]],
-                ["document_type_id", "expiry_date", "state"],
-                { order: "expiry_date asc" },
-            ),
-            this.orm.searchRead(
-                "deployfleet.fuel.log",
-                [["vehicle_id", "=", vehicleId]],
-                ["date", "liters", "total_cost", "consumption_l_per_100km", "is_anomaly"],
-                { order: "date desc", limit: 5 },
-            ),
-            this.orm.searchRead(
-                "deployfleet.maintenance.schedule",
-                [["vehicle_id", "=", vehicleId]],
-                ["name", "is_due", "next_due_date", "next_due_odometer"],
-                { order: "is_due desc" },
-            ),
-            this.orm.searchRead(
-                "deployfleet.maintenance.prediction",
-                [["vehicle_id", "=", vehicleId]],
-                ["risk_score", "risk_level", "basis", "computed_date"],
-                { order: "computed_date desc", limit: 1 },
-            ),
-        ]);
+        const [documents, fuelLogs, maintenanceSchedules, predictions, tyres, insurancePolicies, jobCards] =
+            await Promise.all([
+                this.orm.searchRead(
+                    "deployfleet.compliance.document",
+                    [["res_model", "=", "deployfleet.vehicle"], ["res_id", "=", vehicleId]],
+                    ["document_type_id", "expiry_date", "state"],
+                    { order: "expiry_date asc" },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.fuel.log",
+                    [["vehicle_id", "=", vehicleId]],
+                    ["date", "liters", "total_cost", "consumption_l_per_100km", "is_anomaly"],
+                    { order: "date desc", limit: 5 },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.maintenance.schedule",
+                    [["vehicle_id", "=", vehicleId]],
+                    ["name", "is_due", "next_due_date", "next_due_odometer"],
+                    { order: "is_due desc" },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.maintenance.prediction",
+                    [["vehicle_id", "=", vehicleId]],
+                    ["risk_score", "risk_level", "basis", "computed_date"],
+                    { order: "computed_date desc", limit: 1 },
+                ),
+                // Vehicle 360 (Fleet & Vehicles custom-views initiative):
+                // non-scrapped tyres, the vehicle's most recent insurance
+                // policy, and open (non-closed) workshop job cards — per
+                // the "Tyres/Insurance/Parts-and-Workshop-summary fold
+                // into Vehicle 360" decision (CLAUDE.md §10). Parts itself
+                // has no vehicle_id (confirmed by source read), so it
+                // stays its own registry screen rather than appearing here.
+                this.orm.searchRead(
+                    "deployfleet.tyre",
+                    [["vehicle_id", "=", vehicleId], ["state", "!=", "scrapped"]],
+                    ["position", "state", "tread_depth_mm"],
+                    { order: "position asc" },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.insurance.policy",
+                    [["vehicle_id", "=", vehicleId]],
+                    ["policy_number", "insurer_id", "end_date", "premium_amount"],
+                    { order: "end_date desc", limit: 1 },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.workshop.job.card",
+                    [["vehicle_id", "=", vehicleId], ["state", "!=", "closed"]],
+                    ["name", "state", "total_cost", "opened_date"],
+                    { order: "opened_date desc" },
+                ),
+            ]);
+
+        // Reconcile the two independent fuel-anomaly signals into one
+        // indicator per the agreed decision (CLAUDE.md §10): fuel.log's
+        // own is_anomaly is a flat 30%-above-trailing-average threshold;
+        // deployfleet.fuel.anomaly is a separate, stricter z-score signal
+        // (>=2.0, needs 3+ prior logs) from the Phase 5 AI layer. A log is
+        // flagged anomalous if either signal fires; the z-score, being
+        // the more precise number, is shown when available.
+        const fuelLogIds = fuelLogs.map((log) => log.id);
+        let zScoreByLogId = {};
+        if (fuelLogIds.length) {
+            const anomalies = await this.orm.searchRead(
+                "deployfleet.fuel.anomaly",
+                [["fuel_log_id", "in", fuelLogIds]],
+                ["fuel_log_id", "z_score"],
+            );
+            zScoreByLogId = Object.fromEntries(anomalies.map((a) => [a.fuel_log_id[0], a.z_score]));
+        }
+        const reconciledFuelLogs = fuelLogs.map((log) => ({
+            ...log,
+            anomalyZScore: zScoreByLogId[log.id] ?? null,
+            isAnomalous: log.is_anomaly || log.id in zScoreByLogId,
+        }));
+
+        let insurance = insurancePolicies[0] || null;
+        if (insurance) {
+            const openClaimsCount = await this.orm.searchCount("deployfleet.insurance.claim", [
+                ["policy_id", "=", insurance.id],
+                ["state", "not in", ["paid", "rejected"]],
+            ]);
+            insurance = { ...insurance, openClaimsCount };
+        }
 
         let trip = null;
         const vehicle = this.state.vehicles.find((v) => v.id === vehicleId);
@@ -217,7 +327,16 @@ export class DeployfleetFleetCommandCenter extends Component {
         const latestPrediction = predictions[0] || null;
         const prediction = latestPrediction && latestPrediction.risk_level !== "low" ? latestPrediction : null;
 
-        this.state.detailByVehicleId[vehicleId] = { documents, fuelLogs, maintenanceSchedules, trip, prediction };
+        this.state.detailByVehicleId[vehicleId] = {
+            documents,
+            fuelLogs: reconciledFuelLogs,
+            maintenanceSchedules,
+            trip,
+            prediction,
+            tyres,
+            insurance,
+            jobCards,
+        };
     }
 
     onDismissPrediction(vehicleId) {

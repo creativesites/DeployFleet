@@ -298,6 +298,29 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Layer. See ``docs/architecture/16-experience-architecture.md`` §7.12
   for the full scope-correction reasoning versus the original kanban
   description.
+- **Fleet Command Center deepened into a "Vehicle 360"** (Fleet &
+  Vehicles custom-views work, second deliverable after the Workshop
+  Board): three new sections joined the existing Trip/Compliance/
+  Maintenance/Fuel detail per the agreed screen-structure decision
+  (Tyres/Insurance/Parts-and-Workshop-summary fold into this screen
+  rather than each getting its own). **Tyres** — every non-scrapped
+  ``deployfleet.tyre`` (position, tread depth, fitted/retreaded state).
+  **Insurance** — the vehicle's latest ``deployfleet.insurance.policy``
+  plus an open-claims count from ``deployfleet.insurance.claim``.
+  **Workshop** — open (non-closed) ``deployfleet.workshop.job.card``
+  records with running cost. Parts stays out of this screen entirely —
+  confirmed by source read that it has no ``vehicle_id`` — and remains a
+  separate registry screen, per the same agreed decision. Also
+  **reconciles the two independent fuel-anomaly signals into one
+  indicator**: ``deployfleet.fuel.log.is_anomaly`` (flat 30%-above-
+  trailing-average threshold, always present) and the separate, stricter
+  ``deployfleet.fuel.anomaly`` z-score model (Phase 5's AI layer, needs
+  3+ prior logs, z >= 2.0) previously showed as two disconnected sources
+  — a fuel-log row now flags anomalous if either signal fires, showing
+  the z-score when the AI model has scored that log
+  (``Anomaly (z=2.4)``) or a plain ``Anomaly`` badge otherwise. See
+  ``docs/architecture/16-experience-architecture.md`` §7.10 for the full
+  writeup.
 
 Not yet built
 =============
@@ -427,3 +450,22 @@ needed. Worth carrying forward: prefer ``searchRead``/``search``/``read``/
 ``write``/``call`` (all confirmed working against this live server) over
 less-common ORM service convenience methods whose exact name or
 availability hasn't been verified against a live instance.
+
+A fifth real bug, reported by the user via screenshots: Driver
+Scorecards crashed on open with ``ValueError: Cannot convert
+hr.employee.deployfleet_reliability_score to SQL because it is not
+stored``. Root cause was in this module's own code, not version drift:
+``driver_scorecards.js``'s ``loadDrivers()`` called ``searchRead`` with
+``order: "deployfleet_reliability_score asc"``, but that field is a
+plain computed ``Float`` (``compute="_compute_deployfleet_reliability_
+score"``, no ``store=True``) on ``hr_employee.py`` — this Odoo build
+refuses to build a SQL ``ORDER BY`` against an unstored computed field.
+Fixed entirely client-side, no backend change: dropped the ``order``
+param from the ``searchRead`` call and sort the returned array
+worst-score-first with a plain JS ``.sort()`` after mapping in each
+driver's score band — identical resulting order, no backend model
+change needed for what is purely a frontend display concern. Worth
+carrying forward: an ``order`` param in any ``searchRead`` call in this
+module must name a stored field (plain or ``store=True`` computed) —
+grepped every other ``order:`` usage in this module after this fix and
+confirmed no other screen has the same class of bug.

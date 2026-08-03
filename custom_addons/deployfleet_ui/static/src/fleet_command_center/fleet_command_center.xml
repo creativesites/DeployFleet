@@ -93,7 +93,49 @@
                             <ul t-if="detail.fuelLogs.length > 0" class="df-fleet-cc__detail-list">
                                 <li t-foreach="detail.fuelLogs" t-as="log" t-key="log.id">
                                     <span t-esc="log.date"/> — <t t-esc="log.liters"/> L
-                                    <DeployfleetStatusBadge t-if="log.is_anomaly" label="'Anomaly'" status="'danger'"/>
+                                    <DeployfleetStatusBadge t-if="log.isAnomalous" label="this.fuelAnomalyLabel(log)" status="'danger'"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Tyres</h3>
+                            <p t-if="detail.tyres.length === 0" class="df-fleet-cc__muted">No tyres on file.</p>
+                            <ul t-if="detail.tyres.length > 0" class="df-fleet-cc__detail-list">
+                                <li t-foreach="detail.tyres" t-as="tyre" t-key="tyre.id">
+                                    <span t-esc="this.tyrePositionLabel(tyre.position)"/>
+                                    <span class="df-fleet-cc__tyre-tread"><t t-esc="tyre.tread_depth_mm"/> mm</span>
+                                    <DeployfleetStatusBadge
+                                        label="this.tyreStateLabel(tyre.state)"
+                                        status="tyre.state === 'retreaded' ? 'warning' : 'success'"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Insurance</h3>
+                            <p t-if="!detail.insurance" class="df-fleet-cc__muted">No policy on file.</p>
+                            <p t-if="detail.insurance" class="df-fleet-cc__insurance-line">
+                                <span t-esc="detail.insurance.policy_number"/>
+                                <t t-if="detail.insurance.insurer_id"> — <t t-esc="detail.insurance.insurer_id[1]"/></t>
+                                , expires <t t-esc="detail.insurance.end_date"/>
+                                <DeployfleetStatusBadge
+                                    t-if="detail.insurance.openClaimsCount > 0"
+                                    label="detail.insurance.openClaimsCount + ' open claim(s)'"
+                                    status="'warning'"/>
+                            </p>
+                        </div>
+
+                        <div t-if="detail" class="df-fleet-cc__detail-section">
+                            <h3>Workshop</h3>
+                            <p t-if="detail.jobCards.length === 0" class="df-fleet-cc__muted">No open job cards.</p>
+                            <ul t-if="detail.jobCards.length > 0" class="df-fleet-cc__detail-list">
+                                <li t-foreach="detail.jobCards" t-as="jobCard" t-key="jobCard.id">
+                                    <span t-esc="jobCard.name"/>
+                                    <span class="df-fleet-cc__card-cost"><t t-esc="jobCard.total_cost"/></span>
+                                    <DeployfleetStatusBadge
+                                        label="this.jobCardStateLabel(jobCard.state)"
+                                        status="this.jobCardStateBadgeVariant(jobCard.state)"/>
                                 </li>
                             </ul>
                         </div>

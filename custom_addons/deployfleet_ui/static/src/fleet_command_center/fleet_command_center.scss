@@ -156,6 +156,21 @@
     color: var(--df-color-neutral-900);
 }
 
+.df-fleet-cc__tyre-tread {
+    font-variant-numeric: tabular-nums;
+    color: var(--df-color-neutral-600);
+}
+
+.df-fleet-cc__insurance-line {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
 .df-fleet-cc__detail-actions {
     display: flex;
     flex-wrap: wrap;

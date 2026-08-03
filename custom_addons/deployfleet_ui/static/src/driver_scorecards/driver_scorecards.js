@@ -124,6 +124,10 @@ export class DeployfleetDriverScorecards extends Component {
 
     async loadDrivers() {
         this.state.loading = true;
+        // No `order` here: deployfleet_reliability_score is a computed,
+        // unstored Float (hr_employee.py) — asking searchRead to sort by
+        // it server-side fails with "Cannot convert ... to SQL because it
+        // is not stored". Sort worst-first client-side instead.
         const drivers = await this.orm.searchRead(
             "hr.employee",
             [["deployfleet_is_driver", "=", true]],
@@ -134,12 +138,10 @@ export class DeployfleetDriverScorecards extends Component {
                 "deployfleet_accident_count",
                 "deployfleet_license_is_expired",
             ],
-            { order: "deployfleet_reliability_score asc" },
         );
-        this.state.drivers = drivers.map((driver) => ({
-            ...driver,
-            band: scoreBand(driver.deployfleet_reliability_score),
-        }));
+        this.state.drivers = drivers
+            .map((driver) => ({ ...driver, band: scoreBand(driver.deployfleet_reliability_score) }))
+            .sort((a, b) => a.deployfleet_reliability_score - b.deployfleet_reliability_score);
         this.state.loading = false;
     }
 
