@@ -1,0 +1,23 @@
+{
+    "name": "DeployFleet Zambian Demo Data",
+    "version": "19.0.1.0.0",
+    "category": "DeployFleet",
+    "summary": "Full-system demo dataset for a Zambian trucking company (CreativeSites Logistics)",
+    "author": "DeployFleet",
+    "license": "LGPL-3",
+    "depends": [
+        "deployfleet_accounting", "deployfleet_ai_actions", "deployfleet_ai_agents", "deployfleet_ai_core",
+        "deployfleet_ai_permissions", "deployfleet_ai_whatsapp", "deployfleet_assets", "deployfleet_billing",
+        "deployfleet_client_reports", "deployfleet_compliance", "deployfleet_core", "deployfleet_customer",
+        "deployfleet_customer_portal", "deployfleet_delivery", "deployfleet_dispatch",
+        "deployfleet_dispatch_compliance", "deployfleet_driver", "deployfleet_driver_advance",
+        "deployfleet_driver_performance", "deployfleet_event_bus", "deployfleet_freight_calculator",
+        "deployfleet_fuel", "deployfleet_insurance", "deployfleet_l10n_zm", "deployfleet_leave",
+        "deployfleet_load_expense", "deployfleet_loans", "deployfleet_maintenance", "deployfleet_mobile_customer",
+        "deployfleet_mobile_dispatcher", "deployfleet_mobile_push_bridge", "deployfleet_notifications",
+        "deployfleet_parts", "deployfleet_payroll", "deployfleet_route", "deployfleet_security",
+        "deployfleet_trip", "deployfleet_tyres", "deployfleet_vehicle", "deployfleet_vehicle_compliance",
+        "deployfleet_workshop", "deployfleet_zra",
+    ],
+    "post_init_hook": "post_init_hook",
+}
