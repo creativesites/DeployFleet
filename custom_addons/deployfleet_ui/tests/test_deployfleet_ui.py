@@ -39,3 +39,16 @@ class TestDeployfleetUi(TransactionCase):
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
         siblings = self.env["ir.ui.menu"].search([("parent_id", "=", menu.parent_id.id)], order="sequence")
         self.assertEqual(siblings[0], menu)
+
+    def test_dispatch_board_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_dispatch_board")
+        self.assertEqual(action.tag, "deployfleet_ui.dispatch_board")
+
+    def test_dispatch_board_menu_is_second_in_deployfleet_root(self):
+        mission_control_menu = self.env.ref("deployfleet_ui.menu_deployfleet_mission_control")
+        dispatch_board_menu = self.env.ref("deployfleet_ui.menu_deployfleet_dispatch_board")
+        self.assertEqual(dispatch_board_menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+        siblings = self.env["ir.ui.menu"].search(
+            [("parent_id", "=", dispatch_board_menu.parent_id.id)], order="sequence"
+        )
+        self.assertEqual(list(siblings[:2]), [mission_control_menu, dispatch_board_menu])

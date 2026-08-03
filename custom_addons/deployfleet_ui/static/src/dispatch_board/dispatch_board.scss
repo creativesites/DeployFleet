@@ -1,0 +1,234 @@
+// Deliberately Workspace Layer (flat, light, high-contrast) — NOT the dark
+// Command Layer glass used by Mission Control/Mega Menus/Launcher. Doc 16
+// Principle 1: a dispatcher stares at this screen for a full shift, so it
+// must not fight a translucent card for contrast the way an orientation
+// screen can afford to.
+.df-dispatch-board {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-dispatch-board__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-dispatch-board__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-dispatch-board__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-dispatch-board__loading,
+.df-dispatch-board__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-dispatch-board__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-dispatch-board__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-dispatch-board__card--warning {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-dispatch-board__card--danger {
+    border-left-color: var(--df-color-danger);
+    animation: df-pulse-ambient 2.4s infinite;
+}
+
+.df-dispatch-board__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-dispatch-board__card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-dispatch-board__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-dispatch-board__card-customer {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-dispatch-board__card-route {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.df-dispatch-board__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-dispatch-board__card-weight {
+    font-size: var(--df-font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.df-dispatch-board__card-detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-dispatch-board__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-dispatch-board__no-candidates {
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-dispatch-board__candidates {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-dispatch-board__candidate {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-1) var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+}
+
+.df-dispatch-board__candidate-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-dispatch-board__candidate-score {
+    color: var(--df-color-neutral-600);
+    font-variant-numeric: tabular-nums;
+}
+
+.df-dispatch-board__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--df-space-3);
+}
+
+.df-dispatch-board__dialog {
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-neutral-0);
+    box-shadow: var(--df-shadow-modal);
+}
+
+.df-dispatch-board__dialog-title {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-dispatch-board__dialog-message {
+    margin: 0 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-dispatch-board__dialog-textarea {
+    width: 100%;
+    min-height: 88px;
+    box-sizing: border-box;
+    padding: var(--df-space-1) var(--df-space-2);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    margin-bottom: var(--df-space-2);
+    resize: vertical;
+}
+
+.df-dispatch-board__dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-dispatch-board__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-dispatch-board__card-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-dispatch-board__card--danger {
+        animation: none;
+    }
+}

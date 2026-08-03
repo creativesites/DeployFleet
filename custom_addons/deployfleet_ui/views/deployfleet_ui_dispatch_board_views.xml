@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Dispatch Board (doc 16 §3.5/§7.9, Phase C / Slice 2) - the
+        dispatcher's primary workspace. Placed at sequence 1, right after
+        Mission Control (0) and ahead of the six Mega Menu domains (whose
+        sequences are bumped to 2-7 accordingly, in
+        deployfleet_ui_mega_menu_views.xml), since this is the screen a
+        dispatcher actually lives in day to day.
+    -->
+    <record id="action_deployfleet_dispatch_board" model="ir.actions.client">
+        <field name="name">Dispatch Board</field>
+        <field name="tag">deployfleet_ui.dispatch_board</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_dispatch_board"
+              name="Dispatch Board"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_dispatch_board"
+              sequence="1"/>
+</odoo>

@@ -94,6 +94,34 @@ Implemented so far
   everywhere, so this is the highest-leverage place to fix it. Phase B's
   Launcher/Mega Menu screens were not audited for touch-target sizing in
   this same pass; that remains a worthwhile follow-up.
+- **Dispatch Board** (Phase C / Slice 2): the dispatcher's primary
+  workspace (``static/src/dispatch_board/dispatch_board.js``) — confirmed
+  shipments awaiting a driver/vehicle assignment, tap-to-expand for a
+  ranked candidate list sourced from the existing
+  ``action_suggest_assignments()`` scoring engine, and one-tap Confirm.
+  **Three deliberate scope corrections**, all documented in doc 16 §7.9:
+  (1) **tap-to-assign, not drag-and-drop** — HTML5 drag-drop has poor
+  touch support and CLAUDE.md's mobile-first mandate applies to every
+  Phase C screen without exception; (2) the real backend contract is a
+  plain ``UserError`` from ``deployfleet.dispatch.assignment.
+  action_confirm()`` (in both ``deployfleet_dispatch`` and
+  ``deployfleet_dispatch_compliance``), not the structured three-way
+  ``{success, hard_block, override_required}`` response doc 16 originally
+  described from DeployGuard's Roster Board — the shipped override dialog
+  catches the error, shows its message, and writes one operator-supplied
+  reason to both ``override_reason`` and ``compliance_override_reason``
+  before retrying, rather than the frontend trying to parse which check
+  fired; (3) **Workspace Layer, not Command Layer** — the one deliberate
+  exception among every screen shipped so far, since doc 16 Principle 1
+  requires sustained-work screens to stay flat and high-contrast rather
+  than fight a translucent card for contrast across an 8-hour shift. An
+  urgency indicator (left-border color stripe, plus a pulsing animation
+  on overdue shipments reusing the existing ``df-pulse-ambient`` keyframe)
+  flags shipments approaching or past their pickup window. Not yet built:
+  the persistent candidate side-panel, bulk auto-assign, right-click
+  context actions, and the ambient AI Recommendation Card doc 16 describes
+  alongside the rule-based suggestions (gated on the Copilot Rail/Console
+  work).
 
 Not yet built
 =============
@@ -107,8 +135,8 @@ Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
 Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
 Calendar, Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
 navigation) is complete; Phase C (flagship screens) is underway — Mission
-Control is built, Fleet Command Center/Dispatch Board/the Copilot Rail
-remain, per doc 16 §11's phased rollout.
+Control and the Dispatch Board are built, Fleet Command Center and the
+Copilot Rail remain, per doc 16 §11's phased rollout.
 
 A note on verification
 =======================

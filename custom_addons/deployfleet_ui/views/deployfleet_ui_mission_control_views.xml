@@ -2,9 +2,10 @@
 <odoo>
     <!--
         Mission Control (doc 16 §5/§7.2, Phase C / Slice 1) - the owner/
-        manager Home Dashboard. Placed at sequence 0, ahead of the six
-        Mega Menu domains (sequence 1-6), since this is the intended
-        first screen a manager actually wants to land on.
+        manager Home Dashboard. Placed at sequence 0, ahead of the
+        Dispatch Board (sequence 1) and the six Mega Menu domains
+        (sequence 2-7), since this is the intended first screen a manager
+        actually wants to land on.
     -->
     <record id="action_deployfleet_mission_control" model="ir.actions.client">
         <field name="name">Mission Control</field>

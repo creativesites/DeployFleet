@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DispatchBoard">
+        <div class="df-dispatch-board">
+            <header class="df-dispatch-board__header">
+                <h1 class="df-dispatch-board__title">Dispatch Board</h1>
+                <p class="df-dispatch-board__subtitle">
+                    Confirmed shipments awaiting a driver and vehicle assignment.
+                </p>
+            </header>
+
+            <p t-if="state.loading" class="df-dispatch-board__loading">Loading shipments...</p>
+            <p t-if="!state.loading and state.shipments.length === 0" class="df-dispatch-board__empty">
+                <i class="fa fa-check-circle"/> No shipments are waiting on dispatch right now.
+            </p>
+
+            <div t-if="!state.loading" class="df-dispatch-board__list">
+                <div t-foreach="state.shipments" t-as="shipment" t-key="shipment.id"
+                     t-attf-class="df-dispatch-board__card {{ shipment.urgency ? 'df-dispatch-board__card--' + shipment.urgency : '' }}">
+                    <div class="df-dispatch-board__card-summary" t-on-click="() => this.onSelectShipment(shipment.id)">
+                        <div class="df-dispatch-board__card-main">
+                            <span class="df-dispatch-board__card-name" t-esc="shipment.name"/>
+                            <span class="df-dispatch-board__card-customer" t-esc="shipment.customer_id[1]"/>
+                            <span class="df-dispatch-board__card-route">
+                                <t t-esc="shipment.pickup_depot_id[1]"/>
+                                <i class="fa fa-arrow-right"/>
+                                <t t-esc="shipment.dropoff_depot_id[1]"/>
+                            </span>
+                        </div>
+                        <div class="df-dispatch-board__card-meta">
+                            <DeployfleetStatusBadge t-if="shipment.urgency === 'danger'" label="'Overdue'" status="'danger'"/>
+                            <DeployfleetStatusBadge t-if="shipment.urgency === 'warning'" label="'Urgent'" status="'warning'"/>
+                            <span t-if="shipment.weight_kg" class="df-dispatch-board__card-weight">
+                                <t t-esc="shipment.weight_kg"/> kg
+                            </span>
+                            <i t-attf-class="fa {{ state.selectedShipmentId === shipment.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedShipmentId === shipment.id" class="df-dispatch-board__card-detail">
+                        <div class="df-dispatch-board__detail-actions">
+                            <DeployfleetButton
+                                label="'Suggest Assignments'"
+                                variant="'primary'"
+                                icon="'fa fa-magic'"
+                                loading="state.suggestingShipmentId === shipment.id"
+                                onClick="() => this.onSuggestAssignments(shipment.id)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenShipmentForm(shipment.id)"/>
+                        </div>
+
+                        <p t-if="(state.candidatesByShipment[shipment.id] || []).length === 0"
+                           class="df-dispatch-board__no-candidates">
+                            No candidates suggested yet — tap "Suggest Assignments" to score available vehicles and drivers.
+                        </p>
+
+                        <ul t-if="(state.candidatesByShipment[shipment.id] || []).length > 0" class="df-dispatch-board__candidates">
+                            <li t-foreach="state.candidatesByShipment[shipment.id]" t-as="candidate" t-key="candidate.id"
+                                class="df-dispatch-board__candidate">
+                                <div class="df-dispatch-board__candidate-info">
+                                    <span class="df-dispatch-board__candidate-driver" t-esc="candidate.driver_id[1]"/>
+                                    <span class="df-dispatch-board__candidate-vehicle" t-esc="candidate.vehicle_id[1]"/>
+                                    <span class="df-dispatch-board__candidate-score">
+                                        Score: <t t-esc="candidate.score.toFixed(1)"/>
+                                    </span>
+                                </div>
+                                <DeployfleetButton
+                                    label="'Confirm'"
+                                    variant="'primary'"
+                                    loading="state.confirmingAssignmentId === candidate.id"
+                                    onClick="() => this.onConfirmCandidate(shipment.id, candidate.id)"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div t-if="state.overrideDialog" class="df-dispatch-board__scrim">
+                <div class="df-dispatch-board__dialog">
+                    <h2 class="df-dispatch-board__dialog-title">Override required</h2>
+                    <p class="df-dispatch-board__dialog-message" t-esc="state.overrideDialog.errorMessage"/>
+                    <textarea
+                        class="df-dispatch-board__dialog-textarea"
+                        placeholder="Reason for overriding this check..."
+                        t-att-value="state.overrideDialog.reasonText"
+                        t-on-input="onOverrideReasonInput"/>
+                    <div class="df-dispatch-board__dialog-actions">
+                        <DeployfleetButton label="'Cancel'" variant="'ghost'" onClick="() => this.onCancelOverride()"/>
+                        <DeployfleetButton
+                            label="'Confirm with override'"
+                            variant="'destructive'"
+                            disabled="!state.overrideDialog.reasonText.trim()"
+                            onClick="() => this.onSubmitOverride()"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
