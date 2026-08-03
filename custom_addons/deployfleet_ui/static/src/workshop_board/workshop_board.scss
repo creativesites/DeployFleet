@@ -1,0 +1,180 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as the
+// Dispatch Board and Fleet Command Center (doc 16 Principle 1): a
+// workshop supervisor reviewing this screen is doing sustained
+// operational work, not launching/orienting.
+.df-workshop-board {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-workshop-board__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-workshop-board__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-workshop-board__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-workshop-board__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-workshop-board__loading,
+.df-workshop-board__empty,
+.df-workshop-board__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-workshop-board__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-workshop-board__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-workshop-board__card--open,
+.df-workshop-board__card--diagnosis {
+    border-left-color: var(--df-color-info);
+}
+
+.df-workshop-board__card--repair,
+.df-workshop-board__card--approval {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-workshop-board__card--closed {
+    border-left-color: var(--df-color-success);
+}
+
+.df-workshop-board__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-workshop-board__card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-workshop-board__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-workshop-board__card-vehicle,
+.df-workshop-board__card-description {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-workshop-board__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-workshop-board__card-cost {
+    font-size: var(--df-font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.df-workshop-board__card-detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-workshop-board__card-opened {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-workshop-board__line-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-workshop-board__line-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-workshop-board__line-type {
+    color: var(--df-color-neutral-600);
+    min-width: 50px;
+}
+
+.df-workshop-board__line-description {
+    flex: 1 1 auto;
+}
+
+.df-workshop-board__line-subtotal {
+    font-variant-numeric: tabular-nums;
+}
+
+.df-workshop-board__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-workshop-board__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-workshop-board__card-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

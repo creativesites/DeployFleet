@@ -282,6 +282,22 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Performance Radar multi-axis chart (that needs a real charting-library
   evaluation, one of the few places doc 18 itself calls for a real
   charting primitive over a hand-rolled visual).
+- **Workshop Board** (Phase E, Fleet & Vehicles custom-views work): a
+  filter-chip-plus-tap-to-expand review workspace for
+  ``deployfleet.workshop.job.card``/``deployfleet.workshop.job.line``
+  (``static/src/workshop_board/workshop_board.js`` — chips: All Active/
+  Open/Diagnosis/Repair/Approval/Closed, defaulting to Active). Expanding
+  a card shows its real job lines (labor/part, description, subtotal)
+  and a one-tap state-advance button wired to the card's actual next
+  action method for its current state (``action_start_diagnosis`` →
+  ``action_start_repair`` → ``action_submit_for_approval`` →
+  ``action_close``). Replaces the Fleet & Vehicles Mega Menu's "Workshop"
+  tile, which previously opened the stock job-card list view. **Not a
+  literal drag-drop kanban** — the same mobile-first reasoning as the
+  Dispatch Board (§7.9): HTML5 drag-drop has poor touch support. Workspace
+  Layer. See ``docs/architecture/16-experience-architecture.md`` §7.12
+  for the full scope-correction reasoning versus the original kanban
+  description.
 
 Not yet built
 =============
@@ -306,6 +322,12 @@ genuinely blocked on backend capabilities that don't exist yet (a GPS/
 position feed, a matured multi-stop shipment model) rather than simply
 unbuilt — see doc 16 §11's phased rollout and CLAUDE.md's Phase E status
 note for the full reasoning on what's buildable now versus blocked.
+Alongside Phase E, a Fleet & Vehicles custom-views initiative is also
+underway at explicit user direction ("we want to use custom views as
+much as possible") — the Workshop Board above is its first deliverable;
+next up is deepening the Fleet Command Center into a fuller "Vehicle
+360" (folding in Tyres, Insurance, and a Parts/Workshop summary) and
+distinct registry-style screens for Parts and Assets.
 
 A note on verification
 =======================

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Workshop Board (doc 16 §7.12, Fleet & Vehicles domain) - the
+        workshop supervisor's job-card review workspace. Placed at
+        sequence 11, after Driver Scorecards (10).
+    -->
+    <record id="action_deployfleet_workshop_board" model="ir.actions.client">
+        <field name="name">Workshop Board</field>
+        <field name="tag">deployfleet_ui.workshop_board</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_workshop_board"
+              name="Workshop Board"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_workshop_board"
+              sequence="11"/>
+</odoo>

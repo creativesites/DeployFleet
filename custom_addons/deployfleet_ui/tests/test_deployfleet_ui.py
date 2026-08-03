@@ -76,3 +76,11 @@ class TestDeployfleetUi(TransactionCase):
     def test_driver_scorecards_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_driver_scorecards")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_workshop_board_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_workshop_board")
+        self.assertEqual(action.tag, "deployfleet_ui.workshop_board")
+
+    def test_workshop_board_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_workshop_board")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

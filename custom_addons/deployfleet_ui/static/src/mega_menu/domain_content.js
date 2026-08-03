@@ -45,7 +45,7 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 title: "Workshop",
                 description: "Job cards from diagnosis through to repair complete.",
                 icon: "fa fa-cogs",
-                actionXmlId: "deployfleet_workshop.action_deployfleet_workshop_job_card",
+                actionXmlId: "deployfleet_ui.action_deployfleet_workshop_board",
             },
             {
                 title: "Parts",

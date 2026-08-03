@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.WorkshopBoard">
+        <div class="df-workshop-board">
+            <header class="df-workshop-board__header">
+                <h1 class="df-workshop-board__title">Workshop Board</h1>
+                <p class="df-workshop-board__subtitle">Every job card, oldest active first.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-workshop-board__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-workshop-board__loading">Loading job cards...</p>
+            <p t-if="!state.loading and filteredJobCards.length === 0" class="df-workshop-board__empty">
+                No job cards match this filter.
+            </p>
+
+            <div t-if="!state.loading" class="df-workshop-board__list">
+                <div t-foreach="filteredJobCards" t-as="job" t-key="job.id"
+                     t-attf-class="df-workshop-board__card df-workshop-board__card--{{ job.state }}">
+                    <div class="df-workshop-board__card-summary" t-on-click="() => this.onSelectJobCard(job.id)">
+                        <div class="df-workshop-board__card-main">
+                            <span class="df-workshop-board__card-name" t-esc="job.name"/>
+                            <span class="df-workshop-board__card-vehicle" t-esc="job.vehicle_id[1]"/>
+                            <span t-if="job.description" class="df-workshop-board__card-description" t-esc="job.description"/>
+                        </div>
+                        <div class="df-workshop-board__card-meta">
+                            <DeployfleetStatusBadge label="this.stateLabel(job.state)" status="this.stateBadgeVariant(job.state)"/>
+                            <span class="df-workshop-board__card-cost" t-esc="job.total_cost.toFixed(2)"/>
+                            <i t-attf-class="fa {{ state.selectedJobCardId === job.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedJobCardId === job.id" class="df-workshop-board__card-detail">
+                        <p class="df-workshop-board__card-opened">Opened <t t-esc="job.opened_date"/></p>
+
+                        <t t-set="lines" t-value="state.lineIdsByJobCardId[job.id]"/>
+                        <p t-if="lines and lines.length === 0" class="df-workshop-board__muted">No line items yet.</p>
+                        <ul t-if="lines and lines.length > 0" class="df-workshop-board__line-list">
+                            <li t-foreach="lines" t-as="line" t-key="line.id">
+                                <span class="df-workshop-board__line-type" t-esc="this.lineTypeLabel(line.line_type)"/>
+                                <span class="df-workshop-board__line-description">
+                                    <t t-if="line.part_id" t-esc="line.part_id[1]"/>
+                                    <t t-if="!line.part_id and line.description" t-esc="line.description"/>
+                                </span>
+                                <span class="df-workshop-board__line-subtotal" t-esc="line.subtotal.toFixed(2)"/>
+                            </li>
+                        </ul>
+
+                        <div class="df-workshop-board__detail-actions">
+                            <DeployfleetButton
+                                t-if="this.nextAction(job.state)"
+                                label="this.nextAction(job.state).label"
+                                variant="job.state === 'approval' ? 'primary' : 'secondary'"
+                                loading="state.transitioningJobCardId === job.id"
+                                onClick="() => this.onAdvanceState(job)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenJobCardForm(job.id)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
