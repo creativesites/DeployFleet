@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.AiRecommendationCard">
+        <div class="df-ai-recommendation-card">
+            <div class="df-ai-recommendation-card__header">
+                <DeployfleetAiBadge label="'AI insight'"/>
+                <button t-if="props.onDismiss" type="button" class="df-ai-recommendation-card__dismiss"
+                        t-on-click="() => props.onDismiss()" title="Dismiss">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+            <p class="df-ai-recommendation-card__title" t-esc="props.title"/>
+            <p class="df-ai-recommendation-card__body" t-esc="props.body"/>
+            <p t-if="props.meta" class="df-ai-recommendation-card__meta" t-esc="props.meta"/>
+            <DeployfleetButton t-if="props.actionLabel and props.onAction"
+                               label="props.actionLabel" variant="'ghost'"
+                               onClick="() => props.onAction()"/>
+        </div>
+    </t>
+</templates>

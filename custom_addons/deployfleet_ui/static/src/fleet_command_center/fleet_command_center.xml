@@ -42,6 +42,15 @@
                     <div t-if="state.selectedVehicleId === vehicle.id" class="df-fleet-cc__card-detail">
                         <t t-set="detail" t-value="state.detailByVehicleId[vehicle.id]"/>
 
+                        <DeployfleetAiRecommendationCard
+                            t-if="detail and detail.prediction"
+                            title="this.predictionTitle(detail.prediction)"
+                            body="detail.prediction.basis"
+                            meta="this.predictionMeta(detail.prediction)"
+                            actionLabel="'Open full record'"
+                            onAction="() => this.onOpenVehicleForm(vehicle.id)"
+                            onDismiss="() => this.onDismissPrediction(vehicle.id)"/>
+
                         <div t-if="detail" class="df-fleet-cc__detail-section">
                             <h3>Current trip</h3>
                             <p t-if="!detail.trip" class="df-fleet-cc__muted">No active trip.</p>

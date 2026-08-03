@@ -36,6 +36,17 @@ function extractErrorMessage(error) {
  * and a recent-calls log) — real ORM queries and a real write on
  * `enabled`, not mockup data.
  *
+ * **Natural-language query interface (doc 16 §7.16/§5):** each Agent
+ * Catalog card also has a real "Ask" box. Submitting a question calls
+ * `deployfleet.ai.core.complete(feature.key, agent.system_prompt_template,
+ * question)` — the exact same mandatory-pipeline entry point every other
+ * AI feature in the product goes through (policy/permission/budget
+ * checks, response cache, provider call, usage logging), not a shortcut.
+ * Scoped per-agent rather than one generic global query box: each agent
+ * already has its own system prompt and model tier, so "ask this agent"
+ * is the more correct design than inventing a new, separate prompt/
+ * routing concept for a single freeform box.
+ *
  * **Scope cut, same transparency discipline as every other slice:** doc
  * 16 §7.16 also calls for each catalog entry to show "recent output" and
  * "confidence." The four Phase 5 prediction models
@@ -46,9 +57,13 @@ function extractErrorMessage(error) {
  * unifying that into one generic "confidence" display would need
  * per-agent custom rendering logic, not a generic read. Deferred to a
  * follow-up slice rather than built as four special cases here. Also
- * deferred, per doc 16 §11's own Phase C/D boundary language: per-record
- * contextual awareness, the natural-language query interface, and AI
- * Recommendation Cards inline on other flagship screens.
+ * still deferred, per doc 16 §11's own Phase C/D boundary language:
+ * per-record contextual awareness (the Copilot Rail/Console don't yet
+ * know which record the user has open elsewhere in the app — this
+ * needs a safe, verified hook into the action manager's current
+ * controller, deliberately not attempted speculatively against an
+ * unverified internal API, the same risk-aversion reasoning that kept
+ * the Launcher off a `web.NavBar` patch).
  *
  * Command Layer treatment (light glass, per the mid-Phase-D retrofit —
  * see doc 16 Principle 1 / doc 17 §6): this is a command-center-class
@@ -81,6 +96,9 @@ export class DeployfleetCopilotConsole extends Component {
             totalCallsAllTime: 0,
             featureBreakdown: [],
             recentCalls: [],
+            questionByAgentId: {},
+            answerByAgentId: {},
+            askingAgentId: null,
         });
 
         onWillStart(() => this.loadData());
@@ -92,12 +110,16 @@ export class DeployfleetCopilotConsole extends Component {
         const agents = await this.orm.searchRead(
             "deployfleet.ai.agent",
             [],
-            ["key", "name", "description", "related_models", "feature_id"],
+            ["key", "name", "description", "related_models", "feature_id", "system_prompt_template"],
             { order: "sequence asc" },
         );
         const featureIds = agents.map((agent) => agent.feature_id[0]);
         const features = featureIds.length
-            ? await this.orm.read("deployfleet.ai.feature", featureIds, ["enabled", "model_tier", "data_category"])
+            ? await this.orm.read(
+                  "deployfleet.ai.feature",
+                  featureIds,
+                  ["key", "enabled", "model_tier", "data_category"],
+              )
             : [];
         const featureById = Object.fromEntries(features.map((feature) => [feature.id, feature]));
 
@@ -158,6 +180,37 @@ export class DeployfleetCopilotConsole extends Component {
 
     get formattedCacheHitRate() {
         return `${this.state.cacheHitRate.toFixed(1)}%`;
+    }
+
+    onQuestionInput(agentId, ev) {
+        this.state.questionByAgentId[agentId] = ev.target.value;
+    }
+
+    async onAskAgent(agent) {
+        const question = (this.state.questionByAgentId[agent.id] || "").trim();
+        if (!question) {
+            return;
+        }
+        const feature = this.state.featureById[agent.feature_id[0]];
+        this.state.askingAgentId = agent.id;
+        this.state.answerByAgentId[agent.id] = null;
+        try {
+            const answer = await this.orm.call("deployfleet.ai.core", "complete", [
+                feature.key,
+                agent.system_prompt_template,
+                question,
+            ]);
+            this.state.answerByAgentId[agent.id] = answer;
+            // The call itself already logged to deployfleet.ai.usage - the
+            // dashboard above will reflect it next time this screen loads,
+            // deliberately not force-refreshed here to avoid flashing the
+            // whole screen back to its loading state right after an answer
+            // renders.
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        } finally {
+            this.state.askingAgentId = null;
+        }
     }
 
     async onToggleFeature(featureId) {

@@ -103,6 +103,21 @@
                                 variant="state.featureById[agent.feature_id[0]].enabled ? 'destructive' : 'primary'"
                                 loading="state.togglingFeatureId === agent.feature_id[0]"
                                 onClick="() => this.onToggleFeature(agent.feature_id[0])"/>
+
+                            <div class="df-copilot-console__agent-ask">
+                                <textarea
+                                    class="df-copilot-console__agent-ask-input"
+                                    placeholder="Ask this agent a question..."
+                                    t-att-value="state.questionByAgentId[agent.id]"
+                                    t-on-input="(ev) => this.onQuestionInput(agent.id, ev)"/>
+                                <DeployfleetButton
+                                    label="'Ask'"
+                                    variant="'secondary'"
+                                    disabled="!state.featureById[agent.feature_id[0]].enabled or !(state.questionByAgentId[agent.id] or '').trim()"
+                                    loading="state.askingAgentId === agent.id"
+                                    onClick="() => this.onAskAgent(agent)"/>
+                                <p t-if="state.answerByAgentId[agent.id]" class="df-copilot-console__agent-answer" t-esc="state.answerByAgentId[agent.id]"/>
+                            </div>
                         </div>
                     </div>
                 </section>

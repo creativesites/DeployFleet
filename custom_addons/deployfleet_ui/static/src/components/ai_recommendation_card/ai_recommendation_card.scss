@@ -1,0 +1,45 @@
+.df-ai-recommendation-card {
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-ai-bg);
+    border: 1px solid var(--df-color-ai);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.df-ai-recommendation-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.df-ai-recommendation-card__dismiss {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--df-color-ai);
+    cursor: pointer;
+}
+
+.df-ai-recommendation-card__title {
+    margin: 0;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-recommendation-card__body {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-700);
+    white-space: pre-line;
+}
+
+.df-ai-recommendation-card__meta {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    color: var(--df-color-ai);
+}

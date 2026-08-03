@@ -191,34 +191,59 @@ rationale.
   ``deployfleet.ai.usage`` (this month's cost/tokens via the model's own
   ``total_cost_this_month()``, an all-time cache-hit rate, a per-feature
   cost/token breakdown via ``read_group``, and a recent-calls log) — real
-  ORM queries and a real field write, not mockup data. Command Layer,
-  light glass per the retrofit above, since doc 16 §7.16 calls this a
-  command-center-class destination screen, the same category as Mission
-  Control. **Deferred, same transparency discipline as every prior
-  slice:** per-agent "recent output"/"confidence" (the four Phase 5
-  prediction models each use a different schema for their own risk/
-  confidence metric — unifying that into one generic display needs
-  per-agent custom rendering logic, not a generic read), per-record
-  contextual awareness, the natural-language query interface, and AI
-  Recommendation Cards inline on other flagship screens.
+  ORM queries and a real field write, not mockup data. **The
+  natural-language query interface is also built**, scoped per-agent
+  rather than one generic global query box: each agent card has a real
+  "Ask" box that calls ``deployfleet.ai.core.complete(feature.key, agent.
+  system_prompt_template, question)`` — the same mandatory-pipeline entry
+  point (policy/permission/budget checks, response cache, provider call,
+  usage logging) every other AI feature goes through, not a shortcut
+  around it. Command Layer, light glass per the retrofit above, since doc
+  16 §7.16 calls this a command-center-class destination screen, the same
+  category as Mission Control. **Deferred, same transparency discipline
+  as every prior slice:** per-agent "recent output"/"confidence" in the
+  catalog itself (the four Phase 5 prediction models each use a different
+  schema for their own risk/confidence metric — unifying that into one
+  generic display needs per-agent custom rendering logic, not a generic
+  read) and per-record contextual awareness (neither the Rail nor the
+  Console yet knows which record the user has open elsewhere in the app —
+  deliberately not attempted against an unverified internal action-manager
+  API, the same risk-aversion reasoning that kept the Launcher off a
+  ``web.NavBar`` patch).
+- **AI Recommendation Card** (Phase D / Slice 1, new atom): the full
+  ambient-AI suggestion surface (``DeployfleetAiRecommendationCard``),
+  distinct from the existing inline ``AiBadge`` marker. First real
+  consumer wired into the Fleet Command Center's expanded vehicle detail,
+  surfacing ``deployfleet.maintenance.prediction``'s risk score/level/
+  basis — silent when ``risk_level`` is "low," the same
+  silent-unless-actionable discipline as Mission Control's attention
+  strip. One deliberate deviation from doc 18's "exactly two actions
+  (Accept / Dismiss)" description: this component ships ``actionLabel``/
+  ``onAction`` (an open-ended caller-supplied action) plus ``onDismiss``,
+  not a hardcoded Accept/Dismiss pair, since a maintenance risk score has
+  no single concrete "accept" write the way a Dispatch Board suggestion
+  does — see doc 18's own implementation note for the full reasoning.
+  Not yet wired into the Dispatch Board or Billing — Fleet Command Center
+  is the first consumer, not the last.
 
 Not yet built
 =============
 
 See ``docs/architecture/18-component-library.md`` for the full catalog:
 Toast, Alert, Search Box, Filters, Tables, Skeleton Loaders, Context Menu,
-Progress Ring, Quick Action Bar, AI Recommendation Card, the layout/
-navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet, Split
-View, Master Detail), and every signature "wow" widget (Live Fleet Map,
-Truck Health Ring, Driver Performance Radar, Revenue River, Profit
-Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet Calendar,
-Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
-navigation) is complete; **Phase C (flagship screens) is complete**:
-Mission Control, the Dispatch Board, the Fleet Command Center, and the
-Copilot Rail's ambient half are all built. Only the Phase D Copilot
-Console (agent catalog, usage/cost dashboard, per-record contextual
-awareness, AI Recommendation Cards inline on other screens) remains, per
-doc 16 §11's phased rollout.
+Progress Ring, Quick Action Bar, the layout/navigation shells (Sidebar,
+Modal, Drawer, Inspector, Bottom Sheet, Split View, Master Detail), and
+every signature "wow" widget (Live Fleet Map, Truck Health Ring, Driver
+Performance Radar, Revenue River, Profit Waterfall, Fleet Score, Risk
+Matrix, Maintenance Planner, Fleet Calendar, Load Builder, Fleet Heat Map,
+Fleet Globe). Phase B (Foundation navigation) and Phase C (flagship
+screens) are both complete; **the Phase D Copilot Console is also built**
+(agent catalog, usage/cost dashboard, natural-language query interface,
+and the AI Recommendation Card atom with its first consumer wired into
+the Fleet Command Center). Still open: per-record contextual awareness
+for the Rail/Console, and AI Recommendation Cards on the remaining
+flagship screens (Dispatch Board, Billing) — see doc 16 §11's phased
+rollout.
 
 A note on verification
 =======================

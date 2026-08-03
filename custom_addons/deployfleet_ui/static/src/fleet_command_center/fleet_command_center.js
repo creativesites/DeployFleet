@@ -7,6 +7,7 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
+import { DeployfleetAiRecommendationCard } from "../components/ai_recommendation_card/ai_recommendation_card";
 
 const STATUS_FILTERS = [
     { key: "all", label: "All" },
@@ -67,12 +68,29 @@ function extractErrorMessage(error) {
  * actionable screen, not read-only.
  *
  * Soft-coupling: deployfleet.vehicle/compliance.document/fuel.log/
- * maintenance.schedule/trip are referenced as plain runtime strings, the
- * same decision already made throughout deployfleet_ui.
+ * maintenance.schedule/trip/maintenance.prediction are referenced as
+ * plain runtime strings, the same decision already made throughout
+ * deployfleet_ui.
+ *
+ * **Phase D addition:** the expanded detail also surfaces the vehicle's
+ * latest `deployfleet.maintenance.prediction` (Phase 5's real predictive-
+ * maintenance model — a closed-form risk score from fuel-consumption
+ * trend + recent workshop job cards, not a placeholder) as an
+ * `AiRecommendationCard`, doc 16 §7.9/§8's "ambient AI on this screen"
+ * concept made concrete for the first time anywhere in `deployfleet_ui`.
+ * Silent when `risk_level` is "low", the same silent-unless-actionable
+ * discipline as Mission Control's attention strip — a card for every
+ * vehicle regardless of risk would be noise, not signal.
  */
 export class DeployfleetFleetCommandCenter extends Component {
     static template = "deployfleet_ui.FleetCommandCenter";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetMetricCard };
+    static components = {
+        DeployfleetButton,
+        DeployfleetStatusBadge,
+        DeployfleetStatusPill,
+        DeployfleetMetricCard,
+        DeployfleetAiRecommendationCard,
+    };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
     // component, and declaring an empty props schema here made OWL
@@ -125,6 +143,15 @@ export class DeployfleetFleetCommandCenter extends Component {
         return DOCUMENT_STATE_LABEL[state] || state;
     }
 
+    predictionTitle(prediction) {
+        const levelLabel = prediction.risk_level === "high" ? "High" : "Medium";
+        return `${levelLabel} predicted maintenance risk`;
+    }
+
+    predictionMeta(prediction) {
+        return `Risk score: ${prediction.risk_score}/100`;
+    }
+
     async loadVehicles() {
         this.state.loading = true;
         const vehicles = await this.orm.searchRead(
@@ -149,7 +176,7 @@ export class DeployfleetFleetCommandCenter extends Component {
     }
 
     async loadVehicleDetail(vehicleId) {
-        const [documents, fuelLogs, maintenanceSchedules] = await Promise.all([
+        const [documents, fuelLogs, maintenanceSchedules, predictions] = await Promise.all([
             this.orm.searchRead(
                 "deployfleet.compliance.document",
                 [["res_model", "=", "deployfleet.vehicle"], ["res_id", "=", vehicleId]],
@@ -168,6 +195,12 @@ export class DeployfleetFleetCommandCenter extends Component {
                 ["name", "is_due", "next_due_date", "next_due_odometer"],
                 { order: "is_due desc" },
             ),
+            this.orm.searchRead(
+                "deployfleet.maintenance.prediction",
+                [["vehicle_id", "=", vehicleId]],
+                ["risk_score", "risk_level", "basis", "computed_date"],
+                { order: "computed_date desc", limit: 1 },
+            ),
         ]);
 
         let trip = null;
@@ -181,7 +214,17 @@ export class DeployfleetFleetCommandCenter extends Component {
             trip = trips[0] || null;
         }
 
-        this.state.detailByVehicleId[vehicleId] = { documents, fuelLogs, maintenanceSchedules, trip };
+        const latestPrediction = predictions[0] || null;
+        const prediction = latestPrediction && latestPrediction.risk_level !== "low" ? latestPrediction : null;
+
+        this.state.detailByVehicleId[vehicleId] = { documents, fuelLogs, maintenanceSchedules, trip, prediction };
+    }
+
+    onDismissPrediction(vehicleId) {
+        const detail = this.state.detailByVehicleId[vehicleId];
+        if (detail) {
+            detail.prediction = null;
+        }
     }
 
     async onSetStatus(vehicleId, actionMethod) {
