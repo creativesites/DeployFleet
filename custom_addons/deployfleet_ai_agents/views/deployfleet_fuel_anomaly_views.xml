@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_fuel_anomaly_list" model="ir.ui.view">
+        <field name="name">deployfleet.fuel.anomaly.list</field>
+        <field name="model">deployfleet.fuel.anomaly</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="vehicle_id"/>
+                <field name="fuel_log_id"/>
+                <field name="z_score"/>
+                <field name="detected_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_fuel_anomaly" model="ir.actions.act_window">
+        <field name="name">Fuel Anomalies</field>
+        <field name="res_model">deployfleet.fuel.anomaly</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_fuel_anomaly"
+              name="Fuel Anomalies"
+              parent="deployfleet_ai_core.menu_deployfleet_ai_root"
+              action="action_deployfleet_fuel_anomaly"
+              groups="deployfleet_security.group_deployfleet_dispatcher"
+              sequence="16"/>
+</odoo>

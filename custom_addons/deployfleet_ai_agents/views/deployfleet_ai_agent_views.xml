@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_ai_agent_list" model="ir.ui.view">
+        <field name="name">deployfleet.ai.agent.list</field>
+        <field name="model">deployfleet.ai.agent</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="feature_id"/>
+                <field name="related_models"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_ai_agent_form" model="ir.ui.view">
+        <field name="name">deployfleet.ai.agent.form</field>
+        <field name="model">deployfleet.ai.agent</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="key"/>
+                        <field name="name"/>
+                        <field name="feature_id"/>
+                        <field name="related_models"/>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                    <group string="System Prompt Template">
+                        <field name="system_prompt_template" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_ai_agent" model="ir.actions.act_window">
+        <field name="name">AI Agents</field>
+        <field name="res_model">deployfleet.ai.agent</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_ai_agent"
+              name="Agents"
+              parent="deployfleet_ai_core.menu_deployfleet_ai_root"
+              action="action_deployfleet_ai_agent"
+              groups="deployfleet_security.group_deployfleet_owner"
+              sequence="5"/>
+</odoo>

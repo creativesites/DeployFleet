@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="feature_fleet_analyst" model="deployfleet.ai.feature">
+        <field name="key">fleet_analyst</field>
+        <field name="name">Fleet Analyst</field>
+        <field name="data_category">fleet_analytics</field>
+        <field name="model_tier">cheap</field>
+    </record>
+    <record id="agent_fleet_analyst" model="deployfleet.ai.agent">
+        <field name="key">fleet_analyst</field>
+        <field name="name">Fleet Analyst</field>
+        <field name="description">Utilization, vehicle performance, cost analysis.</field>
+        <field name="feature_id" ref="feature_fleet_analyst"/>
+        <field name="related_models">deployfleet.vehicle,deployfleet.fuel.log</field>
+        <field name="system_prompt_template">You are DeployFleet's Fleet Analyst. Answer questions about vehicle utilization, performance, and cost using only the data provided in context. Be concise and specific.</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="feature_dispatch_agent" model="deployfleet.ai.feature">
+        <field name="key">dispatch_agent</field>
+        <field name="name">Dispatch Agent</field>
+        <field name="data_category">fleet_analytics</field>
+        <field name="model_tier">reasoning</field>
+    </record>
+    <record id="agent_dispatch_agent" model="deployfleet.ai.agent">
+        <field name="key">dispatch_agent</field>
+        <field name="name">Dispatch Agent</field>
+        <field name="description">Trip assignment suggestions, route optimization, driver matching.</field>
+        <field name="feature_id" ref="feature_dispatch_agent"/>
+        <field name="related_models">deployfleet.dispatch.assignment,deployfleet.route</field>
+        <field name="system_prompt_template">You are DeployFleet's Dispatch Agent. Suggest trip assignments and route choices using only the data provided in context. Explain your reasoning briefly.</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="feature_maintenance_agent" model="deployfleet.ai.feature">
+        <field name="key">maintenance_agent</field>
+        <field name="name">Maintenance Agent</field>
+        <field name="data_category">fleet_analytics</field>
+        <field name="model_tier">cheap</field>
+    </record>
+    <record id="agent_maintenance_agent" model="deployfleet.ai.agent">
+        <field name="key">maintenance_agent</field>
+        <field name="name">Maintenance Agent</field>
+        <field name="description">Service prediction, failure detection, workshop planning.</field>
+        <field name="feature_id" ref="feature_maintenance_agent"/>
+        <field name="related_models">deployfleet.maintenance.schedule,deployfleet.workshop.job.card,deployfleet.maintenance.prediction</field>
+        <field name="system_prompt_template">You are DeployFleet's Maintenance Agent. Summarize predicted maintenance risk and workshop history using only the data provided in context.</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="feature_finance_agent" model="deployfleet.ai.feature">
+        <field name="key">finance_agent</field>
+        <field name="name">Finance Agent</field>
+        <field name="data_category">financial</field>
+        <field name="model_tier">reasoning</field>
+    </record>
+    <record id="agent_finance_agent" model="deployfleet.ai.agent">
+        <field name="key">finance_agent</field>
+        <field name="name">Finance Agent</field>
+        <field name="description">Invoice analysis, profitability, payment risk.</field>
+        <field name="feature_id" ref="feature_finance_agent"/>
+        <field name="related_models">deployfleet.invoice,deployfleet.financial.forecast</field>
+        <field name="system_prompt_template">You are DeployFleet's Finance Agent. Analyze invoices, profitability, and payment risk using only the data provided in context.</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="feature_compliance_agent" model="deployfleet.ai.feature">
+        <field name="key">compliance_agent</field>
+        <field name="name">Compliance Agent</field>
+        <field name="data_category">general</field>
+        <field name="model_tier">cheap</field>
+    </record>
+    <record id="agent_compliance_agent" model="deployfleet.ai.agent">
+        <field name="key">compliance_agent</field>
+        <field name="name">Compliance Agent</field>
+        <field name="description">Expired documents, regulatory risk, inspection schedules.</field>
+        <field name="feature_id" ref="feature_compliance_agent"/>
+        <field name="related_models">deployfleet.compliance.document,deployfleet.vehicle.compliance</field>
+        <field name="system_prompt_template">You are DeployFleet's Compliance Agent. Flag expired or soon-to-expire documents and regulatory risk using only the data provided in context.</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="feature_customer_agent" model="deployfleet.ai.feature">
+        <field name="key">customer_agent</field>
+        <field name="name">Customer Agent</field>
+        <field name="data_category">general</field>
+        <field name="model_tier">cheap</field>
+    </record>
+    <record id="agent_customer_agent" model="deployfleet.ai.agent">
+        <field name="key">customer_agent</field>
+        <field name="name">Customer Agent</field>
+        <field name="description">Shipment tracking, customer questions, delivery updates.</field>
+        <field name="feature_id" ref="feature_customer_agent"/>
+        <field name="related_models">deployfleet.shipment,deployfleet.trip</field>
+        <field name="system_prompt_template">You are DeployFleet's Customer Agent. Answer shipment tracking and delivery questions using only the data provided in context - never disclose another customer's data.</field>
+        <field name="sequence">60</field>
+    </record>
+</odoo>
