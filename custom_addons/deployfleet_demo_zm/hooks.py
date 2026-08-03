@@ -50,8 +50,8 @@ def post_init_hook(env):
     drivers = _create_drivers(env)
     routes = _create_routes(env, depots)
     _create_insurance_and_compliance(env, vehicles)
-    _create_maintenance_and_workshop(env, vehicles)
-    _create_parts_and_tyres(env, vehicles)
+    parts = _create_parts_and_tyres(env, vehicles)
+    _create_maintenance_and_workshop(env, vehicles, parts)
     _create_assets(env)
     _create_fuel_logs(env, vehicles)
     _run_operations(env, customers, depots, routes, vehicles, drivers)
@@ -242,7 +242,7 @@ def _create_insurance_and_compliance(env, vehicles):
 # Maintenance, workshop, parts, tyres, assets
 # ---------------------------------------------------------------------
 
-def _create_maintenance_and_workshop(env, vehicles):
+def _create_maintenance_and_workshop(env, vehicles, parts):
     schedule_model = env["deployfleet.maintenance.schedule"]
     job_card_model = env["deployfleet.workshop.job.card"]
     today = date.today()
@@ -271,7 +271,10 @@ def _create_maintenance_and_workshop(env, vehicles):
                 "line_type": "labor", "description": "Labor - clutch replacement",
                 "quantity": 6, "unit_cost": 180.0,
             }),
-            (0, 0, {"line_type": "part", "description": "Clutch kit", "quantity": 1, "unit_cost": 2400.0}),
+            (0, 0, {
+                "line_type": "part", "part_id": parts["PT-CK-300"].id,
+                "description": "Clutch kit", "quantity": 1, "unit_cost": 2400.0,
+            }),
         ],
     })
 
@@ -309,6 +312,8 @@ def _create_parts_and_tyres(env, vehicles):
             "vehicle_id": vehicles["truck_1"].id, "part_id": parts["PT-TY-400"].id,
             "position": position, "tread_depth_mm": 12.0,
         })
+
+    return parts
 
 
 def _create_assets(env):

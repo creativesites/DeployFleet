@@ -69,7 +69,7 @@ class DeployfleetMobilePushBridge(models.AbstractModel):
     def _resolve_recipients(self, recipient_type, source_model, source_id):
         if recipient_type == "dispatchers":
             group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
-            return group.users.partner_id
+            return group.user_ids.partner_id
         if recipient_type == "shipment_customer":
             return self._get_shipments(source_model, source_id).customer_id
         if recipient_type == "assigned_driver":
