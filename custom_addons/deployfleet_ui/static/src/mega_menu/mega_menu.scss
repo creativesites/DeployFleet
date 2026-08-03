@@ -1,0 +1,128 @@
+// Command Layer treatment (doc 17 §6) — this is an orientation/launch
+// surface, not a sustained-work Workspace, so it earns the glass/gradient
+// treatment doc 16 Principle 1 reserves for exactly this kind of screen.
+.df-mega-menu {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-4);
+    background: linear-gradient(160deg, rgba(10, 20, 24, 0.98), rgba(6, 12, 16, 0.98));
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+}
+
+.df-mega-menu__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-4);
+}
+
+.df-mega-menu__title {
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+    margin: 0;
+}
+
+.df-mega-menu__subtitle {
+    margin-top: 4px;
+    color: var(--df-color-neutral-300);
+    font-size: var(--df-font-size-base);
+}
+
+.df-mega-menu__search {
+    min-width: 240px;
+    padding: 8px var(--df-space-2);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+}
+
+.df-mega-menu__search::placeholder {
+    color: var(--df-color-neutral-300);
+}
+
+.df-mega-menu__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--df-space-3);
+}
+
+@media (max-width: 1024px) {
+    .df-mega-menu__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .df-mega-menu__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.df-mega-menu__tile {
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition:
+        transform var(--df-duration-standard) var(--df-ease-standard),
+        background-color var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-mega-menu__tile:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.df-mega-menu__tile-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-accent);
+    color: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-md);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-mega-menu__tile-title {
+    font-weight: var(--df-font-weight-bold);
+    font-size: var(--df-font-size-base);
+    margin-bottom: 4px;
+}
+
+.df-mega-menu__tile-description {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-300);
+}
+
+.df-mega-menu__empty {
+    grid-column: 1 / -1;
+    color: var(--df-color-neutral-300);
+}
+
+.df-mega-menu__unknown-domain {
+    padding: var(--df-space-3);
+    color: var(--df-color-neutral-0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-mega-menu__tile {
+        transition: none;
+    }
+
+    .df-mega-menu__tile:hover {
+        transform: none;
+    }
+}

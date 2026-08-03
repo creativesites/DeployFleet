@@ -8,6 +8,7 @@
     "depends": ["web", "deployfleet_core"],
     "data": [
         "views/deployfleet_ui_showcase_views.xml",
+        "views/deployfleet_ui_mega_menu_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -20,6 +21,9 @@
             "deployfleet_ui/static/src/showcase/*.js",
             "deployfleet_ui/static/src/showcase/*.xml",
             "deployfleet_ui/static/src/command_palette/*.js",
+            "deployfleet_ui/static/src/mega_menu/*.scss",
+            "deployfleet_ui/static/src/mega_menu/*.js",
+            "deployfleet_ui/static/src/mega_menu/*.xml",
         ],
     },
 }

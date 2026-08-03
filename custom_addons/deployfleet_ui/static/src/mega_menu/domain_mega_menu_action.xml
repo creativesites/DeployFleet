@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DomainMegaMenuAction">
+        <DeployfleetMegaMenu
+            t-if="domain"
+            label="domain.label"
+            subtitle="domain.subtitle"
+            tiles="domain.tiles"/>
+        <div t-else="" class="df-mega-menu__unknown-domain">
+            Unknown DeployFleet domain — check this action's params.domain value.
+        </div>
+    </t>
+</templates>

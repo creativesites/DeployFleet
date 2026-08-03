@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.MegaMenu">
+        <div class="df-mega-menu">
+            <div class="df-mega-menu__header">
+                <div>
+                    <h2 class="df-mega-menu__title" t-esc="props.label"/>
+                    <p t-if="props.subtitle" class="df-mega-menu__subtitle" t-esc="props.subtitle"/>
+                </div>
+                <input type="text"
+                       class="df-mega-menu__search"
+                       placeholder="Search this domain..."
+                       t-att-value="state.searchQuery"
+                       t-on-input="onSearchInput"/>
+            </div>
+            <div class="df-mega-menu__grid">
+                <t t-foreach="filteredTiles" t-as="tile" t-key="tile.title">
+                    <div class="df-mega-menu__tile" t-on-click="() => this.onTileClick(tile)">
+                        <div class="df-mega-menu__tile-icon">
+                            <i t-att-class="tile.icon"/>
+                        </div>
+                        <div class="df-mega-menu__tile-title" t-esc="tile.title"/>
+                        <div class="df-mega-menu__tile-description" t-esc="tile.description"/>
+                    </div>
+                </t>
+                <p t-if="!filteredTiles.length" class="df-mega-menu__empty">
+                    No screens in this domain match "<t t-esc="state.searchQuery"/>".
+                </p>
+            </div>
+        </div>
+    </t>
+</templates>

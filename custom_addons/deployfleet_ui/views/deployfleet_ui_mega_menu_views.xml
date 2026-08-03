@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Domain Mega Menus (doc 16 §3.1/§7.1, Phase B Slice 2). Six
+        ir.actions.client records sharing one JS component/tag
+        (deployfleet_ui.domain_mega_menu), distinguished only by their
+        params.domain key - see
+        static/src/mega_menu/domain_content.js for the curated tile
+        content per domain, grounded in the actual 65-menu-item
+        inventory across all 43 backend modules.
+
+        Reachable via the standard menu for now, placed at the top of
+        DeployFleet's menu (sequence 1-6, ahead of the existing granular
+        items) - becomes overlay-triggered from the DeployFleet Launcher
+        once Phase B Slice 3 builds it. Purely additive: no existing
+        menu item is removed or reparented.
+    -->
+    <record id="action_deployfleet_mega_menu_fleet" model="ir.actions.client">
+        <field name="name">Fleet &amp; Vehicles</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'fleet'}"/>
+    </record>
+    <record id="action_deployfleet_mega_menu_dispatch" model="ir.actions.client">
+        <field name="name">Dispatch &amp; Trips</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'dispatch'}"/>
+    </record>
+    <record id="action_deployfleet_mega_menu_compliance" model="ir.actions.client">
+        <field name="name">Compliance</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'compliance'}"/>
+    </record>
+    <record id="action_deployfleet_mega_menu_billing" model="ir.actions.client">
+        <field name="name">Billing &amp; Finance</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'billing'}"/>
+    </record>
+    <record id="action_deployfleet_mega_menu_driver" model="ir.actions.client">
+        <field name="name">Driver &amp; HR</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'driver'}"/>
+    </record>
+    <record id="action_deployfleet_mega_menu_ai" model="ir.actions.client">
+        <field name="name">AI &amp; Intelligence</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'ai'}"/>
+    </record>
+
+    <menuitem id="menu_deployfleet_mega_menu_fleet"
+              name="Fleet &amp; Vehicles"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_fleet"
+              sequence="1"/>
+    <menuitem id="menu_deployfleet_mega_menu_dispatch"
+              name="Dispatch &amp; Trips"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_dispatch"
+              sequence="2"/>
+    <menuitem id="menu_deployfleet_mega_menu_compliance"
+              name="Compliance"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_compliance"
+              sequence="3"/>
+    <menuitem id="menu_deployfleet_mega_menu_billing"
+              name="Billing &amp; Finance"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_billing"
+              sequence="4"/>
+    <menuitem id="menu_deployfleet_mega_menu_driver"
+              name="Driver &amp; HR"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_driver"
+              sequence="5"/>
+    <menuitem id="menu_deployfleet_mega_menu_ai"
+              name="AI &amp; Intelligence"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_ai"
+              sequence="6"/>
+</odoo>

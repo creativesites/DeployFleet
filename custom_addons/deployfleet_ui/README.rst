@@ -37,6 +37,22 @@ Implemented so far
   form view directly. See ``docs/architecture/18-component-library.md``'s
   "Implementation note on the global Command Palette" for why this extends
   Odoo's palette instead of reimplementing one.
+- **Domain Mega Menus** (Phase B / Slice 2): one real shared ``MegaMenu``
+  OWL component (``static/src/mega_menu/mega_menu.js``) — full-screen
+  Command-Layer glass, client-side instant search, a responsive tile grid —
+  parameterized by six curated domain content sets (``domain_content.js``):
+  Fleet & Vehicles, Dispatch & Trips, Compliance, Billing & Finance, Driver
+  & HR, and AI & Intelligence. All six domains share one
+  ``ir.actions.client`` tag distinguished only by a ``params.domain`` key,
+  fixing the exact fragility found in DeployGuard's own five copy-pasted
+  mega-menu files (doc 16 §3.1). Content is a deliberate curation of each
+  domain's ~4-8 main workflow screens, grounded in the actual 65-menu-item
+  inventory across all 43 backend modules — not every menu item is
+  promoted to a tile; admin/config-only screens stay reachable through the
+  standard menu. Reachable today as six new top-level menu entries (placed
+  ahead of the existing granular items, nothing removed or reparented);
+  becomes overlay-triggered from the DeployFleet Launcher once Slice 3
+  builds it.
 
 Not yet built
 =============
@@ -45,12 +61,14 @@ See ``docs/architecture/18-component-library.md`` for the full catalog:
 Toast, Alert, Search Box, Filters, Tables, Skeleton Loaders, Context Menu,
 Progress Ring, Quick Action Bar, AI Recommendation Card, the layout/
 navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet, Split
-View, Master Detail, Copilot Rail), the Domain Mega Menus and DeployFleet
-Launcher (Phase B, Slices 2-3), and every signature "wow" widget (Live Fleet
-Map, Truck Health Ring, Driver Performance Radar, Revenue River, Profit
-Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet Calendar,
-Load Builder, Fleet Heat Map, Fleet Globe). These land in subsequent slices
-per doc 16 §11's phased rollout.
+View, Master Detail, Copilot Rail), the DeployFleet Launcher (Phase B,
+Slice 3 — the highest-technical-risk item, since it means patching
+``web.NavBar`` rather than adding a self-contained component), and every
+signature "wow" widget (Live Fleet Map, Truck Health Ring, Driver
+Performance Radar, Revenue River, Profit Waterfall, Fleet Score, Risk
+Matrix, Maintenance Planner, Fleet Calendar, Load Builder, Fleet Heat Map,
+Fleet Globe). These land in subsequent slices per doc 16 §11's phased
+rollout.
 
 A note on verification
 =======================
