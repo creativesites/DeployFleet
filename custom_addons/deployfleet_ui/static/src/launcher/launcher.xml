@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.Launcher">
+        <div class="df-launcher-root">
+            <button t-if="!state.open"
+                    type="button"
+                    class="df-launcher__trigger"
+                    title="DeployFleet Launcher (Alt+L)"
+                    t-on-click="toggleOpen">
+                <i class="fa fa-th"/>
+            </button>
+
+            <div t-if="state.open" class="df-launcher__scrim" t-on-click.self="close">
+                <div class="df-launcher">
+                    <div class="df-launcher__header">
+                        <div class="df-launcher__brand">
+                            <span class="df-launcher__brand-mark">DF</span>
+                            <div>
+                                <h2 class="df-launcher__title">DeployFleet Launcher</h2>
+                                <p class="df-launcher__subtitle">Jump to any workspace. Alt+L to open, Esc to close.</p>
+                            </div>
+                        </div>
+                        <input type="text"
+                               class="df-launcher__search"
+                               placeholder="Search workspaces and apps..."
+                               t-att-value="state.searchQuery"
+                               t-on-input="onSearchInput"/>
+                        <button type="button" class="df-launcher__close" t-on-click="close">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+
+                    <div t-if="!state.searchQuery and (state.favorites.length or state.recents.length)" class="df-launcher__saved">
+                        <div t-if="state.favorites.length" class="df-launcher__saved-group">
+                            <h3>Favorites</h3>
+                            <div class="df-launcher__chip-row">
+                                <button t-foreach="state.favorites" t-as="item" t-key="'fav-' + item.key"
+                                        type="button" class="df-launcher__chip"
+                                        t-on-click="() => this.onSavedItemClick(item)">
+                                    <i t-att-class="item.icon"/>
+                                    <span t-esc="item.label"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div t-if="state.recents.length" class="df-launcher__saved-group">
+                            <h3>Recent</h3>
+                            <div class="df-launcher__chip-row">
+                                <button t-foreach="state.recents" t-as="item" t-key="'recent-' + item.key"
+                                        type="button" class="df-launcher__chip"
+                                        t-on-click="() => this.onSavedItemClick(item)">
+                                    <i t-att-class="item.icon"/>
+                                    <span t-esc="item.label"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="df-launcher__priority-strip">
+                        <button t-foreach="domains" t-as="domain" t-key="'priority-' + domain.key"
+                                type="button"
+                                t-attf-class="df-launcher__priority-pill df-launcher__icon--{{ domain.colorFamily }}"
+                                t-on-click="() => this.onDomainClick(domain)">
+                            <i t-att-class="domain.icon"/>
+                            <span t-esc="domain.label"/>
+                            <span class="df-launcher__shortcut-badge" t-esc="'Alt+' + domain.shortcut.toUpperCase()"/>
+                        </button>
+                    </div>
+
+                    <div class="df-launcher__section">
+                        <h3>Workspaces</h3>
+                        <div class="df-launcher__grid">
+                            <div t-foreach="filteredDomains" t-as="domain" t-key="'grid-' + domain.key"
+                                 class="df-launcher__tile"
+                                 t-on-click="() => this.onDomainClick(domain)">
+                                <button type="button"
+                                        t-attf-class="df-launcher__favorite {{ isFavorite(domain.key) ? 'df-launcher__favorite--active' : '' }}"
+                                        t-on-click="(ev) => this.toggleFavorite(ev, domain.key, domain.label, domain.icon)">
+                                    <i class="fa fa-star"/>
+                                </button>
+                                <div t-attf-class="df-launcher__tile-icon df-launcher__icon--{{ domain.colorFamily }}">
+                                    <i t-att-class="domain.icon"/>
+                                </div>
+                                <div class="df-launcher__tile-title" t-esc="domain.label"/>
+                                <div class="df-launcher__tile-subtitle" t-esc="domain.subtitle"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div t-if="filteredApps.length" class="df-launcher__section">
+                        <h3>Other Apps</h3>
+                        <div class="df-launcher__grid">
+                            <div t-foreach="filteredApps" t-as="app" t-key="'app-' + app.id"
+                                 class="df-launcher__tile"
+                                 t-on-click="() => this.onAppClick(app)">
+                                <button type="button"
+                                        t-attf-class="df-launcher__favorite {{ isFavorite('app-' + app.id) ? 'df-launcher__favorite--active' : '' }}"
+                                        t-on-click="(ev) => this.toggleFavorite(ev, 'app-' + app.id, app.name, 'fa fa-th')">
+                                    <i class="fa fa-star"/>
+                                </button>
+                                <div class="df-launcher__tile-icon df-launcher__icon--slate">
+                                    <i class="fa fa-th"/>
+                                </div>
+                                <div class="df-launcher__tile-title" t-esc="app.name"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

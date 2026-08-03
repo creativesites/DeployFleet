@@ -53,6 +53,25 @@ Implemented so far
   ahead of the existing granular items, nothing removed or reparented);
   becomes overlay-triggered from the DeployFleet Launcher once Slice 3
   builds it.
+- **DeployFleet Launcher** (Phase B / Slice 3): a full-screen Command-Layer
+  overlay (``static/src/launcher/launcher.js``) — priority-workspace strip
+  with ``Alt+<letter>`` shortcuts to each of the six Mega Menu domains, a
+  destination grid, localStorage-backed recents and favorites, and a
+  persistent corner trigger button, opened globally with ``Alt+L`` or the
+  corner button, closed with ``Esc`` or a click outside. **Deliberately not
+  a ``web.NavBar`` patch** — doc 16 §3.2 explains why: a bad xpath match
+  against this exact Odoo 19 nightly's NavBar template could break the top
+  navigation bar across the *entire product*, not just this feature, and
+  that template's current structure can't be verified against a live
+  instance from this development environment. Every other part of the
+  spec (glass, priority strip, keyboard shortcuts, destination grid,
+  recents/favorites) ships anyway via a self-contained, always-mounted
+  overlay instead. The destination grid is populated from the six curated
+  Mega Menu domains rather than Odoo's own ``getApps()`` — DeployFleet
+  nests all 43 modules under one single app menu rather than many
+  distinct top-level apps, so a literal Odoo-app grid would be nearly
+  empty; Odoo's own real top-level apps (Settings, Discuss, ...) render
+  separately below as "Other Apps."
 
 Not yet built
 =============
@@ -61,14 +80,12 @@ See ``docs/architecture/18-component-library.md`` for the full catalog:
 Toast, Alert, Search Box, Filters, Tables, Skeleton Loaders, Context Menu,
 Progress Ring, Quick Action Bar, AI Recommendation Card, the layout/
 navigation shells (Sidebar, Modal, Drawer, Inspector, Bottom Sheet, Split
-View, Master Detail, Copilot Rail), the DeployFleet Launcher (Phase B,
-Slice 3 — the highest-technical-risk item, since it means patching
-``web.NavBar`` rather than adding a self-contained component), and every
-signature "wow" widget (Live Fleet Map, Truck Health Ring, Driver
-Performance Radar, Revenue River, Profit Waterfall, Fleet Score, Risk
-Matrix, Maintenance Planner, Fleet Calendar, Load Builder, Fleet Heat Map,
-Fleet Globe). These land in subsequent slices per doc 16 §11's phased
-rollout.
+View, Master Detail, Copilot Rail), and every signature "wow" widget (Live
+Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
+Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
+Calendar, Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
+navigation) is now complete; these land across Phase C-E per doc 16 §11's
+phased rollout.
 
 A note on verification
 =======================

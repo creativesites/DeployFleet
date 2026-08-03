@@ -1,0 +1,329 @@
+// The persistent corner trigger (doc 16 §5's "a persistent corner
+// control") — visible whenever the overlay itself is closed.
+.df-launcher__trigger {
+    position: fixed;
+    right: var(--df-space-3);
+    bottom: var(--df-space-3);
+    z-index: 1000;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--df-color-accent);
+    color: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-md);
+    cursor: pointer;
+    box-shadow: var(--df-shadow-hover);
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-launcher__trigger:hover {
+    transform: scale(1.05);
+}
+
+.df-launcher__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--df-space-3);
+}
+
+.df-launcher {
+    width: 100%;
+    max-width: 1180px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-4);
+    border-radius: var(--df-radius-lg);
+    background: linear-gradient(145deg, rgba(20, 31, 54, 0.98), rgba(10, 18, 34, 0.98));
+    border: 1px solid var(--df-glass-border);
+    box-shadow: var(--df-shadow-modal);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+}
+
+.df-launcher__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-launcher__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    flex: 1 1 auto;
+}
+
+.df-launcher__brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-accent);
+    color: var(--df-color-neutral-0);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-launcher__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-launcher__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-300);
+}
+
+.df-launcher__search {
+    flex: 1 1 260px;
+    padding: 8px var(--df-space-2);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+}
+
+.df-launcher__search::placeholder {
+    color: var(--df-color-neutral-300);
+}
+
+.df-launcher__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--df-color-neutral-0);
+    cursor: pointer;
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-launcher__close:hover {
+    transform: rotate(90deg);
+}
+
+.df-launcher__saved {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-launcher__saved-group {
+    margin-bottom: var(--df-space-2);
+}
+
+.df-launcher__saved-group h3 {
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-300);
+    margin-bottom: 6px;
+}
+
+.df-launcher__chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.df-launcher__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px var(--df-space-1);
+    border-radius: 999px;
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    cursor: pointer;
+}
+
+.df-launcher__priority-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--df-space-4);
+}
+
+.df-launcher__priority-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px var(--df-space-2);
+    border-radius: 999px;
+    border: none;
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    cursor: pointer;
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-launcher__priority-pill:hover {
+    transform: translateY(-1px);
+}
+
+.df-launcher__shortcut-badge {
+    padding: 1px 6px;
+    border-radius: var(--df-radius-sm);
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 10px;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-launcher__section {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-launcher__section h3 {
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-300);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-launcher__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--df-space-2);
+}
+
+.df-launcher__tile {
+    position: relative;
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition:
+        transform var(--df-duration-standard) var(--df-ease-standard),
+        background-color var(--df-duration-standard) var(--df-ease-standard);
+}
+
+.df-launcher__tile:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.df-launcher__tile-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--df-radius-sm);
+    color: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-md);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-launcher__tile-title {
+    font-weight: var(--df-font-weight-bold);
+    font-size: var(--df-font-size-base);
+}
+
+.df-launcher__tile-subtitle {
+    margin-top: 2px;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-300);
+}
+
+.df-launcher__favorite {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--df-color-neutral-300);
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-launcher__tile:hover .df-launcher__favorite,
+.df-launcher__favorite--active {
+    opacity: 1;
+}
+
+.df-launcher__favorite--active {
+    color: var(--df-color-accent);
+}
+
+// Domain/app icon-chip gradients — decorative Command Layer accents,
+// deliberately distinct from doc 17 §2.2's reserved status-semantic
+// colors. The one deliberate exception is "ai", which intentionally
+// reuses the reserved AI-content violet (--df-color-ai) since the
+// AI & Intelligence domain genuinely is AI-branded content, not a
+// violation of the "violet means AI" reservation rule.
+.df-launcher__icon--fleet {
+    background: linear-gradient(135deg, var(--df-color-primary-light), var(--df-color-primary));
+}
+
+.df-launcher__icon--dispatch {
+    background: linear-gradient(135deg, #22d3ee, #0891b2);
+}
+
+.df-launcher__icon--compliance {
+    background: linear-gradient(135deg, var(--df-color-warning), var(--df-color-danger-dark));
+}
+
+.df-launcher__icon--billing {
+    background: linear-gradient(135deg, #22c55e, var(--df-color-success));
+}
+
+.df-launcher__icon--driver {
+    background: linear-gradient(135deg, #fb7185, #e11d48);
+}
+
+.df-launcher__icon--ai {
+    background: linear-gradient(135deg, var(--df-color-ai), #5b21b6);
+}
+
+.df-launcher__icon--slate {
+    background: linear-gradient(135deg, #64748b, #334155);
+}
+
+@media (max-width: 640px) {
+    .df-launcher__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-launcher__trigger,
+    .df-launcher__close,
+    .df-launcher__priority-pill,
+    .df-launcher__tile,
+    .df-launcher__favorite {
+        transition: none;
+    }
+
+    .df-launcher__trigger:hover,
+    .df-launcher__close:hover,
+    .df-launcher__priority-pill:hover,
+    .df-launcher__tile:hover {
+        transform: none;
+    }
+}

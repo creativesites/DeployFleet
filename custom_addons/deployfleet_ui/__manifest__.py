@@ -24,6 +24,9 @@
             "deployfleet_ui/static/src/mega_menu/*.scss",
             "deployfleet_ui/static/src/mega_menu/*.js",
             "deployfleet_ui/static/src/mega_menu/*.xml",
+            "deployfleet_ui/static/src/launcher/*.scss",
+            "deployfleet_ui/static/src/launcher/*.js",
+            "deployfleet_ui/static/src/launcher/*.xml",
         ],
     },
 }
