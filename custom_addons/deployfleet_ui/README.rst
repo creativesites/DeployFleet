@@ -72,6 +72,28 @@ Implemented so far
   distinct top-level apps, so a literal Odoo-app grid would be nearly
   empty; Odoo's own real top-level apps (Settings, Discuss, ...) render
   separately below as "Other Apps."
+- **Mission Control** (Phase C / Slice 1): the owner/manager Home Dashboard
+  (``static/src/mission_control/mission_control.js``), reachable at menu
+  sequence 0 (ahead of the six Mega Menu domains) and via the Launcher's
+  ``Alt+H`` shortcut, which was deliberately left unassigned in Slice 3
+  for exactly this. A silent-unless-nonzero attention strip built from
+  five genuine parallel ``searchCount`` queries against field-verified
+  models (unassigned shipments, expired/expiring-soon compliance
+  documents, vehicles in breakdown, pending AI approvals — the last
+  using the ``ai`` StatusPill variant, since that pill is literally about
+  AI-suggested actions awaiting review), three real KPI cards (Active
+  Vehicles, Active Shipments, Confirmed Revenue), and quick links to all
+  six domains. **Every count is a genuine ORM query, not a placeholder
+  number** — field names (``deployfleet.shipment.state``,
+  ``deployfleet.compliance.document.state``, ``deployfleet.vehicle.
+  status``, ``deployfleet.ai.action.request.state``) were read directly
+  from each model's source before writing these domains, not guessed.
+  This slice also retroactively bumped the shared Button and StatusPill
+  atoms' touch targets to 44px (previously 36px and ~20px respectively)
+  per CLAUDE.md's explicit mobile-first instruction — both are reused
+  everywhere, so this is the highest-leverage place to fix it. Phase B's
+  Launcher/Mega Menu screens were not audited for touch-target sizing in
+  this same pass; that remains a worthwhile follow-up.
 
 Not yet built
 =============
@@ -84,8 +106,9 @@ View, Master Detail, Copilot Rail), and every signature "wow" widget (Live
 Fleet Map, Truck Health Ring, Driver Performance Radar, Revenue River,
 Profit Waterfall, Fleet Score, Risk Matrix, Maintenance Planner, Fleet
 Calendar, Load Builder, Fleet Heat Map, Fleet Globe). Phase B (Foundation
-navigation) is now complete; these land across Phase C-E per doc 16 §11's
-phased rollout.
+navigation) is complete; Phase C (flagship screens) is underway — Mission
+Control is built, Fleet Command Center/Dispatch Board/the Copilot Rail
+remain, per doc 16 §11's phased rollout.
 
 A note on verification
 =======================

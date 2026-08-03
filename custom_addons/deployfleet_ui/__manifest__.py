@@ -9,6 +9,7 @@
     "data": [
         "views/deployfleet_ui_showcase_views.xml",
         "views/deployfleet_ui_mega_menu_views.xml",
+        "views/deployfleet_ui_mission_control_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -27,6 +28,9 @@
             "deployfleet_ui/static/src/launcher/*.scss",
             "deployfleet_ui/static/src/launcher/*.js",
             "deployfleet_ui/static/src/launcher/*.xml",
+            "deployfleet_ui/static/src/mission_control/*.scss",
+            "deployfleet_ui/static/src/mission_control/*.js",
+            "deployfleet_ui/static/src/mission_control/*.xml",
         ],
     },
 }

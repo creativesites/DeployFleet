@@ -1,8 +1,11 @@
+// min-height: 44px per CLAUDE.md's mobile-first requirement — this is a
+// clickable attention-strip element (doc 16 §3.3), not decorative text.
 .df-status-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px var(--df-space-1);
+    min-height: 44px;
+    padding: 4px var(--df-space-2);
     border-radius: 999px;
     border: none;
     cursor: pointer;
@@ -38,6 +41,11 @@
 .df-status-pill--info {
     background: var(--df-color-info-bg);
     color: var(--df-color-info);
+}
+
+.df-status-pill--ai {
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
 }
 
 .df-status-pill__count {

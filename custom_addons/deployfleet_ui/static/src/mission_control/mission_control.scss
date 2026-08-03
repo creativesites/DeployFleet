@@ -1,0 +1,123 @@
+// Command Layer treatment (doc 17 §6) — this is an orientation screen,
+// not sustained work, per doc 16 Principle 1.
+.df-mission-control {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: linear-gradient(160deg, rgba(10, 20, 24, 0.98), rgba(6, 12, 16, 0.98));
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+}
+
+.df-mission-control__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-mission-control__title {
+    margin: 0;
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-mission-control__subtitle {
+    margin: 4px 0 0;
+    color: var(--df-color-neutral-300);
+    font-size: var(--df-font-size-base);
+}
+
+// Mobile-first: single-column stacking is the default; wider viewports
+// opt into more columns via the media queries below, not the other way
+// around.
+.df-mission-control__attention {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--df-space-3);
+}
+
+.df-mission-control__all-clear {
+    color: var(--df-color-success);
+    font-weight: var(--df-font-weight-medium);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-mission-control__kpis {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-4);
+}
+
+@media (min-width: 641px) {
+    .df-mission-control__kpis {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+// MetricCard is a Workspace Layer component by default (white surface) —
+// mounting it on this Command Layer dark background needs its own
+// override so the cards still read clearly, per doc 16 Principle 1's
+// warning against mixing the two layers' treatments unintentionally.
+.df-mission-control__kpis .df-metric-card {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--df-glass-border);
+}
+
+.df-mission-control__kpis .df-metric-card__header,
+.df-mission-control__kpis .df-metric-card__caption {
+    color: var(--df-color-neutral-300);
+}
+
+.df-mission-control__kpis .df-metric-card__value {
+    color: var(--df-color-neutral-0);
+}
+
+.df-mission-control__quick-links h2 {
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-300);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-mission-control__quick-links-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+// Mobile-first touch target: 44px minimum height, per platform guidance
+// (iOS HIG / Android Material both recommend ~44-48px), a deliberate
+// correction applied here and to the shared Button/StatusPill atoms.
+.df-mission-control__quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px var(--df-space-2);
+    border-radius: 999px;
+    border: 1px solid var(--df-glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    cursor: pointer;
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-mission-control__quick-link:hover {
+    transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-mission-control__quick-link {
+        transition: none;
+    }
+
+    .df-mission-control__quick-link:hover {
+        transform: none;
+    }
+}

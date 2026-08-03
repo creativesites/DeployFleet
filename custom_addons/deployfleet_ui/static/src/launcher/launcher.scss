@@ -277,6 +277,10 @@
 // reuses the reserved AI-content violet (--df-color-ai) since the
 // AI & Intelligence domain genuinely is AI-branded content, not a
 // violation of the "violet means AI" reservation rule.
+.df-launcher__icon--home {
+    background: linear-gradient(135deg, var(--df-color-accent), var(--df-color-accent-dark));
+}
+
 .df-launcher__icon--fleet {
     background: linear-gradient(135deg, var(--df-color-primary-light), var(--df-color-primary));
 }

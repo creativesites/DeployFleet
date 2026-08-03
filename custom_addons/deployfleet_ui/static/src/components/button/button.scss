@@ -1,9 +1,14 @@
+// Height is 44px, not the more common desktop-admin 32-36px, per
+// CLAUDE.md's mobile-first requirement (iOS HIG / Android Material both
+// recommend a ~44-48px minimum touch target) — Button is the most
+// widely reused interactive atom in the catalog, so this is where the
+// fix has the most reach.
 .df-button {
     display: inline-flex;
     align-items: center;
     gap: var(--df-space-1);
     padding: 0 var(--df-space-2);
-    height: 36px;
+    height: 44px;
     border-radius: var(--df-radius-sm);
     font-family: var(--df-font-family);
     font-size: var(--df-font-size-base);

@@ -6,7 +6,22 @@ import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { registry } from "@web/core/registry";
 import { DEPLOYFLEET_MEGA_MENU_DOMAINS } from "../mega_menu/domain_content";
 
-const DOMAIN_DESTINATIONS = [
+// Mission Control (Phase C / Slice 1) reclaims the Alt+H shortcut doc 16
+// §5 always intended for "Home" — it was left unused in Phase B/Slice 3
+// specifically so this didn't need a remap once Mission Control shipped.
+// Unlike the six Mega Menu domains below, its label/subtitle aren't
+// pulled from domain_content.js since it isn't one of those domains.
+const HOME_DESTINATION = {
+    key: "home",
+    actionXmlId: "deployfleet_ui.action_deployfleet_mission_control",
+    icon: "fa fa-home",
+    colorFamily: "home",
+    shortcut: "h",
+    label: "Mission Control",
+    subtitle: "Today's fleet at a glance — attention strip, KPIs, and quick links.",
+};
+
+const MEGA_MENU_DESTINATIONS = [
     {
         key: "dispatch",
         actionXmlId: "deployfleet_ui.action_deployfleet_mega_menu_dispatch",
@@ -54,6 +69,8 @@ const DOMAIN_DESTINATIONS = [
     label: DEPLOYFLEET_MEGA_MENU_DOMAINS[entry.key].label,
     subtitle: DEPLOYFLEET_MEGA_MENU_DOMAINS[entry.key].subtitle,
 }));
+
+const DOMAIN_DESTINATIONS = [HOME_DESTINATION, ...MEGA_MENU_DESTINATIONS];
 
 const RECENTS_STORAGE_KEY = "deployfleet_ui.launcher.recents";
 const FAVORITES_STORAGE_KEY = "deployfleet_ui.launcher.favorites";

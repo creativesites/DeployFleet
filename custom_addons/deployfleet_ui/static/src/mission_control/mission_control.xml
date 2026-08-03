@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.MissionControl">
+        <div class="df-mission-control">
+            <header class="df-mission-control__header">
+                <h1 class="df-mission-control__title">Mission Control</h1>
+                <p class="df-mission-control__subtitle">Is anything wrong today?</p>
+            </header>
+
+            <section t-if="!state.loading and hasAttentionItems" class="df-mission-control__attention">
+                <DeployfleetStatusPill t-foreach="attentionPills" t-as="item" t-key="item.stateKey"
+                                       label="item.label"
+                                       count="item.count"
+                                       status="item.status"
+                                       onClick="() => this.onAttentionPillClick(item.actionXmlId)"/>
+            </section>
+            <p t-if="!state.loading and !hasAttentionItems" class="df-mission-control__all-clear">
+                <i class="fa fa-check-circle"/> Nothing needs your attention right now.
+            </p>
+
+            <section class="df-mission-control__kpis">
+                <DeployfleetMetricCard
+                    label="'Active Vehicles'"
+                    value="state.activeVehicles"
+                    icon="'fa fa-truck'"
+                    status="'success'"/>
+                <DeployfleetMetricCard
+                    label="'Active Shipments'"
+                    value="state.activeShipments"
+                    icon="'fa fa-cube'"
+                    status="'info'"/>
+                <DeployfleetMetricCard
+                    label="'Confirmed Revenue'"
+                    value="formattedRevenue"
+                    icon="'fa fa-money'"
+                    status="'success'"/>
+            </section>
+
+            <section class="df-mission-control__quick-links">
+                <h2>Jump to a workspace</h2>
+                <div class="df-mission-control__quick-links-row">
+                    <button t-foreach="quickLinks" t-as="link" t-key="link.key"
+                            type="button" class="df-mission-control__quick-link"
+                            t-on-click="() => this.onQuickLinkClick(link)">
+                        <i t-att-class="link.icon"/>
+                        <span t-esc="link.label"/>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </t>
+</templates>
