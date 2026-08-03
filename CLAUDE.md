@@ -38,6 +38,7 @@ The full Phase 1 architecture analysis lives in `docs/architecture/`, indexed at
 | [06-risks-and-recommendations.md](docs/architecture/06-risks-and-recommendations.md) | Hard risks, moderate risks, open questions requiring explicit sign-off |
 | [07-domain-model-erd.md](docs/architecture/07-domain-model-erd.md) | Entity model, relationships, key workflows — the schema Phase 1 builds against |
 | [08-ai-architecture.md](docs/architecture/08-ai-architecture.md) | AI provider strategy, cost/permission architecture, agent catalog, mandatory action-approval pipeline |
+| [16-experience-architecture.md](docs/architecture/16-experience-architecture.md) | The full UX/frontend strategy — gates all future frontend work the same way this doc gates AI work. Written after functional completion of all 43 modules; audits DeployFleet's current 100%-stock-Odoo UI, grounds DeployGuard OWL-pattern reuse in an actual source read, and gives area-by-area redesign direction (Dispatch Board and the AI Workspace are the flagged top priorities) |
 
 Root-level summary docs (`ARCHITECTURE.md`, `MODULE_STRUCTURE.md`, `AI_ARCHITECTURE.md`, `DATABASE_DESIGN.md`, `MOBILE_ARCHITECTURE.md`, `DEPLOYMENT.md`, `CHANGELOG.md`) exist as short entry points that point into the detailed docs above — keep them short; put real analysis in `docs/architecture/`, not duplicated at root.
 
@@ -78,6 +79,8 @@ Before writing new AI code, check [08-ai-architecture.md](docs/architecture/08-a
 ---
 
 ## 5. UI/UX standards
+
+**The authoritative elaboration of this section is [16-experience-architecture.md](docs/architecture/16-experience-architecture.md)** — check any dashboard/board/workspace design or build against it before starting, the same discipline §4 already requires against the AI architecture doc. The bullets below are the short-form summary; the real analysis (current-state audit, DeployGuard pattern-reuse grounding, per-area redesign direction, a phased rollout recommendation) lives there.
 
 - **Mobile-first.** Primary users are drivers, dispatchers, and fleet managers/supervisors working from phones and tablets, not desks. Design and test for phone and tablet viewports first, desktop second.
 - **Modern glassmorphic, enterprise-clean aesthetic — not default Odoo chrome.** Avoid shipping stock Odoo list/form views where a purpose-built interface materially improves the workflow (dispatch board, vehicle cards, trip timelines, analytics widgets).
