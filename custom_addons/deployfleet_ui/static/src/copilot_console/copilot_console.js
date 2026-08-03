@@ -127,17 +127,23 @@ export class DeployfleetCopilotConsole extends Component {
             [costThisMonth, tokensThisMonth],
             totalCallsAllTime,
             cacheHitCallsAllTime,
-            featureBreakdown,
+            allUsageLogs,
             recentCalls,
         ] = await Promise.all([
             this.orm.call("deployfleet.ai.usage", "total_cost_this_month", []),
             this.orm.searchCount("deployfleet.ai.usage", []),
             this.orm.searchCount("deployfleet.ai.usage", [["cache_hit", "=", true]]),
-            this.orm.readGroup(
+            // Aggregated client-side below rather than via orm.readGroup():
+            // that convenience method doesn't exist on this exact Odoo 19
+            // nightly's ORM service ("this.orm.readGroup is not a
+            // function") - the same class of version-drift already hit
+            // elsewhere in this project. searchRead + a plain JS reduce
+            // avoids depending on an unverified internal method name.
+            this.orm.searchRead(
                 "deployfleet.ai.usage",
                 [],
-                ["estimated_cost_usd:sum", "tokens_in:sum", "tokens_out:sum"],
-                ["feature"],
+                ["feature", "estimated_cost_usd", "tokens_in", "tokens_out"],
+                { limit: 2000 },
             ),
             this.orm.searchRead(
                 "deployfleet.ai.usage",
@@ -146,6 +152,24 @@ export class DeployfleetCopilotConsole extends Component {
                 { order: "call_date desc", limit: 10 },
             ),
         ]);
+
+        const breakdownByFeature = {};
+        for (const log of allUsageLogs) {
+            const row = (breakdownByFeature[log.feature] ??= {
+                feature: log.feature,
+                __count: 0,
+                estimated_cost_usd: 0,
+                tokens_in: 0,
+                tokens_out: 0,
+            });
+            row.__count += 1;
+            row.estimated_cost_usd += log.estimated_cost_usd;
+            row.tokens_in += log.tokens_in;
+            row.tokens_out += log.tokens_out;
+        }
+        const featureBreakdown = Object.values(breakdownByFeature).sort(
+            (a, b) => b.estimated_cost_usd - a.estimated_cost_usd,
+        );
 
         this.state.agents = agents;
         this.state.featureById = featureById;

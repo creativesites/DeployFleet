@@ -387,3 +387,21 @@ compile was run against every file, individually and as the full
 concatenated bundle — the verification step this section's opening
 paragraph now documents as standard for every future SCSS change in this
 module, not just brace-balance checking.
+
+A fourth real bug, reported by the user via screenshot: the Copilot
+Console crashed on open with ``OwlError: ... "this.orm.readGroup is not a
+function"``. Another instance of this exact Odoo 19 nightly's version
+drift (the same class as the ``res.groups.category_id``/``res.users.
+groups_id`` renames documented in CLAUDE.md) — the JS ORM service's
+convenience wrapper for ``read_group`` isn't exposed under that name on
+this build. Rather than guess the current correct name, fixed by removing
+the dependency on it entirely: the per-feature cost/token breakdown in
+``copilot_console.js`` now fetches up to 2000 ``deployfleet.ai.usage``
+records via ``searchRead`` (already confirmed working elsewhere in this
+module) and aggregates them client-side with a plain JS reduce, producing
+the exact same ``{feature, __count, estimated_cost_usd, tokens_in,
+tokens_out}`` row shape the template already expected — no XML changes
+needed. Worth carrying forward: prefer ``searchRead``/``search``/``read``/
+``write``/``call`` (all confirmed working against this live server) over
+less-common ORM service convenience methods whose exact name or
+availability hasn't been verified against a live instance.
