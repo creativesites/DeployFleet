@@ -46,8 +46,17 @@
         gated by base.group_system (AI, Event Bus, Vehicle Types) show up.
         group_deployfleet_owner is the top of the implied_ids chain, so
         this also grants manager/dispatcher/driver access transitively.
+
+        Deliberately a <function> call, not a <record id="base.user_admin">
+        block: base.user_admin's ir.model.data entry is created by Odoo's
+        own base module with noupdate="1" (protecting the admin user from
+        being clobbered by every module upgrade), so a plain <record> here
+        is silently skipped by the loader on every install/update, from the
+        very first install onward - no error, nothing to notice, it just
+        never applies. A <function> call is a direct method invocation, not
+        a data-file record load, so it isn't subject to that noupdate flag
+        at all and actually runs every time this module installs/updates.
     -->
-    <record id="base.user_admin" model="res.users">
-        <field name="groups_id" eval="[(4, ref('group_deployfleet_owner'))]"/>
-    </record>
+    <function model="res.users" name="write"
+              eval="[[ref('base.user_admin')], {'groups_id': [(4, ref('group_deployfleet_owner'))]}]"/>
 </odoo>
