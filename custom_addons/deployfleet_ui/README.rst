@@ -312,7 +312,12 @@ A note on verification
 
 Every OWL/JS/XML file in this module was written against standard Odoo
 17-19 OWL conventions and checked for syntax validity (``node --check`` on
-every ``.js`` file, XML well-formedness on every ``.xml`` file) — but,
+every ``.js`` file, XML well-formedness on every ``.xml`` file, and every
+``.scss`` file compiled — both individually and as the full concatenated
+``web.assets_backend`` bundle in manifest order, which is what actually
+catches cross-file/bundle-level failures — via ``libsass``
+(``pip install libsass``; ``python3 -c "import sass; sass.compile(...)"``))
+— but,
 unlike this project's Python modules, **none of it has been verified by
 actually rendering it in a running Odoo web client**, since this
 development environment has no browser or live Odoo instance to load one
@@ -359,3 +364,26 @@ syntactically valid OWL; only rendering it against Odoo's real action
 manager surfaces it. Any future ``ir.actions.client`` component in this
 module should either omit ``static props`` entirely or declare it with the
 actual injected keys marked optional — never an empty object.
+
+A third real bug, this one a database-wide failure rather than a single
+screen: the user reported ``Style error. The style compilation failed``
+blocking every screen, not just the one they were looking at (Odoo compiles
+``web.assets_backend``'s SCSS as one bundle, so a syntax error in any one
+file breaks every screen sharing that bundle). Root cause: ``launcher.scss``
+used ``max(var(--df-space-1), env(safe-area-inset-bottom))`` for mobile
+safe-area padding — but (lib)sass ships its own built-in ``max()`` math
+function under the same name as the CSS one, shadowing it and trying to
+evaluate ``var(--df-space-1)`` as a literal Sass number, which fails with
+``"var(--df-space-1)" is not a number for 'max'`` and takes the whole
+bundle down with it. This is exactly the class of bug the brace-balance
+check this module previously relied on (``grep -o '{' | wc -l`` vs.
+``grep -o '}' | wc -l``) cannot catch — the braces were perfectly balanced;
+the file just wasn't valid Sass. Fixed by switching to
+``calc(var(--df-space-1) + env(safe-area-inset-bottom, 0px))`` — ``calc()``
+has no such name collision (already used safely elsewhere in this module,
+e.g. ``metric_card.scss``) and additive stacking is the more common
+safe-area-inset pattern anyway. Caught only once a real ``libsass``
+compile was run against every file, individually and as the full
+concatenated bundle — the verification step this section's opening
+paragraph now documents as standard for every future SCSS change in this
+module, not just brace-balance checking.

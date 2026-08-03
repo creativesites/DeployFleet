@@ -64,9 +64,19 @@
 }
 
 @media (max-width: 640px) {
+    // `padding-bottom` deliberately uses `calc(... + env(...))`, not
+    // `max(...)`: (lib)sass's own built-in `max()` math function
+    // shadows the CSS one and tries to evaluate `var(--df-space-1)` as
+    // a Sass number, failing the whole bundle's compile with "is not a
+    // number for `max'". `calc()` doesn't have that name collision and
+    // is already used elsewhere in this module with `var()` inside it
+    // without issue (see metric_card.scss) — and additive stacking is
+    // the more common safe-area-inset pattern anyway, ensuring the
+    // notch inset is always respected on top of the visual padding
+    // rather than only when it happens to be larger.
     .df-launcher__scrim {
         padding: var(--df-space-1);
-        padding-bottom: max(var(--df-space-1), env(safe-area-inset-bottom));
+        padding-bottom: calc(var(--df-space-1) + env(safe-area-inset-bottom, 0px));
     }
 
     .df-launcher {
