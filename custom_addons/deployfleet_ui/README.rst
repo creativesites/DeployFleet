@@ -495,10 +495,26 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Requests to the new history workspace. Financial Forecast stays
   deliberately deferred to Billing & Finance's own "Financial
   Intelligence" gap. See also
-  ``docs/architecture/21-copilot-rail-architecture.md`` for a much
-  larger, separately-scoped Copilot Rail Chat initiative (tool-calling,
-  persistent multi-session chat, rich in-chat components, a
-  context/memory layer) — designed, not yet implemented.
+  ``docs/architecture/21-copilot-rail-architecture.md`` for the much
+  larger, separately-scoped Copilot Rail Chat initiative this preceded
+  (tool-calling, rich in-chat components, a context/memory layer,
+  action execution) — doc 21's Phases 2-4, still designed, not built.
+- **Copilot Rail Chat tab — doc 21 §10 Phase 1** (multi-session,
+  persisted, plain-text). The Rail's ``deployfleet.ai.chat.session``/
+  ``.message`` models were scaffolded since Phase 0 with zero consumers
+  anywhere in the codebase (confirmed by the AI & Intelligence audit) —
+  this is their first real UI. A second tab (Approvals | Chat)
+  alongside the existing ambient approval queue: pick one of the six
+  ``deployfleet.ai.agent`` personas to start a session (the session
+  then keeps that agent's feature/prompt for its whole lifetime), real
+  rename/favorite/archive, and a conversation view backed by a new
+  ``deployfleet.ai.chat.session.action_send_message()`` method that
+  persists both turns and folds a bounded recent-history transcript
+  into the existing ``deployfleet.ai.core.complete()`` call for
+  multi-turn context — no change to that method's signature, no second
+  call path to a provider. Deliberately still not built, per doc 21's
+  own phase boundaries: tool-calling, structured/rich responses, action
+  execution, and the memory layer (Phases 1b-4).
 
 Not yet built
 =============

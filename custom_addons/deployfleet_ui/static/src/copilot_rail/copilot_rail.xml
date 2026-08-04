@@ -16,37 +16,148 @@
                             <i class="fa fa-times"/>
                         </button>
                     </header>
-                    <p class="df-copilot-rail__subtitle">Pending AI-proposed actions awaiting your approval.</p>
 
-                    <p t-if="state.loading" class="df-copilot-rail__loading">Loading...</p>
-                    <p t-if="!state.loading and pendingCount === 0" class="df-copilot-rail__empty">
-                        <i class="fa fa-check-circle"/> Nothing waiting on you right now.
-                    </p>
+                    <nav class="df-copilot-rail__tabs">
+                        <button type="button"
+                                t-attf-class="df-copilot-rail__tab {{ state.activeTab === 'approvals' ? 'df-copilot-rail__tab--active' : '' }}"
+                                t-on-click="() => this.onSelectTab('approvals')">
+                            Approvals
+                            <span t-if="pendingCount > 0" class="df-copilot-rail__tab-count" t-esc="pendingCount"/>
+                        </button>
+                        <button type="button"
+                                t-attf-class="df-copilot-rail__tab {{ state.activeTab === 'chat' ? 'df-copilot-rail__tab--active' : '' }}"
+                                t-on-click="() => this.onSelectTab('chat')">
+                            Chat
+                        </button>
+                    </nav>
 
-                    <ul t-if="!state.loading and pendingCount > 0" class="df-copilot-rail__list">
-                        <li t-foreach="state.pendingApprovals" t-as="request" t-key="request.id" class="df-copilot-rail__item">
-                            <div class="df-copilot-rail__item-header">
-                                <span class="df-copilot-rail__item-name" t-esc="request.name"/>
-                                <span class="df-copilot-rail__item-feature" t-esc="request.feature_id[1]"/>
-                            </div>
-                            <p class="df-copilot-rail__item-action">
-                                <t t-esc="request.action_type"/> on <t t-esc="request.target_model"/>
-                            </p>
-                            <pre class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
-                            <div class="df-copilot-rail__item-actions">
+                    <!-- ============================= APPROVALS ============================= -->
+                    <t t-if="state.activeTab === 'approvals'">
+                        <p class="df-copilot-rail__subtitle">Pending AI-proposed actions awaiting your approval.</p>
+
+                        <p t-if="state.loading" class="df-copilot-rail__loading">Loading...</p>
+                        <p t-if="!state.loading and pendingCount === 0" class="df-copilot-rail__empty">
+                            <i class="fa fa-check-circle"/> Nothing waiting on you right now.
+                        </p>
+
+                        <ul t-if="!state.loading and pendingCount > 0" class="df-copilot-rail__list">
+                            <li t-foreach="state.pendingApprovals" t-as="request" t-key="request.id" class="df-copilot-rail__item">
+                                <div class="df-copilot-rail__item-header">
+                                    <span class="df-copilot-rail__item-name" t-esc="request.name"/>
+                                    <span class="df-copilot-rail__item-feature" t-esc="request.feature_id[1]"/>
+                                </div>
+                                <p class="df-copilot-rail__item-action">
+                                    <t t-esc="request.action_type"/> on <t t-esc="request.target_model"/>
+                                </p>
+                                <pre class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                                <div class="df-copilot-rail__item-actions">
+                                    <DeployfleetButton
+                                        label="'Approve'"
+                                        variant="'primary'"
+                                        loading="state.actingRequestId === request.id"
+                                        onClick="() => this.onApprove(request.id)"/>
+                                    <DeployfleetButton
+                                        label="'Reject'"
+                                        variant="'destructive'"
+                                        loading="state.actingRequestId === request.id"
+                                        onClick="() => this.onOpenRejectDialog(request.id)"/>
+                                </div>
+                            </li>
+                        </ul>
+                    </t>
+
+                    <!-- ============================= CHAT ============================= -->
+                    <t t-if="state.activeTab === 'chat'">
+                        <!-- Session list -->
+                        <t t-if="state.chatView === 'sessions'">
+                            <div class="df-copilot-rail__new-chat">
+                                <select class="df-copilot-rail__agent-select"
+                                        t-att-value="state.newSessionAgentId"
+                                        t-on-change="(ev) => this.onNewSessionAgentInput(ev.target.value)">
+                                    <option value="">Start a chat with...</option>
+                                    <option t-foreach="state.agents" t-as="agent" t-key="agent.id" t-att-value="agent.id">
+                                        <t t-esc="agent.name"/>
+                                    </option>
+                                </select>
                                 <DeployfleetButton
-                                    label="'Approve'"
+                                    label="'New Chat'"
                                     variant="'primary'"
-                                    loading="state.actingRequestId === request.id"
-                                    onClick="() => this.onApprove(request.id)"/>
-                                <DeployfleetButton
-                                    label="'Reject'"
-                                    variant="'destructive'"
-                                    loading="state.actingRequestId === request.id"
-                                    onClick="() => this.onOpenRejectDialog(request.id)"/>
+                                    loading="state.creatingSession"
+                                    onClick="() => this.onCreateSession()"/>
                             </div>
-                        </li>
-                    </ul>
+
+                            <div class="df-copilot-rail__archive-toggle">
+                                <button type="button"
+                                        t-attf-class="df-copilot-rail__archive-btn {{ !state.showArchived ? 'df-copilot-rail__archive-btn--active' : '' }}"
+                                        t-on-click="() => this.state.showArchived = false">Active</button>
+                                <button type="button"
+                                        t-attf-class="df-copilot-rail__archive-btn {{ state.showArchived ? 'df-copilot-rail__archive-btn--active' : '' }}"
+                                        t-on-click="() => this.state.showArchived = true">Archived</button>
+                            </div>
+
+                            <p t-if="filteredSessions.length === 0" class="df-copilot-rail__empty">
+                                No <t t-esc="state.showArchived ? 'archived' : 'active'"/> chats yet.
+                            </p>
+
+                            <ul t-if="filteredSessions.length > 0" class="df-copilot-rail__session-list">
+                                <li t-foreach="filteredSessions" t-as="session" t-key="session.id" class="df-copilot-rail__session">
+                                    <t t-if="state.renamingSessionId === session.id">
+                                        <input type="text" class="df-copilot-rail__rename-input"
+                                               t-att-value="state.renameText"
+                                               t-on-input="onRenameInput"/>
+                                        <DeployfleetButton label="'Save'" variant="'primary'" onClick="() => this.onSaveRename(session)"/>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="df-copilot-rail__session-main" t-on-click="() => this.onSelectSession(session.id)">
+                                            <span class="df-copilot-rail__session-name" t-esc="session.name"/>
+                                            <span class="df-copilot-rail__session-feature" t-esc="session.feature_id[1]"/>
+                                        </div>
+                                        <div class="df-copilot-rail__session-actions">
+                                            <button type="button" class="df-copilot-rail__icon-btn" t-on-click="() => this.onStartRename(session)">
+                                                <i class="fa fa-pencil"/>
+                                            </button>
+                                            <button type="button" class="df-copilot-rail__icon-btn" t-on-click="() => this.onToggleFavorite(session)">
+                                                <i t-attf-class="fa {{ session.favorite ? 'fa-star' : 'fa-star-o' }}"/>
+                                            </button>
+                                            <button type="button" class="df-copilot-rail__icon-btn" t-on-click="() => this.onToggleArchive(session)">
+                                                <i t-attf-class="fa {{ session.archived ? 'fa-inbox' : 'fa-archive' }}"/>
+                                            </button>
+                                        </div>
+                                    </t>
+                                </li>
+                            </ul>
+                        </t>
+
+                        <!-- Conversation -->
+                        <t t-if="state.chatView === 'conversation'">
+                            <button type="button" class="df-copilot-rail__back-btn" t-on-click="() => this.onBackToSessions()">
+                                <i class="fa fa-arrow-left"/> All chats
+                            </button>
+
+                            <div class="df-copilot-rail__conversation">
+                                <div t-foreach="state.messagesBySessionId[state.selectedSessionId] or []" t-as="message" t-key="message_index"
+                                     t-attf-class="df-copilot-rail__message df-copilot-rail__message--{{ message.role }}">
+                                    <span t-esc="message.content"/>
+                                </div>
+                                <p t-if="(state.messagesBySessionId[state.selectedSessionId] or []).length === 0"
+                                   class="df-copilot-rail__empty">Ask this agent anything.</p>
+                            </div>
+
+                            <div class="df-copilot-rail__composer">
+                                <textarea
+                                    class="df-copilot-rail__composer-input"
+                                    placeholder="Type a message..."
+                                    t-att-value="state.newMessageText"
+                                    t-on-input="onNewMessageInput"/>
+                                <DeployfleetButton
+                                    label="'Send'"
+                                    variant="'primary'"
+                                    loading="state.sendingMessage"
+                                    disabled="!state.newMessageText.trim()"
+                                    onClick="() => this.onSendMessage()"/>
+                            </div>
+                        </t>
+                    </t>
                 </div>
             </div>
 

@@ -122,6 +122,220 @@
     color: var(--df-color-neutral-600);
 }
 
+// ---- Tabs (Approvals | Chat) ----
+
+.df-copilot-rail__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-rail__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-1);
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-copilot-rail__tab--active {
+    color: var(--df-color-ai);
+    border-bottom-color: var(--df-color-ai);
+}
+
+.df-copilot-rail__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--df-color-ai);
+    color: var(--df-color-neutral-0);
+    font-size: 11px;
+}
+
+// ---- Chat: session list ----
+
+.df-copilot-rail__new-chat {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-rail__agent-select {
+    flex: 1 1 160px;
+    min-height: 44px;
+    padding: 0 var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-copilot-rail__archive-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-rail__archive-btn {
+    min-height: 32px;
+    padding: 0 var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-0);
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+    cursor: pointer;
+}
+
+.df-copilot-rail__archive-btn--active {
+    background: var(--df-color-ai-bg);
+    border-color: var(--df-color-ai);
+    color: var(--df-color-ai);
+}
+
+.df-copilot-rail__session-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-rail__session {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-1);
+    padding: var(--df-space-1) var(--df-space-2);
+    min-height: 44px;
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+}
+
+.df-copilot-rail__session-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
+    cursor: pointer;
+}
+
+.df-copilot-rail__session-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.df-copilot-rail__session-feature {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-ai);
+}
+
+.df-copilot-rail__session-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.df-copilot-rail__icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--df-color-neutral-600);
+    cursor: pointer;
+}
+
+.df-copilot-rail__rename-input {
+    flex: 1 1 auto;
+    min-height: 36px;
+    padding: 0 var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+}
+
+// ---- Chat: conversation ----
+
+.df-copilot-rail__back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+    cursor: pointer;
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-rail__conversation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-copilot-rail__message {
+    max-width: 85%;
+    padding: 6px var(--df-space-1);
+    border-radius: var(--df-radius-md);
+    font-size: var(--df-font-size-sm);
+    white-space: pre-line;
+}
+
+.df-copilot-rail__message--user {
+    align-self: flex-end;
+    background: var(--df-color-ai);
+    color: var(--df-color-neutral-0);
+}
+
+.df-copilot-rail__message--assistant {
+    align-self: flex-start;
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    color: var(--df-color-neutral-900);
+}
+
+.df-copilot-rail__composer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-rail__composer-input {
+    width: 100%;
+    min-height: 60px;
+    box-sizing: border-box;
+    padding: 6px var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    resize: vertical;
+}
+
 .df-copilot-rail__loading,
 .df-copilot-rail__empty {
     color: var(--df-color-neutral-600);

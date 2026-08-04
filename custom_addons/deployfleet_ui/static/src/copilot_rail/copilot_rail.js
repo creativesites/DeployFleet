@@ -18,30 +18,33 @@ function extractErrorMessage(error) {
  * ([08-ai-architecture.md](../../../../../docs/architecture/08-ai-architecture.md) §5,
  * CLAUDE.md §4, hard risk #7).
  *
- * **Scope note, same transparency discipline as every other Phase C
- * slice:** doc 16 §419 places the Copilot Console deliberately at the
- * Phase C/D boundary — the *ambient* half (this rail, plus AI
- * Recommendation Cards inline on flagship screens) belongs in Phase C;
- * the *destination* half (a dedicated Copilot Console screen with an
- * agent catalog and a usage/cost dashboard over `deployfleet.ai.usage`)
- * is explicitly allowed to trail into Phase D. This slice ships exactly
- * the ambient half: a live pending-approvals badge and an expandable
- * queue wired to the real `deployfleet.ai.action.request` pipeline
- * (`action_approve()`/`action_reject()`, unchanged) — real, working
- * approve/reject, not a mockup. **Not yet built:** per-record contextual
- * awareness (showing agent output specific to whatever record is
- * currently open — the rail always shows the same global queue
- * regardless of what page it's opened from), a natural-language question
- * interface, the agent catalog view, and the usage/cost dashboard — all
- * explicitly deferred to the Phase D Copilot Console per doc 16's own
- * boundary, not silently dropped.
+ * **Two tabs: Approvals (unchanged) and Chat (new — doc 21 §5/§9/§10
+ * Phase 1).** The Chat tab is a persistent, multi-session, single-turn-
+ * grounded-in-real-history conversation with one of the six
+ * `deployfleet.ai.agent` personas, built on `deployfleet.ai.chat.session`/
+ * `.message` — modeled since Phase 0 but completely unused until now (see
+ * the AI & Intelligence domain audit in CLAUDE.md). **Deliberately scoped
+ * to doc 21's Phase 1 only**: plain-text responses, no tool-calling, no
+ * rich in-chat components, no auto-execute actions, no memory/entity-
+ * summary layer — those are doc 21 §10's Phases 2–4, explicitly not
+ * attempted here. Every message still routes through the exact same
+ * `deployfleet.ai.core.complete()` entry point every other AI feature in
+ * the product uses (via `deployfleet.ai.chat.session.action_send_message()`,
+ * which persists both turns and builds a bounded recent-history transcript
+ * for multi-turn context — see that method's own docstring), so policy/
+ * permission/budget/cache checks all still apply identically.
  *
- * `Alt+A` is a new keybinding, chosen the same way the Launcher's
- * per-domain shortcuts were: it doesn't collide with any binding already
- * claimed (L, D, F, C, B, R, I, H).
+ * A new session picks an agent up front (from `deployfleet.ai.agent`) —
+ * the session then keeps using that agent's feature/prompt for its whole
+ * lifetime, the same per-agent framing the Copilot Console's own "Ask"
+ * box already established, rather than inventing a new generic assistant
+ * identity.
  *
- * Soft-coupling: deployfleet.ai.action.request is referenced as a plain
- * runtime string, the same decision made throughout deployfleet_ui.
+ * `Alt+A` (unchanged) opens the Rail to whichever tab was last active.
+ *
+ * Soft-coupling: deployfleet.ai.action.request/deployfleet.ai.chat.session/
+ * deployfleet.ai.chat.message/deployfleet.ai.agent are referenced as plain
+ * runtime strings, the same decision made throughout deployfleet_ui.
  */
 export class DeployfleetCopilotRail extends Component {
     static template = "deployfleet_ui.CopilotRail";
@@ -53,10 +56,25 @@ export class DeployfleetCopilotRail extends Component {
         this.notification = useService("notification");
         this.state = useState({
             open: false,
+            activeTab: "approvals",
             loading: true,
             pendingApprovals: [],
             actingRequestId: null,
             rejectDialog: null,
+            // Chat
+            chatLoaded: false,
+            chatView: "sessions",
+            sessions: [],
+            showArchived: false,
+            agents: [],
+            newSessionAgentId: "",
+            creatingSession: false,
+            selectedSessionId: null,
+            messagesBySessionId: {},
+            newMessageText: "",
+            sendingMessage: false,
+            renamingSessionId: null,
+            renameText: "",
         });
 
         useHotkey("alt+a", () => this.toggleOpen(), { global: true, allowRepeat: false });
@@ -110,6 +128,14 @@ export class DeployfleetCopilotRail extends Component {
         this.state.rejectDialog = null;
     }
 
+    async onSelectTab(tabKey) {
+        this.state.activeTab = tabKey;
+        if (tabKey === "chat" && !this.state.chatLoaded) {
+            this.state.chatLoaded = true;
+            await Promise.all([this.loadSessions(), this.loadAgents()]);
+        }
+    }
+
     async onApprove(requestId) {
         this.state.actingRequestId = requestId;
         try {
@@ -153,6 +179,157 @@ export class DeployfleetCopilotRail extends Component {
             this.notification.add(extractErrorMessage(error), { type: "danger" });
         } finally {
             this.state.actingRequestId = null;
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Chat (doc 21 §5/§9, Phase 1)
+    // ---------------------------------------------------------------
+
+    async loadSessions() {
+        this.state.sessions = await this.orm.searchRead(
+            "deployfleet.ai.chat.session",
+            [],
+            ["name", "feature_id", "favorite", "archived"],
+            { order: "create_date desc" },
+        );
+    }
+
+    async loadAgents() {
+        this.state.agents = await this.orm.searchRead(
+            "deployfleet.ai.agent",
+            [],
+            ["name", "feature_id", "system_prompt_template"],
+            { order: "sequence asc" },
+        );
+    }
+
+    get filteredSessions() {
+        return this.state.sessions.filter((s) => Boolean(s.archived) === this.state.showArchived);
+    }
+
+    onNewSessionAgentInput(value) {
+        this.state.newSessionAgentId = value;
+    }
+
+    async onCreateSession() {
+        const agent = this.state.agents.find((a) => a.id === parseInt(this.state.newSessionAgentId, 10));
+        if (!agent) {
+            this.notification.add("Choose an agent to start a chat with.", { type: "danger" });
+            return;
+        }
+        this.state.creatingSession = true;
+        try {
+            const [sessionId] = await this.orm.create("deployfleet.ai.chat.session", [
+                {
+                    name: `Chat with ${agent.name}`,
+                    feature_id: agent.feature_id[0],
+                    system_prompt: agent.system_prompt_template,
+                },
+            ]);
+            await this.loadSessions();
+            this.state.newSessionAgentId = "";
+            await this.onSelectSession(sessionId);
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        } finally {
+            this.state.creatingSession = false;
+        }
+    }
+
+    async onSelectSession(sessionId) {
+        this.state.selectedSessionId = sessionId;
+        this.state.chatView = "conversation";
+        if (!this.state.messagesBySessionId[sessionId]) {
+            await this.loadMessages(sessionId);
+        }
+    }
+
+    async loadMessages(sessionId) {
+        this.state.messagesBySessionId[sessionId] = await this.orm.searchRead(
+            "deployfleet.ai.chat.message",
+            [["session_id", "=", sessionId]],
+            ["role", "content"],
+            { order: "create_date asc" },
+        );
+    }
+
+    onBackToSessions() {
+        this.state.chatView = "sessions";
+    }
+
+    async onToggleFavorite(session) {
+        try {
+            await this.orm.write("deployfleet.ai.chat.session", [session.id], { favorite: !session.favorite });
+            session.favorite = !session.favorite;
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        }
+    }
+
+    async onToggleArchive(session) {
+        try {
+            await this.orm.write("deployfleet.ai.chat.session", [session.id], { archived: !session.archived });
+            session.archived = !session.archived;
+            if (this.state.selectedSessionId === session.id) {
+                this.state.chatView = "sessions";
+            }
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        }
+    }
+
+    onStartRename(session) {
+        this.state.renamingSessionId = session.id;
+        this.state.renameText = session.name;
+    }
+
+    onRenameInput(ev) {
+        this.state.renameText = ev.target.value;
+    }
+
+    async onSaveRename(session) {
+        const name = this.state.renameText.trim();
+        if (!name) {
+            return;
+        }
+        try {
+            await this.orm.write("deployfleet.ai.chat.session", [session.id], { name });
+            session.name = name;
+            this.state.renamingSessionId = null;
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        }
+    }
+
+    onNewMessageInput(ev) {
+        this.state.newMessageText = ev.target.value;
+    }
+
+    async onSendMessage() {
+        const text = this.state.newMessageText.trim();
+        const sessionId = this.state.selectedSessionId;
+        if (!text || !sessionId) {
+            return;
+        }
+        this.state.sendingMessage = true;
+        this.state.newMessageText = "";
+        this.state.messagesBySessionId[sessionId].push({ role: "user", content: text });
+        try {
+            const reply = await this.orm.call("deployfleet.ai.chat.session", "action_send_message", [
+                [sessionId],
+                text,
+            ]);
+            this.state.messagesBySessionId[sessionId].push({ role: "assistant", content: reply });
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+            // Reload from the server so the optimistic user-message append
+            // above doesn't drift from what actually persisted (the write
+            // happens before complete() can fail, so the user turn is
+            // real even if the assistant turn errored out).
+            await this.loadMessages(sessionId);
+        } finally {
+            this.state.sendingMessage = false;
         }
     }
 }

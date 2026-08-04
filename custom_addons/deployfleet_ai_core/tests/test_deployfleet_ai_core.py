@@ -83,6 +83,46 @@ class TestDeployfleetAICoreAccessAsRealUser(TestDeployfleetAICoreBase):
         self.assertFalse(self.feature.enabled)
 
 
+class TestDeployfleetAIChatSession(TestDeployfleetAICoreBase):
+    """Regression tests for the Copilot Rail's Chat tab persistence layer
+    (docs/architecture/21-copilot-rail-architecture.md §5/§10 Phase 1) —
+    deployfleet.ai.chat.session/.message were modeled since Phase 0 but
+    had zero consumers until this."""
+
+    def _create_session(self):
+        return self.env["deployfleet.ai.chat.session"].create({
+            "name": "Test Chat", "feature_id": self.feature.id, "system_prompt": "sys",
+        })
+
+    def test_send_message_persists_both_turns_and_returns_reply(self):
+        session = self._create_session()
+        with self._mock_provider_call(text="here is your answer"):
+            reply = session.action_send_message("what's up?")
+        self.assertEqual(reply, "here is your answer")
+        self.assertEqual(len(session.message_ids), 2)
+        self.assertEqual(session.message_ids[0].role, "user")
+        self.assertEqual(session.message_ids[0].content, "what's up?")
+        self.assertEqual(session.message_ids[1].role, "assistant")
+        self.assertEqual(session.message_ids[1].content, "here is your answer")
+
+    def test_second_message_includes_prior_turns_in_transcript(self):
+        session = self._create_session()
+        with self._mock_provider_call(text="first reply"):
+            session.action_send_message("first question")
+        with self._mock_provider_call(text="second reply") as mocked:
+            session.action_send_message("second question")
+        sent_args = " ".join(str(arg) for arg in mocked.call_args.args)
+        self.assertIn("first question", sent_args)
+        self.assertIn("first reply", sent_args)
+        self.assertIn("second question", sent_args)
+
+    def test_session_respects_feature_enabled_gate(self):
+        session = self._create_session()
+        self.feature.enabled = False
+        with self.assertRaises(UserError):
+            session.action_send_message("hello")
+
+
 class TestDeployfleetAICorePolicyGates(TestDeployfleetAICoreBase):
     def test_ai_disabled_globally_blocks_call(self):
         self.policy.ai_enabled = False
