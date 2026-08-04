@@ -318,6 +318,13 @@
     color: var(--df-color-neutral-900);
 }
 
+.df-copilot-rail__tool-calls {
+    margin: 4px 0 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-ai);
+    opacity: 0.85;
+}
+
 .df-copilot-rail__context-chip {
     display: flex;
     align-items: center;
@@ -456,4 +463,73 @@
     .df-copilot-rail__panel {
         max-width: 100%;
     }
+}
+
+// Rich in-chat components (doc 21 §7/§8) — rendered inside an assistant
+// message bubble, so these stay compact rather than reusing a full
+// workspace card's spacing scale.
+.df-chat-message-renderer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+    margin-top: var(--df-space-1);
+    max-width: 85%;
+    align-self: flex-start;
+}
+
+.df-chat-vehicle-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-chat-vehicle-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-1);
+}
+
+.df-chat-vehicle-card__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--df-space-1);
+}
+
+.df-chat-vehicle-card__label {
+    color: var(--df-color-neutral-600);
+}
+
+.df-chat-vehicle-card__loading,
+.df-chat-vehicle-card__missing {
+    color: var(--df-color-neutral-600);
+    margin: 0;
+}
+
+.df-chat-table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-1);
+    overflow-x: auto;
+}
+
+.df-chat-table__title {
+    font-weight: 600;
+    font-size: var(--df-font-size-sm);
+    margin: 0 0 var(--df-space-1) 0;
+}
+
+.df-chat-table__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-chat-table__table th,
+.df-chat-table__table td {
+    text-align: left;
+    padding: 4px var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-100);
 }

@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 from odoo.exceptions import UserError
@@ -131,6 +132,46 @@ class TestDeployfleetAIChatSession(TestDeployfleetAICoreBase):
         # The context note must never leak into the persisted, user-visible
         # chat history - only the turn actually typed/heard is stored.
         self.assertNotIn("viewing vehicle ABC-123", session.message_ids[0].content)
+
+    def test_rich_payload_block_is_extracted_and_stripped_from_content(self):
+        session = self._create_session()
+        raw_reply = (
+            'Vehicle ZM-1234 looks fine.\n'
+            '```json\n'
+            '{"components": [{"type": "vehicle_card", "vehicle_id": 123}], "actions_available": []}\n'
+            '```'
+        )
+        with self._mock_provider_call(text=raw_reply):
+            reply = session.action_send_message("how's the vehicle?")
+        self.assertEqual(reply, "Vehicle ZM-1234 looks fine.")
+        message = session.message_ids.filtered(lambda m: m.role == "assistant")
+        self.assertEqual(message.content, "Vehicle ZM-1234 looks fine.")
+        self.assertNotIn("```", message.content)
+        payload = json.loads(message.rich_payload)
+        self.assertEqual(payload["components"], [{"type": "vehicle_card", "vehicle_id": 123}])
+
+    def test_malformed_rich_payload_block_degrades_to_plain_text(self):
+        session = self._create_session()
+        raw_reply = 'Here you go.\n```json\n{not valid json\n```'
+        with self._mock_provider_call(text=raw_reply):
+            reply = session.action_send_message("hello")
+        self.assertEqual(reply, raw_reply)
+        message = session.message_ids.filtered(lambda m: m.role == "assistant")
+        self.assertFalse(message.rich_payload)
+
+    def test_plain_reply_with_no_json_block_has_no_rich_payload(self):
+        session = self._create_session()
+        with self._mock_provider_call(text="just a plain answer"):
+            session.action_send_message("hello")
+        message = session.message_ids.filtered(lambda m: m.role == "assistant")
+        self.assertFalse(message.rich_payload)
+        self.assertFalse(message.tool_calls)
+
+    def test_extract_rich_payload_ignores_a_json_block_without_components_key(self):
+        session = self._create_session()
+        payload, text = session._extract_rich_payload('Some text\n```json\n{"foo": "bar"}\n```')
+        self.assertIsNone(payload)
+        self.assertIn("```json", text)
 
 
 class TestDeployfleetAICorePolicyGates(TestDeployfleetAICoreBase):
@@ -349,14 +390,16 @@ class TestDeployfleetAICoreToolCalling(TestDeployfleetAICoreBase):
             "name": "get_thing", "description": "gets a thing",
             "parameters": {"type": "object", "properties": {}},
         }]
+        tool_call_log = []
         with patch("odoo.addons.deployfleet_ai_core.models.deployfleet_ai_engine.requests") as mock_requests:
             mock_requests.post.side_effect = [tool_call_response, final_response]
             text, tokens_in, tokens_out = core._call_openai_compatible_with_tools(
-                "deepseek", "fake-key", "deepseek-chat", "sys", "hello", 4096, 0.2, tools, executor,
+                "deepseek", "fake-key", "deepseek-chat", "sys", "hello", 4096, 0.2, tools, executor, tool_call_log,
             )
         self.assertEqual(text, "Thing 7 is fine.")
         self.assertEqual((tokens_in, tokens_out), (30, 13))
         executor.assert_called_once_with("get_thing", {"id": 7})
+        self.assertEqual(tool_call_log, [{"tool": "get_thing", "args": {"id": 7}}])
 
     def test_claude_adapter_executes_tool_use_then_returns_final_text(self):
         core = self.env["deployfleet.ai.core"]
@@ -377,14 +420,16 @@ class TestDeployfleetAICoreToolCalling(TestDeployfleetAICoreBase):
             "name": "get_thing", "description": "gets a thing",
             "parameters": {"type": "object", "properties": {}},
         }]
+        tool_call_log = []
         with patch("odoo.addons.deployfleet_ai_core.models.deployfleet_ai_engine.requests") as mock_requests:
             mock_requests.post.side_effect = [tool_use_response, final_response]
             text, tokens_in, tokens_out = core._call_claude_with_tools(
-                "fake-key", "claude-haiku-4-5-20251001", "sys", "hello", 4096, 0.2, tools, executor,
+                "fake-key", "claude-haiku-4-5-20251001", "sys", "hello", 4096, 0.2, tools, executor, tool_call_log,
             )
         self.assertEqual(text, "Thing 7 is fine.")
         self.assertEqual((tokens_in, tokens_out), (30, 13))
         executor.assert_called_once_with("get_thing", {"id": 7})
+        self.assertEqual(tool_call_log, [{"tool": "get_thing", "args": {"id": 7}}])
 
     def test_tool_rounds_exhausted_degrades_gracefully_instead_of_looping(self):
         core = self.env["deployfleet.ai.core"]

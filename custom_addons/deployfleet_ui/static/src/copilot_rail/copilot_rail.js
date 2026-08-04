@@ -6,6 +6,7 @@ import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { registry } from "@web/core/registry";
 import { DeployfleetButton } from "../components/button/button";
 import { copilotContextStore } from "./copilot_context";
+import { DeployfleetChatMessageRenderer } from "./chat_message_renderer";
 
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
@@ -59,7 +60,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetCopilotRail extends Component {
     static template = "deployfleet_ui.CopilotRail";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetChatMessageRenderer };
     static props = {};
 
     setup() {
@@ -134,6 +135,15 @@ export class DeployfleetCopilotRail extends Component {
         const domainPrefix = this.copilotContext.domain ? `${this.copilotContext.domain}: ` : "";
         return `Viewing ${domainPrefix}${this.copilotContext.recordLabel} `
             + `(${this.copilotContext.model} #${this.copilotContext.recordId})`;
+    }
+
+    /** doc 21 §5's transparency detail: which tool(s) an assistant turn
+     * actually invoked, as a short "looked up: ..." line. */
+    formattedToolCalls(toolCalls) {
+        if (!toolCalls || !toolCalls.length) {
+            return "";
+        }
+        return toolCalls.map((call) => call.tool).join(", ");
     }
 
     formattedProposedVals(proposedVals) {
@@ -276,12 +286,32 @@ export class DeployfleetCopilotRail extends Component {
     }
 
     async loadMessages(sessionId) {
-        this.state.messagesBySessionId[sessionId] = await this.orm.searchRead(
+        const messages = await this.orm.searchRead(
             "deployfleet.ai.chat.message",
             [["session_id", "=", sessionId]],
-            ["role", "content"],
+            ["role", "content", "tool_calls", "rich_payload"],
             { order: "create_date asc" },
         );
+        this.state.messagesBySessionId[sessionId] = messages.map((message) => ({
+            ...message,
+            toolCalls: this.parseJsonField(message.tool_calls),
+            richPayload: this.parseJsonField(message.rich_payload),
+        }));
+    }
+
+    /** `tool_calls`/`rich_payload` come back from the ORM as either a JSON
+     * string or `false` (Odoo's empty-Text convention) - never trust the
+     * exact shape, degrade to null on anything unparseable rather than
+     * breaking the conversation view. */
+    parseJsonField(value) {
+        if (!value) {
+            return null;
+        }
+        try {
+            return JSON.parse(value);
+        } catch {
+            return null;
+        }
     }
 
     onBackToSessions() {
@@ -346,12 +376,16 @@ export class DeployfleetCopilotRail extends Component {
         this.state.newMessageText = "";
         this.state.messagesBySessionId[sessionId].push({ role: "user", content: text });
         try {
-            const reply = await this.orm.call("deployfleet.ai.chat.session", "action_send_message", [
+            await this.orm.call("deployfleet.ai.chat.session", "action_send_message", [
                 [sessionId],
                 text,
                 this.contextNote,
             ]);
-            this.state.messagesBySessionId[sessionId].push({ role: "assistant", content: reply });
+            // Reload rather than push a plain-text bubble: the persisted
+            // assistant message may carry tool_calls/rich_payload (doc 21
+            // §5/§7) this component has no way to reconstruct from the
+            // bare reply string action_send_message() returns.
+            await this.loadMessages(sessionId);
         } catch (error) {
             this.notification.add(extractErrorMessage(error), { type: "danger" });
             // Reload from the server so the optimistic user-message append

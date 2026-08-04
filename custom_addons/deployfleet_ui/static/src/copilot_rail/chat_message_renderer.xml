@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ChatMessageRenderer">
+        <div class="df-chat-message-renderer">
+            <t t-foreach="props.components" t-as="item" t-key="item_index">
+                <DeployfleetChatVehicleCard
+                    t-if="item.type === 'vehicle_card' and item.vehicle_id"
+                    vehicleId="item.vehicle_id"/>
+                <DeployfleetChatTable
+                    t-if="item.type === 'table' and item.columns and item.rows"
+                    title="item.title || ''"
+                    columns="item.columns"
+                    rows="item.rows"/>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="deployfleet_ui.ChatVehicleCard">
+        <DeployfleetCard layer="'workspace'">
+            <div class="df-chat-vehicle-card">
+                <p t-if="!state.vehicle and !state.notFound" class="df-chat-vehicle-card__loading">Loading vehicle…</p>
+                <p t-if="state.notFound" class="df-chat-vehicle-card__missing">Vehicle not found.</p>
+                <t t-if="state.vehicle">
+                    <div class="df-chat-vehicle-card__header">
+                        <strong t-esc="state.vehicle.license_plate"/>
+                        <DeployfleetStatusBadge label="state.vehicle.status" status="statusBadgeVariant"/>
+                    </div>
+                    <div class="df-chat-vehicle-card__row">
+                        <span class="df-chat-vehicle-card__label">Driver</span>
+                        <span t-esc="state.vehicle.current_driver_id ? state.vehicle.current_driver_id[1] : 'Unassigned'"/>
+                    </div>
+                    <div class="df-chat-vehicle-card__row">
+                        <span class="df-chat-vehicle-card__label">Odometer</span>
+                        <span t-esc="state.vehicle.odometer + ' km'"/>
+                    </div>
+                </t>
+            </div>
+        </DeployfleetCard>
+    </t>
+
+    <t t-name="deployfleet_ui.ChatTable">
+        <div class="df-chat-table">
+            <p t-if="props.title" class="df-chat-table__title" t-esc="props.title"/>
+            <table class="df-chat-table__table">
+                <thead>
+                    <tr>
+                        <th t-foreach="props.columns" t-as="column" t-key="column_index" t-esc="column"/>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="props.rows" t-as="row" t-key="row_index">
+                        <td t-foreach="row" t-as="cell" t-key="cell_index" t-esc="cell"/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+</templates>

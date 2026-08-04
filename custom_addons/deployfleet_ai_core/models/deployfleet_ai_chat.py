@@ -1,4 +1,10 @@
+import json
+import logging
+import re
+
 from odoo import fields, models
+
+_logger = logging.getLogger(__name__)
 
 # How many recent messages (both roles) to fold into the prompt sent to
 # complete() for multi-turn context - a deliberately simple, bounded
@@ -8,6 +14,15 @@ from odoo import fields, models
 # call path to a provider. Later phases may replace this with the
 # tool-calling/structured-output pipeline doc 21 describes.
 _MAX_HISTORY_MESSAGES = 20
+
+# doc 21 §7's structured-output contract, reached via a portable trailing
+# ```json {...} ``` fenced block rather than each provider's own native
+# JSON-mode/structured-output parameter (a deliberate deviation - native
+# JSON-mode needs a provider-specific request shape per adapter, and this
+# convention works identically across all three providers with zero
+# adapter changes, at the cost of relying on the model actually following
+# the instruction rather than a hard API guarantee).
+_RICH_PAYLOAD_FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.DOTALL)
 
 
 class DeployfleetAIChatSession(models.Model):
@@ -68,7 +83,13 @@ class DeployfleetAIChatSession(models.Model):
         frontend's useCopilotContext() store. It is folded into the
         transcript sent to the model for this turn only - deliberately
         never persisted on the message record itself, so the visible chat
-        history stays exactly what the user typed and heard back."""
+        history stays exactly what the user typed and heard back.
+
+        The assistant's raw reply may end with a ```json {...} ``` block
+        (doc 21 §7's structured-output contract) - extracted here into
+        `rich_payload` before the plain-text remainder is persisted as
+        `content`, so the transcript folded into future turns and the
+        chat bubble the user sees both stay clean prose, never raw JSON."""
         self.ensure_one()
         message_model = self.env["deployfleet.ai.chat.message"]
         message_model.create({"session_id": self.id, "role": "user", "content": content})
@@ -81,21 +102,49 @@ class DeployfleetAIChatSession(models.Model):
             transcript = f"[Context: {context_note}]\n{transcript}"
         reply = self._get_reply(transcript)
 
-        message_model.create({"session_id": self.id, "role": "assistant", "content": reply})
-        return reply
+        rich_payload, plain_text = self._extract_rich_payload(reply["text"])
+        message_model.create({
+            "session_id": self.id, "role": "assistant", "content": plain_text,
+            "tool_calls": json.dumps(reply["tool_calls"]) if reply["tool_calls"] else False,
+            "rich_payload": json.dumps(rich_payload) if rich_payload else False,
+        })
+        return plain_text
 
     def _get_reply(self, transcript):
-        """Produces the assistant's reply text for a turn. Plain
-        deployfleet.ai.core.complete() by default - deployfleet_ai_agents
-        overrides this via _inherit to route through complete_with_tools()
-        instead, the same overridable-hook pattern this codebase already
-        uses for _score_candidate() (deployfleet_dispatch_compliance
-        extending deployfleet_dispatch). Kept as a separate method
-        (rather than inlined in action_send_message()) specifically so
-        that override point exists without deployfleet_ai_core ever
-        needing to depend on deployfleet_ai_agents."""
+        """Produces the assistant's reply for a turn, as
+        `{"text": str, "tool_calls": [{"tool": ..., "args": ...}, ...]}`.
+        Plain deployfleet.ai.core.complete() (empty tool_calls) by default
+        - deployfleet_ai_agents overrides this via _inherit to route
+        through complete_with_tools() instead and populate tool_calls,
+        the same overridable-hook pattern this codebase already uses for
+        _score_candidate() (deployfleet_dispatch_compliance extending
+        deployfleet_dispatch). Kept as a separate method (rather than
+        inlined in action_send_message()) specifically so that override
+        point exists without deployfleet_ai_core ever needing to depend
+        on deployfleet_ai_agents."""
         self.ensure_one()
-        return self.env["deployfleet.ai.core"].complete(self.feature_id.key, self.system_prompt, transcript)
+        text = self.env["deployfleet.ai.core"].complete(self.feature_id.key, self.system_prompt, transcript)
+        return {"text": text, "tool_calls": []}
+
+    def _extract_rich_payload(self, text):
+        """Pulls an optional trailing ```json {...} ``` block out of a
+        plain-text reply (doc 21 §7). Returns (rich_payload_dict_or_None,
+        plain_text_with_the_block_removed). Never raises - an absent or
+        malformed block just means no rich payload, the same "never trust
+        the exact shape" defensiveness the provider adapters already
+        apply to token-usage parsing."""
+        match = _RICH_PAYLOAD_FENCE_RE.search(text)
+        if not match:
+            return None, text
+        try:
+            payload = json.loads(match.group(1))
+        except ValueError:
+            _logger.warning("deployfleet.ai.chat.session: malformed rich-payload JSON block, ignoring it")
+            return None, text
+        if not isinstance(payload, dict) or "components" not in payload:
+            return None, text
+        plain_text = (text[:match.start()] + text[match.end():]).strip()
+        return payload, plain_text or text
 
 
 class DeployfleetAIChatMessage(models.Model):
@@ -106,3 +155,12 @@ class DeployfleetAIChatMessage(models.Model):
     session_id = fields.Many2one("deployfleet.ai.chat.session", required=True, ondelete="cascade")
     role = fields.Selection([("user", "User"), ("assistant", "Assistant")], required=True)
     content = fields.Text(required=True)
+    tool_calls = fields.Text(
+        help="JSON list of {'tool', 'args'} this turn invoked (doc 21 §5) - populated only for "
+             "assistant messages from a tooled agent session; empty/false otherwise.",
+    )
+    rich_payload = fields.Text(
+        help="JSON {'components': [...], 'actions_available': [...]} extracted from the assistant's "
+             "reply (doc 21 §7) - lets the frontend's ChatMessageRenderer (doc 21 §8) render rich "
+             "components instead of only `content`'s plain text; empty/false when absent.",
+    )

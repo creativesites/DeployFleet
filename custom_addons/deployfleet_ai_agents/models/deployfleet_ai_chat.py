@@ -26,6 +26,9 @@ class DeployfleetAIChatSession(models.Model):
             return super()._get_reply(transcript)
 
         executor = tool_model.build_executor(agent)
-        return self.env["deployfleet.ai.core"].complete_with_tools(
-            self.feature_id.key, self.system_prompt, transcript, tools, executor=executor,
+        tool_call_log = []
+        text = self.env["deployfleet.ai.core"].complete_with_tools(
+            self.feature_id.key, self.system_prompt, transcript, tools,
+            executor=executor, tool_call_log=tool_call_log,
         )
+        return {"text": text, "tool_calls": tool_call_log}

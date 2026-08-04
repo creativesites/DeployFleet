@@ -108,3 +108,28 @@ class TestDeployfleetAIChatSessionToolCalling(TransactionCase):
         self.assertEqual(reply, "plain reply")
         mocked_complete.assert_called_once()
         mocked_complete_with_tools.assert_not_called()
+
+    def test_session_for_agent_with_tools_persists_tool_call_transparency(self):
+        """doc 21 §5's tool_calls field: the _get_reply() override passes a
+        tool_call_log list into complete_with_tools() by reference, so a
+        provider adapter that actually invokes a tool (simulated here via
+        the mock's side_effect, since complete_with_tools() itself is
+        mocked) leaves a record action_send_message() can persist."""
+        agent = self.env.ref("deployfleet_ai_agents.agent_fleet_analyst")
+        session = self._create_session(agent.feature_id)
+
+        def fake_complete_with_tools(_feature_key, _system_prompt, _transcript, _tools,
+                                      executor=None, tool_call_log=None, company=None):
+            del executor, company  # unused - only tool_call_log matters for this test
+            if tool_call_log is not None:
+                tool_call_log.append({"tool": "get_vehicle_summary", "args": {"vehicle_id": 1}})
+            return "vehicle 1 is available"
+
+        with patch.object(
+            type(self.env["deployfleet.ai.core"]), "complete_with_tools", side_effect=fake_complete_with_tools,
+        ):
+            session.action_send_message("how's vehicle 1?")
+
+        message = session.message_ids.filtered(lambda m: m.role == "assistant")
+        self.assertTrue(message.tool_calls)
+        self.assertIn("get_vehicle_summary", message.tool_calls)

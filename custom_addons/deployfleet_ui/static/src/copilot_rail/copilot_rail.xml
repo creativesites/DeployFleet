@@ -135,10 +135,17 @@
                             </button>
 
                             <div class="df-copilot-rail__conversation">
-                                <div t-foreach="state.messagesBySessionId[state.selectedSessionId] or []" t-as="message" t-key="message_index"
-                                     t-attf-class="df-copilot-rail__message df-copilot-rail__message--{{ message.role }}">
-                                    <span t-esc="message.content"/>
-                                </div>
+                                <t t-foreach="state.messagesBySessionId[state.selectedSessionId] or []" t-as="message" t-key="message_index">
+                                    <div t-attf-class="df-copilot-rail__message df-copilot-rail__message--{{ message.role }}">
+                                        <span t-esc="message.content"/>
+                                        <p t-if="message.toolCalls and message.toolCalls.length" class="df-copilot-rail__tool-calls">
+                                            <i class="fa fa-search"/> Looked up: <t t-esc="this.formattedToolCalls(message.toolCalls)"/>
+                                        </p>
+                                    </div>
+                                    <DeployfleetChatMessageRenderer
+                                        t-if="message.richPayload and message.richPayload.components"
+                                        components="message.richPayload.components"/>
+                                </t>
                                 <p t-if="(state.messagesBySessionId[state.selectedSessionId] or []).length === 0"
                                    class="df-copilot-rail__empty">Ask this agent anything.</p>
                             </div>

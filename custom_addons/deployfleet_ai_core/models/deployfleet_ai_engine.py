@@ -132,7 +132,13 @@ class DeployfleetAICore(models.AbstractModel):
         return response_text
 
     @api.model
-    def complete_with_tools(self, feature_key, system_prompt, user_message, tools, executor=None, company=None):
+    # Mirrors complete()'s own parameter list plus the tool-calling-specific
+    # additions - a dict-based signature would just move the same complexity
+    # into every call site instead of removing it.
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def complete_with_tools(
+        self, feature_key, system_prompt, user_message, tools, executor=None, company=None, tool_call_log=None,
+    ):
         """Like complete(), but lets the provider call back into a bounded
         set of tools (function/tool-calling) before producing its final
         answer. Tool results are live data, so — unlike complete() — this
@@ -143,7 +149,14 @@ class DeployfleetAICore(models.AbstractModel):
         adapters below reshape per provider). `executor(name, arguments)`
         is called for each tool the provider selects and must return a
         JSON-serializable result; passing no executor is safe (tool calls
-        just come back as an error string the model can react to)."""
+        just come back as an error string the model can react to).
+
+        `tool_call_log`, if a list is passed, gets one {"tool", "args"}
+        dict appended per tool call actually executed (doc 21 §5's
+        transparency field on deployfleet.ai.chat.message) - a side
+        channel rather than a return-value change, so complete_with_tools()'s
+        existing (text, tokens_in, tokens_out)-shaped internals don't need
+        to change shape for callers that don't care."""
         company = company or self.env.company
 
         policy = self.env["deployfleet.ai.policy"].search([("company_id", "=", company.id)], limit=1)
@@ -182,7 +195,7 @@ class DeployfleetAICore(models.AbstractModel):
         try:
             response_text, tokens_in, tokens_out = self._call_provider_with_tools(
                 provider, api_key, model_name, system_prompt, user_message,
-                config.max_tokens, config.temperature, tools, executor,
+                config.max_tokens, config.temperature, tools, executor, tool_call_log,
             )
         except Exception as exc:
             duration_ms = int((time.monotonic() - start) * 1000)
@@ -266,20 +279,21 @@ class DeployfleetAICore(models.AbstractModel):
         raise ValueError(f"Unknown AI provider: {provider}")
 
     @api.model
-    # Mirrors _call_provider()'s own parameter list plus tools/executor — a dict-based
-    # signature would just move the same complexity into every call site instead of removing it.
+    # Mirrors _call_provider()'s own parameter list plus tools/executor/
+    # tool_call_log — a dict-based signature would just move the same
+    # complexity into every call site instead of removing it.
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def _call_provider_with_tools(self, provider, api_key, model_name, system_prompt, user_message,
-                                   max_tokens, temperature, tools, executor):
+                                   max_tokens, temperature, tools, executor, tool_call_log=None):
         if provider in ("deepseek", "openai"):
             return self._call_openai_compatible_with_tools(
                 provider, api_key, model_name, system_prompt, user_message,
-                max_tokens, temperature, tools, executor,
+                max_tokens, temperature, tools, executor, tool_call_log,
             )
         if provider == "claude":
             return self._call_claude_with_tools(
                 api_key, model_name, system_prompt, user_message,
-                max_tokens, temperature, tools, executor,
+                max_tokens, temperature, tools, executor, tool_call_log,
             )
         raise NotImplementedError(
             f"Tool-calling is not implemented for provider '{provider}' "
@@ -287,12 +301,17 @@ class DeployfleetAICore(models.AbstractModel):
         )
 
     @api.model
-    def _execute_tool_call(self, name, arguments, executor):
+    def _execute_tool_call(self, name, arguments, executor, tool_call_log=None):
         """Runs one provider-selected tool call and returns a JSON string
         result suitable for feeding back to the provider. Never raises —
         an unknown tool, a bad argument, or an executor exception all
         become an error string the model can react to instead of aborting
-        the whole exchange over what might be recoverable."""
+        the whole exchange over what might be recoverable. Records the
+        call in `tool_call_log` (if a list was passed) regardless of
+        outcome — a failed tool call is still worth surfacing in doc 21
+        §5's transparency detail."""
+        if tool_call_log is not None:
+            tool_call_log.append({"tool": name, "args": arguments})
         if not executor:
             return json.dumps({"error": "No tool executor is available in this context."})
         try:
@@ -308,7 +327,7 @@ class DeployfleetAICore(models.AbstractModel):
     # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
     def _call_openai_compatible_with_tools(
         self, provider, api_key, model_name, system_prompt, user_message,
-        max_tokens, temperature, tools, executor,
+        max_tokens, temperature, tools, executor, tool_call_log=None,
     ):
         """OpenAI/DeepSeek function-calling: `tools`/`tool_choice` on the
         request, `message.tool_calls[].function.{name,arguments}` (a JSON
@@ -382,15 +401,17 @@ class DeployfleetAICore(models.AbstractModel):
                 except ValueError:
                     result = json.dumps({"error": f"Invalid JSON arguments for tool '{fn.get('name')}'."})
                 else:
-                    result = self._execute_tool_call(fn.get("name"), arguments, executor)
+                    result = self._execute_tool_call(fn.get("name"), arguments, executor, tool_call_log)
                 messages.append({"role": "tool", "tool_call_id": call.get("id"), "content": result})
 
         return self._tool_rounds_exhausted_message(), total_tokens_in, total_tokens_out
 
     @api.model
+    # Same reasoning as _call_openai_compatible_with_tools's own disable comment above.
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def _call_claude_with_tools(
         self, api_key, model_name, system_prompt, user_message,
-        max_tokens, temperature, tools, executor,
+        max_tokens, temperature, tools, executor, tool_call_log=None,
     ):
         """Claude Messages API tool use: `tools` with `input_schema` on the
         request, `content` blocks of `type: "tool_use"` on the response,
@@ -455,7 +476,9 @@ class DeployfleetAICore(models.AbstractModel):
                 {
                     "type": "tool_result",
                     "tool_use_id": block.get("id"),
-                    "content": self._execute_tool_call(block.get("name"), block.get("input") or {}, executor),
+                    "content": self._execute_tool_call(
+                        block.get("name"), block.get("input") or {}, executor, tool_call_log,
+                    ),
                 }
                 for block in tool_use_blocks
             ]
