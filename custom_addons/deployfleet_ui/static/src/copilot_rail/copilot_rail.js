@@ -5,6 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { registry } from "@web/core/registry";
 import { DeployfleetButton } from "../components/button/button";
+import { copilotContextStore } from "./copilot_context";
 
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
@@ -19,20 +20,30 @@ function extractErrorMessage(error) {
  * CLAUDE.md §4, hard risk #7).
  *
  * **Two tabs: Approvals (unchanged) and Chat (new — doc 21 §5/§9/§10
- * Phase 1).** The Chat tab is a persistent, multi-session, single-turn-
- * grounded-in-real-history conversation with one of the six
+ * Phase 1, extended in Phase 1b).** The Chat tab is a persistent,
+ * multi-session, real-history-grounded conversation with one of the six
  * `deployfleet.ai.agent` personas, built on `deployfleet.ai.chat.session`/
  * `.message` — modeled since Phase 0 but completely unused until now (see
- * the AI & Intelligence domain audit in CLAUDE.md). **Deliberately scoped
- * to doc 21's Phase 1 only**: plain-text responses, no tool-calling, no
- * rich in-chat components, no auto-execute actions, no memory/entity-
- * summary layer — those are doc 21 §10's Phases 2–4, explicitly not
- * attempted here. Every message still routes through the exact same
- * `deployfleet.ai.core.complete()` entry point every other AI feature in
- * the product uses (via `deployfleet.ai.chat.session.action_send_message()`,
- * which persists both turns and builds a bounded recent-history transcript
- * for multi-turn context — see that method's own docstring), so policy/
- * permission/budget/cache checks all still apply identically.
+ * the AI & Intelligence domain audit in CLAUDE.md). Every message still
+ * routes through `deployfleet.ai.chat.session.action_send_message()`,
+ * which persists both turns and builds a bounded recent-history
+ * transcript for multi-turn context — so policy/permission/budget/cache
+ * checks all still apply identically. Server-side (deployfleet_ai_agents'
+ * `_get_reply()` override — see docs/architecture/
+ * 21-copilot-rail-architecture.md §3/§10), a session whose agent has
+ * registered tools now routes through `complete_with_tools()` instead of
+ * plain `complete()`, so the assistant can look up live vehicle/
+ * maintenance/dispatch/compliance data before answering — invisible to
+ * this component, which still just calls `action_send_message()`.
+ * **Still deliberately not built**: rich in-chat components, auto-execute
+ * actions, the memory/entity-summary layer — doc 21 §10's Phases 2–4.
+ *
+ * `useCopilotContext()` (doc 21 §2, `./copilot_context.js`) lets a
+ * workspace publish "what the user is looking at" into a small shared
+ * store; this component reads it via `useState(copilotContextStore)` to
+ * show a context chip and fold a `context_note` into the next message
+ * sent — never persisted on the message itself, only used to steer that
+ * turn's answer (see `action_send_message()`'s own docstring).
  *
  * A new session picks an agent up front (from `deployfleet.ai.agent`) —
  * the session then keeps using that agent's feature/prompt for its whole
@@ -54,6 +65,12 @@ export class DeployfleetCopilotRail extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
+        // useState() on the module-level copilotContextStore (rather than
+        // reading it directly) registers this component as a subscriber,
+        // so the Rail re-renders whenever a workspace publishes/clears
+        // context via useCopilotContext() - the standard Owl pattern for
+        // a store shared across independently-mounted components.
+        this.copilotContext = useState(copilotContextStore);
         this.state = useState({
             open: false,
             activeTab: "approvals",
@@ -104,6 +121,19 @@ export class DeployfleetCopilotRail extends Component {
 
     get pendingCount() {
         return this.state.pendingApprovals.length;
+    }
+
+    /** Plain-text description of what the user is currently looking at
+     * elsewhere in the app (doc 21 §2), or null if no workspace has
+     * published context. Shown as a chip above the composer and folded
+     * into the prompt for the next message sent. */
+    get contextNote() {
+        if (!this.copilotContext.recordId) {
+            return null;
+        }
+        const domainPrefix = this.copilotContext.domain ? `${this.copilotContext.domain}: ` : "";
+        return `Viewing ${domainPrefix}${this.copilotContext.recordLabel} `
+            + `(${this.copilotContext.model} #${this.copilotContext.recordId})`;
     }
 
     formattedProposedVals(proposedVals) {
@@ -319,6 +349,7 @@ export class DeployfleetCopilotRail extends Component {
             const reply = await this.orm.call("deployfleet.ai.chat.session", "action_send_message", [
                 [sessionId],
                 text,
+                this.contextNote,
             ]);
             this.state.messagesBySessionId[sessionId].push({ role: "assistant", content: reply });
         } catch (error) {

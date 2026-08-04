@@ -143,6 +143,11 @@
                                    class="df-copilot-rail__empty">Ask this agent anything.</p>
                             </div>
 
+                            <div t-if="contextNote" class="df-copilot-rail__context-chip">
+                                <i class="fa fa-eye"/>
+                                <span t-esc="contextNote"/>
+                            </div>
+
                             <div class="df-copilot-rail__composer">
                                 <textarea
                                     class="df-copilot-rail__composer-input"

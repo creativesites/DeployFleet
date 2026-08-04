@@ -8,6 +8,7 @@ import { DeployfleetStatusBadge } from "../components/status_badge/status_badge"
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DeployfleetAiRecommendationCard } from "../components/ai_recommendation_card/ai_recommendation_card";
+import { useCopilotContext } from "../copilot_rail/copilot_context";
 
 const STATUS_FILTERS = [
     { key: "all", label: "All" },
@@ -150,6 +151,7 @@ export class DeployfleetFleetCommandCenter extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.notification = useService("notification");
+        this.copilotContext = useCopilotContext();
         this.state = useState({
             loading: true,
             vehicles: [],
@@ -267,9 +269,17 @@ export class DeployfleetFleetCommandCenter extends Component {
     async onSelectVehicle(vehicleId) {
         if (this.state.selectedVehicleId === vehicleId) {
             this.state.selectedVehicleId = null;
+            this.copilotContext.clearContext();
             return;
         }
         this.state.selectedVehicleId = vehicleId;
+        const vehicleForContext = this.state.vehicles.find((v) => v.id === vehicleId);
+        this.copilotContext.setContext({
+            domain: "fleet",
+            model: "deployfleet.vehicle",
+            recordId: vehicleId,
+            recordLabel: vehicleForContext?.license_plate || vehicleForContext?.display_name || `Vehicle #${vehicleId}`,
+        });
         if (!this.state.editByVehicleId[vehicleId]) {
             const vehicle = this.state.vehicles.find((v) => v.id === vehicleId);
             this.state.editByVehicleId[vehicleId] = {

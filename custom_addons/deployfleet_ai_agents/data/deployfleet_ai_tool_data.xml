@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Phase 1b first tranche (docs/architecture/21-copilot-rail-architecture.md §3/§10):
+         read-only, one or two per agent, each a thin wrapper around an ORM search this
+         codebase already performs somewhere in deployfleet_ui. Finance/Customer agents
+         deliberately excluded for now — Finance sits behind the `financial` data-category
+         boundary (§4 criterion 2), Customer Agent's cross-customer data-isolation concerns
+         weren't audited for tool access in this pass. -->
+
+    <record id="tool_get_vehicle_summary" model="deployfleet.ai.tool">
+        <field name="key">get_vehicle_summary</field>
+        <field name="name">Get Vehicle Summary</field>
+        <field name="description">Look up one vehicle's current status, driver, odometer, and type by its database id.</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {"vehicle_id": {"type": "integer", "description": "The deployfleet.vehicle record id."}}, "required": ["vehicle_id"]}]]></field>
+        <field name="read_only" eval="True"/>
+        <field name="model_name">deployfleet.vehicle</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_fleet_analyst'), ref('agent_maintenance_agent')])]"/>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="tool_get_due_maintenance" model="deployfleet.ai.tool">
+        <field name="key">get_due_maintenance</field>
+        <field name="name">Get Due Maintenance</field>
+        <field name="description">List maintenance schedules currently due, soonest first, across the whole fleet.</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {}}]]></field>
+        <field name="read_only" eval="True"/>
+        <field name="model_name">deployfleet.maintenance.schedule</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_maintenance_agent')])]"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="tool_get_available_drivers" model="deployfleet.ai.tool">
+        <field name="key">get_available_drivers</field>
+        <field name="name">Get Available Drivers</field>
+        <field name="description">List drivers with a valid license who are not on approved leave on a given date (defaults to any date if omitted).</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {"date": {"type": "string", "description": "ISO date (YYYY-MM-DD) to check leave against. Optional."}}}]]></field>
+        <field name="read_only" eval="True"/>
+        <field name="model_name">hr.employee</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_dispatch_agent')])]"/>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="tool_get_unassigned_shipments" model="deployfleet.ai.tool">
+        <field name="key">get_unassigned_shipments</field>
+        <field name="name">Get Unassigned Shipments</field>
+        <field name="description">List confirmed shipments not yet assigned to a vehicle/driver, soonest pickup first.</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {}}]]></field>
+        <field name="read_only" eval="True"/>
+        <field name="model_name">deployfleet.shipment</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_dispatch_agent')])]"/>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="tool_get_expiring_documents" model="deployfleet.ai.tool">
+        <field name="key">get_expiring_documents</field>
+        <field name="name">Get Expiring Documents</field>
+        <field name="description">List compliance documents that are expiring soon or already expired, across vehicles and drivers.</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {}}]]></field>
+        <field name="read_only" eval="True"/>
+        <field name="model_name">deployfleet.compliance.document</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_compliance_agent')])]"/>
+        <field name="sequence">50</field>
+    </record>
+</odoo>

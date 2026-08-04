@@ -122,6 +122,16 @@ class TestDeployfleetAIChatSession(TestDeployfleetAICoreBase):
         with self.assertRaises(UserError):
             session.action_send_message("hello")
 
+    def test_context_note_is_folded_into_transcript_but_never_persisted(self):
+        session = self._create_session()
+        with self._mock_provider_call(text="here's the vehicle status") as mocked:
+            session.action_send_message("what's going on?", context_note="viewing vehicle ABC-123")
+        sent_args = " ".join(str(arg) for arg in mocked.call_args.args)
+        self.assertIn("viewing vehicle ABC-123", sent_args)
+        # The context note must never leak into the persisted, user-visible
+        # chat history - only the turn actually typed/heard is stored.
+        self.assertNotIn("viewing vehicle ABC-123", session.message_ids[0].content)
+
 
 class TestDeployfleetAICorePolicyGates(TestDeployfleetAICoreBase):
     def test_ai_disabled_globally_blocks_call(self):
@@ -280,3 +290,132 @@ class TestDeployfleetAICoreProviderAdapters(TestDeployfleetAICoreBase):
         core = self.env["deployfleet.ai.core"]
         with self.assertRaises(NotImplementedError):
             core._call_provider("local", None, "local-model", "sys", "hello", 4096, 0.2)
+
+
+class TestDeployfleetAICoreToolCalling(TestDeployfleetAICoreBase):
+    """Regression tests for complete_with_tools() and its two
+    provider-native tool-calling adapters (docs/architecture/
+    21-copilot-rail-architecture.md §3/§10 Phase 1b)."""
+
+    def _mock_tool_call(self, text="tool-informed answer", tokens_in=5, tokens_out=5):
+        return patch.object(
+            type(self.env["deployfleet.ai.core"]),
+            "_call_provider_with_tools",
+            return_value=(text, tokens_in, tokens_out),
+        )
+
+    def test_complete_with_tools_returns_provider_text_and_logs_usage(self):
+        tools = [{"name": "noop", "description": "does nothing", "parameters": {"type": "object", "properties": {}}}]
+        with self._mock_tool_call(text="42 vehicles active"):
+            result = self.env["deployfleet.ai.core"].complete_with_tools(
+                "test_feature", "sys", "how many vehicles?", tools,
+            )
+        self.assertEqual(result, "42 vehicles active")
+        log = self.env["deployfleet.ai.usage"].search([("feature", "=", "test_feature")], limit=1)
+        self.assertEqual(log.state, "success")
+        self.assertFalse(log.cache_hit)
+
+    def test_complete_with_tools_never_reads_or_writes_cache(self):
+        tools = [{"name": "noop", "description": "x", "parameters": {}}]
+        with self._mock_tool_call(text="first"):
+            self.env["deployfleet.ai.core"].complete_with_tools("test_feature", "sys", "hello", tools)
+        cache = self.env["deployfleet.ai.response.cache"].search([("feature", "=", "test_feature")])
+        self.assertFalse(cache, "tool-calling responses must never populate the plain-text response cache")
+
+    def test_complete_with_tools_respects_disabled_feature_gate(self):
+        self.feature.enabled = False
+        with self.assertRaises(UserError):
+            self.env["deployfleet.ai.core"].complete_with_tools("test_feature", "sys", "hello", [])
+
+    def test_openai_adapter_executes_tool_call_then_returns_final_text(self):
+        core = self.env["deployfleet.ai.core"]
+        tool_call_response = MagicMock()
+        tool_call_response.raise_for_status.return_value = None
+        tool_call_response.json.return_value = {
+            "choices": [{"message": {
+                "role": "assistant", "content": None,
+                "tool_calls": [{"id": "call_1", "function": {"name": "get_thing", "arguments": '{"id": 7}'}}],
+            }}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+        }
+        final_response = MagicMock()
+        final_response.raise_for_status.return_value = None
+        final_response.json.return_value = {
+            "choices": [{"message": {"role": "assistant", "content": "Thing 7 is fine."}}],
+            "usage": {"prompt_tokens": 20, "completion_tokens": 8},
+        }
+        executor = MagicMock(return_value={"status": "fine"})
+        tools = [{
+            "name": "get_thing", "description": "gets a thing",
+            "parameters": {"type": "object", "properties": {}},
+        }]
+        with patch("odoo.addons.deployfleet_ai_core.models.deployfleet_ai_engine.requests") as mock_requests:
+            mock_requests.post.side_effect = [tool_call_response, final_response]
+            text, tokens_in, tokens_out = core._call_openai_compatible_with_tools(
+                "deepseek", "fake-key", "deepseek-chat", "sys", "hello", 4096, 0.2, tools, executor,
+            )
+        self.assertEqual(text, "Thing 7 is fine.")
+        self.assertEqual((tokens_in, tokens_out), (30, 13))
+        executor.assert_called_once_with("get_thing", {"id": 7})
+
+    def test_claude_adapter_executes_tool_use_then_returns_final_text(self):
+        core = self.env["deployfleet.ai.core"]
+        tool_use_response = MagicMock()
+        tool_use_response.raise_for_status.return_value = None
+        tool_use_response.json.return_value = {
+            "content": [{"type": "tool_use", "id": "toolu_1", "name": "get_thing", "input": {"id": 7}}],
+            "usage": {"input_tokens": 10, "output_tokens": 5},
+        }
+        final_response = MagicMock()
+        final_response.raise_for_status.return_value = None
+        final_response.json.return_value = {
+            "content": [{"type": "text", "text": "Thing 7 is fine."}],
+            "usage": {"input_tokens": 20, "output_tokens": 8},
+        }
+        executor = MagicMock(return_value={"status": "fine"})
+        tools = [{
+            "name": "get_thing", "description": "gets a thing",
+            "parameters": {"type": "object", "properties": {}},
+        }]
+        with patch("odoo.addons.deployfleet_ai_core.models.deployfleet_ai_engine.requests") as mock_requests:
+            mock_requests.post.side_effect = [tool_use_response, final_response]
+            text, tokens_in, tokens_out = core._call_claude_with_tools(
+                "fake-key", "claude-haiku-4-5-20251001", "sys", "hello", 4096, 0.2, tools, executor,
+            )
+        self.assertEqual(text, "Thing 7 is fine.")
+        self.assertEqual((tokens_in, tokens_out), (30, 13))
+        executor.assert_called_once_with("get_thing", {"id": 7})
+
+    def test_tool_rounds_exhausted_degrades_gracefully_instead_of_looping(self):
+        core = self.env["deployfleet.ai.core"]
+        always_tool_call_response = MagicMock()
+        always_tool_call_response.raise_for_status.return_value = None
+        always_tool_call_response.json.return_value = {
+            "choices": [{"message": {
+                "role": "assistant", "content": None,
+                "tool_calls": [{"id": "call_1", "function": {"name": "get_thing", "arguments": "{}"}}],
+            }}],
+            "usage": {"prompt_tokens": 1, "completion_tokens": 1},
+        }
+        executor = MagicMock(return_value={"ok": True})
+        tools = [{"name": "get_thing", "description": "x", "parameters": {}}]
+        with patch("odoo.addons.deployfleet_ai_core.models.deployfleet_ai_engine.requests") as mock_requests:
+            mock_requests.post.return_value = always_tool_call_response
+            text, _tokens_in, _tokens_out = core._call_openai_compatible_with_tools(
+                "deepseek", "fake-key", "deepseek-chat", "sys", "hello", 4096, 0.2, tools, executor,
+            )
+        self.assertIn("wasn't able to finish", text)
+
+    def test_execute_tool_call_returns_error_when_no_executor(self):
+        core = self.env["deployfleet.ai.core"]
+        result = core._execute_tool_call("anything", {}, None)
+        self.assertIn("error", result)
+
+    def test_execute_tool_call_catches_executor_exception(self):
+        core = self.env["deployfleet.ai.core"]
+
+        def boom(_name, _args):
+            raise ValueError("kaboom")
+
+        result = core._execute_tool_call("anything", {}, boom)
+        self.assertIn("kaboom", result)

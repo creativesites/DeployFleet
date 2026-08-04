@@ -1,0 +1,110 @@
+from unittest.mock import patch
+
+from odoo.exceptions import UserError
+from odoo.tests.common import TransactionCase, tagged
+
+_EXPECTED_TOOL_KEYS = {
+    "get_vehicle_summary", "get_due_maintenance", "get_available_drivers",
+    "get_unassigned_shipments", "get_expiring_documents",
+}
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetAITool(TransactionCase):
+    """Regression tests for the Phase 1b tool registry (docs/architecture/
+    21-copilot-rail-architecture.md §3) — fixed dict-dispatch execution,
+    per-agent tool scoping, and the constraint keeping a tool record from
+    naming a key this module doesn't actually implement."""
+
+    def test_five_tools_seeded(self):
+        tools = self.env["deployfleet.ai.tool"].search([])
+        self.assertEqual(set(tools.mapped("key")), _EXPECTED_TOOL_KEYS)
+
+    def test_finance_and_customer_agents_have_no_tools(self):
+        finance_agent = self.env.ref("deployfleet_ai_agents.agent_finance_agent")
+        customer_agent = self.env.ref("deployfleet_ai_agents.agent_customer_agent")
+        self.assertFalse(self.env["deployfleet.ai.tool"].schemas_for_agent(finance_agent))
+        self.assertFalse(self.env["deployfleet.ai.tool"].schemas_for_agent(customer_agent))
+
+    def test_to_llm_schema_shape(self):
+        tool = self.env.ref("deployfleet_ai_agents.tool_get_vehicle_summary")
+        schema = tool.to_llm_schema()
+        self.assertEqual(schema["name"], "get_vehicle_summary")
+        self.assertIn("description", schema)
+        self.assertEqual(schema["parameters"]["type"], "object")
+
+    def test_execute_unassigned_shipments_returns_a_count_not_an_error(self):
+        tool = self.env.ref("deployfleet_ai_agents.tool_get_unassigned_shipments")
+        result = tool.execute({})
+        self.assertNotIn("error", result)
+        self.assertIn("count", result)
+
+    def test_execute_unknown_key_never_raises(self):
+        tool = self.env.ref("deployfleet_ai_agents.tool_get_vehicle_summary")
+        # A tool missing its own vehicle_id argument should degrade to an
+        # {"error": ...} dict, never an exception escaping to the caller.
+        result = tool.execute({})
+        self.assertIn("error", result)
+
+    def test_key_must_have_a_registered_handler(self):
+        with self.assertRaises(UserError):
+            self.env["deployfleet.ai.tool"].create({
+                "key": "not_a_real_handler",
+                "name": "Bogus Tool",
+                "description": "This key has no _TOOL_HANDLERS entry.",
+            })
+
+    def test_build_executor_refuses_tool_outside_agent_scope(self):
+        compliance_agent = self.env.ref("deployfleet_ai_agents.agent_compliance_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(compliance_agent)
+        # Compliance Agent only has get_expiring_documents (§3/§10) — a
+        # tool-call for another agent's tool must be refused, not silently run.
+        result = executor("get_vehicle_summary", {"vehicle_id": 1})
+        self.assertIn("error", result)
+
+    def test_build_executor_runs_tool_within_agent_scope(self):
+        compliance_agent = self.env.ref("deployfleet_ai_agents.agent_compliance_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(compliance_agent)
+        result = executor("get_expiring_documents", {})
+        self.assertNotIn("error", result)
+        self.assertIn("count", result)
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetAIChatSessionToolCalling(TransactionCase):
+    """Regression tests for the _get_reply() override that routes chat
+    turns through complete_with_tools() when the session's feature maps
+    to an agent with registered tools (doc 21 §3/§10 Phase 1b)."""
+
+    def _create_session(self, feature):
+        return self.env["deployfleet.ai.chat.session"].create({
+            "name": "Test Chat", "feature_id": feature.id, "system_prompt": "sys",
+        })
+
+    def test_session_for_agent_with_tools_routes_through_complete_with_tools(self):
+        agent = self.env.ref("deployfleet_ai_agents.agent_fleet_analyst")
+        session = self._create_session(agent.feature_id)
+        with patch.object(
+            type(self.env["deployfleet.ai.core"]), "complete_with_tools", return_value="tool-informed reply",
+        ) as mocked:
+            reply = session.action_send_message("how's vehicle 1?")
+        self.assertEqual(reply, "tool-informed reply")
+        mocked.assert_called_once()
+        _feature_key, _system_prompt, _transcript, tools = mocked.call_args.args
+        self.assertTrue(any(tool["name"] == "get_vehicle_summary" for tool in tools))
+
+    def test_session_for_feature_without_agent_falls_back_to_plain_complete(self):
+        feature = self.env["deployfleet.ai.feature"].create({
+            "key": "no_agent_feature", "name": "No Agent Feature",
+            "enabled": True, "model_tier": "cheap", "data_category": "general",
+        })
+        session = self._create_session(feature)
+        with patch.object(
+            type(self.env["deployfleet.ai.core"]), "complete", return_value="plain reply",
+        ) as mocked_complete, patch.object(
+            type(self.env["deployfleet.ai.core"]), "complete_with_tools",
+        ) as mocked_complete_with_tools:
+            reply = session.action_send_message("hello")
+        self.assertEqual(reply, "plain reply")
+        mocked_complete.assert_called_once()
+        mocked_complete_with_tools.assert_not_called()

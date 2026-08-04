@@ -318,6 +318,20 @@
     color: var(--df-color-neutral-900);
 }
 
+.df-copilot-rail__context-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px var(--df-space-1);
+    border-radius: 999px;
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
+    font-size: var(--df-font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .df-copilot-rail__composer {
     display: flex;
     flex-direction: column;

@@ -9,11 +9,12 @@
     "depends": [
         "deployfleet_ai_core", "deployfleet_ai_permissions", "deployfleet_maintenance",
         "deployfleet_workshop", "deployfleet_fuel", "deployfleet_dispatch", "deployfleet_billing",
-        "deployfleet_security",
+        "deployfleet_security", "deployfleet_compliance", "deployfleet_leave",
     ],
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_ai_agent_data.xml",
+        "data/deployfleet_ai_tool_data.xml",
         "data/deployfleet_ai_agents_cron.xml",
         "views/deployfleet_ai_agent_views.xml",
         "views/deployfleet_maintenance_prediction_views.xml",

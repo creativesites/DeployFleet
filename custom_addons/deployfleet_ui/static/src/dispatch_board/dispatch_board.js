@@ -6,6 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
+import { useCopilotContext } from "../copilot_rail/copilot_context";
 
 // A shipment is "urgent" once its requested pickup is less than this many
 // hours away — mirrors no backend field, this is a pure display heuristic
@@ -143,6 +144,7 @@ export class DeployfleetDispatchBoard extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.notification = useService("notification");
+        this.copilotContext = useCopilotContext();
         this.state = useState({
             loading: true,
             shipments: [],
@@ -246,9 +248,17 @@ export class DeployfleetDispatchBoard extends Component {
     async onSelectShipment(shipmentId, state) {
         if (this.state.selectedShipmentId === shipmentId) {
             this.state.selectedShipmentId = null;
+            this.copilotContext.clearContext();
             return;
         }
         this.state.selectedShipmentId = shipmentId;
+        const shipmentForContext = this.state.shipments.find((s) => s.id === shipmentId);
+        this.copilotContext.setContext({
+            domain: "dispatch",
+            model: "deployfleet.shipment",
+            recordId: shipmentId,
+            recordLabel: shipmentForContext?.name || `Shipment #${shipmentId}`,
+        });
         if (state === "confirmed" && !this.state.candidatesByShipment[shipmentId]) {
             await this.loadCandidates(shipmentId);
         }
