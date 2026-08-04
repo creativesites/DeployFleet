@@ -60,6 +60,12 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 actionXmlId: "deployfleet_tyres.action_deployfleet_tyre",
             },
             {
+                title: "Insurance",
+                description: "Vehicle insurance policies and coverage periods.",
+                icon: "fa fa-shield",
+                actionXmlId: "deployfleet_insurance.action_deployfleet_insurance_policy",
+            },
+            {
                 title: "Assets",
                 description: "Trailers, GPS units, and other non-vehicle equipment.",
                 icon: "fa fa-archive",
