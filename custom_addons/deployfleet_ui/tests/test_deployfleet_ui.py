@@ -100,3 +100,35 @@ class TestDeployfleetUi(TransactionCase):
     def test_asset_registry_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_asset_registry")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_vehicle_types_workspace_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_vehicle_types_workspace")
+        self.assertEqual(action.tag, "deployfleet_ui.vehicle_types_workspace")
+
+    def test_vehicle_types_workspace_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_vehicle_types_workspace")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_fuel_intelligence_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_fuel_intelligence")
+        self.assertEqual(action.tag, "deployfleet_ui.fuel_intelligence")
+
+    def test_fuel_intelligence_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_fuel_intelligence")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_tyre_manager_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_tyre_manager")
+        self.assertEqual(action.tag, "deployfleet_ui.tyre_manager")
+
+    def test_tyre_manager_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_tyre_manager")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_insurance_center_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_insurance_center")
+        self.assertEqual(action.tag, "deployfleet_ui.insurance_center")
+
+    def test_insurance_center_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_insurance_center")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

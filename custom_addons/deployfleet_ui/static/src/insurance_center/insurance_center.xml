@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.InsuranceCenter">
+        <div class="df-insurance-center">
+            <header class="df-insurance-center__header">
+                <h1 class="df-insurance-center__title">Insurance Center</h1>
+                <p class="df-insurance-center__subtitle">Policy renewals and claims across the fleet.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-insurance-center__filters">
+                <DeployfleetStatusPill t-foreach="expiryFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.expiryFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.expiryFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-insurance-center__loading">Loading policies...</p>
+            <p t-if="!state.loading and filteredPolicies.length === 0" class="df-insurance-center__empty">
+                No policies match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredPolicies.length > 0" class="df-insurance-center__table">
+                <div class="df-insurance-center__row df-insurance-center__row--header">
+                    <span class="df-insurance-center__col df-insurance-center__col--vehicle">Vehicle</span>
+                    <span class="df-insurance-center__col df-insurance-center__col--policy">Policy</span>
+                    <span class="df-insurance-center__col df-insurance-center__col--insurer">Insurer</span>
+                    <span class="df-insurance-center__col df-insurance-center__col--date">Expires</span>
+                    <span class="df-insurance-center__col df-insurance-center__col--status"/>
+                </div>
+
+                <t t-foreach="filteredPolicies" t-as="policy" t-key="policy.id">
+                    <div t-attf-class="df-insurance-center__row {{ policy.expiryBand === 'expired' ? 'df-insurance-center__row--expired' : (policy.expiryBand === 'expiring_soon' ? 'df-insurance-center__row--expiring' : '') }}"
+                         t-on-click="() => this.onSelectPolicy(policy.id)">
+                        <span class="df-insurance-center__col df-insurance-center__col--vehicle" t-esc="policy.vehicle_id[1]"/>
+                        <span class="df-insurance-center__col df-insurance-center__col--policy" t-esc="policy.policy_number"/>
+                        <span class="df-insurance-center__col df-insurance-center__col--insurer" t-esc="policy.insurer_id ? policy.insurer_id[1] : '—'"/>
+                        <span class="df-insurance-center__col df-insurance-center__col--date" t-esc="policy.end_date"/>
+                        <span class="df-insurance-center__col df-insurance-center__col--status">
+                            <DeployfleetStatusBadge t-if="policy.expiryBand === 'expired'" label="'Expired'" status="'danger'"/>
+                            <DeployfleetStatusBadge t-if="policy.expiryBand === 'expiring_soon'" label="'Expiring Soon'" status="'warning'"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedPolicyId === policy.id" class="df-insurance-center__detail">
+                        <h3 class="df-insurance-center__detail-title">Claims</h3>
+                        <p t-if="state.claimsByPolicyId[policy.id] and state.claimsByPolicyId[policy.id].length === 0"
+                           class="df-insurance-center__muted">No claims on file.</p>
+                        <ul t-if="state.claimsByPolicyId[policy.id] and state.claimsByPolicyId[policy.id].length > 0"
+                            class="df-insurance-center__claim-list">
+                            <li t-foreach="state.claimsByPolicyId[policy.id]" t-as="claim" t-key="claim.id">
+                                <div class="df-insurance-center__claim-main">
+                                    <span t-esc="claim.claim_number or claim.incident_date"/>
+                                    <DeployfleetStatusBadge label="this.claimStateLabel(claim.state)" status="this.claimStateBadgeVariant(claim.state)"/>
+                                </div>
+                                <div class="df-insurance-center__claim-actions">
+                                    <DeployfleetButton
+                                        t-if="claim.state === 'draft'"
+                                        label="'Submit'"
+                                        variant="'secondary'"
+                                        loading="state.actingPolicyId === policy.id"
+                                        onClick="() => this.onClaimAction(policy.id, claim.id, 'action_submit')"/>
+                                    <DeployfleetButton
+                                        t-if="claim.state === 'submitted'"
+                                        label="'Approve'"
+                                        variant="'primary'"
+                                        loading="state.actingPolicyId === policy.id"
+                                        onClick="() => this.onClaimAction(policy.id, claim.id, 'action_approve')"/>
+                                    <DeployfleetButton
+                                        t-if="claim.state === 'submitted'"
+                                        label="'Reject'"
+                                        variant="'destructive'"
+                                        loading="state.actingPolicyId === policy.id"
+                                        onClick="() => this.onClaimAction(policy.id, claim.id, 'action_reject')"/>
+                                    <DeployfleetButton
+                                        t-if="claim.state === 'approved'"
+                                        label="'Mark Paid'"
+                                        variant="'primary'"
+                                        loading="state.actingPolicyId === policy.id"
+                                        onClick="() => this.onClaimAction(policy.id, claim.id, 'action_mark_paid')"/>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <h3 class="df-insurance-center__detail-title">File a Claim</h3>
+                        <div class="df-insurance-center__claim-form">
+                            <input type="text" class="df-insurance-center__input" placeholder="Claim number (optional)"
+                                   t-att-value="(state.newClaimByPolicyId[policy.id] and state.newClaimByPolicyId[policy.id].claim_number) or ''"
+                                   t-on-input="(ev) => this.onNewClaimInput(policy.id, 'claim_number', ev.target.value)"/>
+                            <input type="date" class="df-insurance-center__input"
+                                   t-att-value="(state.newClaimByPolicyId[policy.id] and state.newClaimByPolicyId[policy.id].incident_date) or ''"
+                                   t-on-input="(ev) => this.onNewClaimInput(policy.id, 'incident_date', ev.target.value)"/>
+                            <input type="number" min="0" step="any" class="df-insurance-center__input" placeholder="Amount claimed"
+                                   t-att-value="(state.newClaimByPolicyId[policy.id] and state.newClaimByPolicyId[policy.id].amount_claimed) or ''"
+                                   t-on-input="(ev) => this.onNewClaimInput(policy.id, 'amount_claimed', ev.target.value)"/>
+                            <input type="text" class="df-insurance-center__input df-insurance-center__input--wide" placeholder="Description"
+                                   t-att-value="(state.newClaimByPolicyId[policy.id] and state.newClaimByPolicyId[policy.id].description) or ''"
+                                   t-on-input="(ev) => this.onNewClaimInput(policy.id, 'description', ev.target.value)"/>
+                            <DeployfleetButton
+                                label="'File Claim'"
+                                variant="'primary'"
+                                loading="state.actingPolicyId === policy.id"
+                                onClick="() => this.onFileClaim(policy.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -346,6 +346,41 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   target (the stock list view). See
   ``docs/architecture/16-experience-architecture.md`` §7.12a for the
   full writeup.
+- **Vehicle Profile, Vehicle Types Workspace, Fuel Intelligence, Tyre
+  Manager, and Insurance Center** — five screens shipped as one batch,
+  per ``docs/architecture/20-experience-implementation-strategy.md``'s
+  domain-completeness-first rollout and the user's explicit "all five
+  in one pass" direction; see that doc's §6 for the full writeup of
+  each. Short version: **Vehicle Profile** isn't a separate screen —
+  Fleet Command Center's expanded card gained a real, editable
+  "Identity & Capacity" section (license plate, model, vehicle type,
+  driver, odometer, capacity fields, saved via ``orm.write``) instead
+  of a second `ir.actions.client` with unverified per-record params
+  plumbing. **Vehicle Types Workspace**
+  (``static/src/vehicle_types_workspace/``) replaces the stock editable
+  list with a registry-ledger screen (inline edit/create/delete,
+  up/down reorder) — required a real ACL fix, since
+  ``deployfleet.vehicle.type`` write access was previously
+  ``base.group_system``-only, meaning fleet managers couldn't manage
+  their own vehicle classes at all. **Fuel Intelligence**
+  (``static/src/fuel_intelligence/``) is a fleet-wide, anomaly-
+  reconciled fuel-log ledger with a real "Log Fuel" quick-add form.
+  **Tyre Manager** (``static/src/tyre_manager/``) is a fleet-wide,
+  worst-tread-first tyre list with real rotate/retread/scrap/record-
+  reading actions — building it found and fixed a genuine pre-existing
+  backend ACL bug (dispatcher lacked ``create`` on
+  ``deployfleet.tyre.event``, which those actions create internally,
+  despite already having ``write`` on the parent tyre model), with a
+  new regression test confirming the fix. **Insurance Center**
+  (``static/src/insurance_center/``) is a fleet-wide, expiry-banded
+  policy ledger with a real "File a Claim" form and the claim lifecycle
+  actions — dispatcher can file a claim but not progress it
+  (``create=1``/``write=0``), a legitimate approval gate rather than a
+  bug, documented as such rather than "fixed." All five Mega Menu tiles
+  (Vehicles, Vehicle Types, Fuel Logs → Fuel Intelligence, Tyres → Tyre
+  Manager, Insurance → Insurance Center in both the Fleet & Vehicles
+  *and* Compliance domains) now point at these screens instead of stock
+  views.
 
 Not yet built
 =============

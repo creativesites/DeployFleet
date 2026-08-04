@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.VehicleTypesWorkspace">
+        <div class="df-vehicle-types">
+            <header class="df-vehicle-types__header">
+                <h1 class="df-vehicle-types__title">Vehicle Types</h1>
+                <p class="df-vehicle-types__subtitle">The vehicle classes your fleet operates.</p>
+            </header>
+
+            <div class="df-vehicle-types__new">
+                <input type="text" class="df-vehicle-types__input"
+                       placeholder="New type name"
+                       t-att-value="state.newType.name"
+                       t-on-input="(ev) => this.onNewTypeFieldInput('name', ev.target.value)"/>
+                <input type="text" class="df-vehicle-types__input df-vehicle-types__input--code"
+                       placeholder="Code"
+                       t-att-value="state.newType.code"
+                       t-on-input="(ev) => this.onNewTypeFieldInput('code', ev.target.value)"/>
+                <DeployfleetButton
+                    label="'Add Vehicle Type'"
+                    variant="'primary'"
+                    loading="state.creating"
+                    onClick="() => this.onCreateType()"/>
+            </div>
+
+            <p t-if="state.loading" class="df-vehicle-types__loading">Loading vehicle types...</p>
+            <p t-if="!state.loading and state.types.length === 0" class="df-vehicle-types__empty">
+                No vehicle types configured yet.
+            </p>
+
+            <div t-if="!state.loading and state.types.length > 0" class="df-vehicle-types__table">
+                <div class="df-vehicle-types__row df-vehicle-types__row--header">
+                    <span class="df-vehicle-types__col df-vehicle-types__col--order"/>
+                    <span class="df-vehicle-types__col df-vehicle-types__col--name">Name</span>
+                    <span class="df-vehicle-types__col df-vehicle-types__col--code">Code</span>
+                </div>
+
+                <t t-foreach="state.types" t-as="type" t-key="type.id">
+                    <div class="df-vehicle-types__row" t-on-click="() => this.onSelectType(type.id)">
+                        <span class="df-vehicle-types__col df-vehicle-types__col--order">
+                            <button type="button" class="df-vehicle-types__order-btn"
+                                    t-on-click.stop="() => this.onMoveType(type.id, -1)">
+                                <i class="fa fa-chevron-up"/>
+                            </button>
+                            <button type="button" class="df-vehicle-types__order-btn"
+                                    t-on-click.stop="() => this.onMoveType(type.id, 1)">
+                                <i class="fa fa-chevron-down"/>
+                            </button>
+                        </span>
+                        <span class="df-vehicle-types__col df-vehicle-types__col--name" t-esc="type.name"/>
+                        <span class="df-vehicle-types__col df-vehicle-types__col--code" t-esc="type.code or '—'"/>
+                    </div>
+
+                    <div t-if="state.selectedTypeId === type.id" class="df-vehicle-types__detail">
+                        <input type="text" class="df-vehicle-types__input"
+                               placeholder="Name"
+                               t-att-value="state.editByTypeId[type.id].name"
+                               t-on-input="(ev) => this.onEditFieldInput(type.id, 'name', ev.target.value)"/>
+                        <input type="text" class="df-vehicle-types__input df-vehicle-types__input--code"
+                               placeholder="Code"
+                               t-att-value="state.editByTypeId[type.id].code"
+                               t-on-input="(ev) => this.onEditFieldInput(type.id, 'code', ev.target.value)"/>
+                        <DeployfleetButton
+                            label="'Save'"
+                            variant="'primary'"
+                            loading="state.savingTypeId === type.id"
+                            onClick="() => this.onSaveType(type.id)"/>
+                        <DeployfleetButton
+                            label="'Delete'"
+                            variant="'destructive'"
+                            loading="state.savingTypeId === type.id"
+                            onClick="() => this.onDeleteType(type.id)"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

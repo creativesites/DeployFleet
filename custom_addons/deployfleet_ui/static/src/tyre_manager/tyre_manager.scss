@@ -1,7 +1,10 @@
 // Workspace Layer (flat, light, high-contrast) — same reasoning as the
-// Dispatch Board (doc 16 Principle 1): a fleet manager reviewing this
-// screen needs sustained readability, not Command-Layer glass.
-.df-fleet-cc {
+// Fleet Command Center/Workshop Board: a workshop supervisor reviewing
+// this screen is doing sustained operational work, not launching. Uses
+// the same tap-to-expand accordion pattern (not the registry-ledger
+// style) since each tyre has real, reviewable sub-history and actions
+// — this is a review queue, not a reference ledger.
+.df-tyre-manager {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
@@ -12,42 +15,43 @@
     font-family: var(--df-font-family);
 }
 
-.df-fleet-cc__header {
+.df-tyre-manager__header {
     margin-bottom: var(--df-space-3);
 }
 
-.df-fleet-cc__title {
+.df-tyre-manager__title {
     margin: 0;
     font-size: var(--df-font-size-lg);
     font-weight: var(--df-font-weight-bold);
     color: var(--df-color-neutral-900);
 }
 
-.df-fleet-cc__subtitle {
+.df-tyre-manager__subtitle {
     margin: 2px 0 0;
     font-size: var(--df-font-size-sm);
     color: var(--df-color-neutral-600);
 }
 
-.df-fleet-cc__filters {
+.df-tyre-manager__filters {
     display: flex;
     flex-wrap: wrap;
     gap: var(--df-space-1);
     margin-bottom: var(--df-space-3);
 }
 
-.df-fleet-cc__loading,
-.df-fleet-cc__empty {
+.df-tyre-manager__loading,
+.df-tyre-manager__empty,
+.df-tyre-manager__muted {
     color: var(--df-color-neutral-600);
 }
 
-.df-fleet-cc__list {
+.df-tyre-manager__list {
     display: flex;
     flex-direction: column;
     gap: var(--df-space-2);
 }
 
-.df-fleet-cc__card {
+.df-tyre-manager__card {
     background: var(--df-color-neutral-0);
     border: 1px solid var(--df-color-neutral-300);
     border-left: 4px solid var(--df-color-neutral-300);
@@ -55,24 +59,19 @@
     box-shadow: var(--df-shadow-resting);
 }
 
-.df-fleet-cc__card--available {
+.df-tyre-manager__card--fitted {
     border-left-color: var(--df-color-success);
 }
 
-.df-fleet-cc__card--assigned {
-    border-left-color: var(--df-color-info);
-}
-
-.df-fleet-cc__card--maintenance {
+.df-tyre-manager__card--retreaded {
     border-left-color: var(--df-color-warning);
 }
 
-.df-fleet-cc__card--breakdown {
-    border-left-color: var(--df-color-danger);
-    animation: df-pulse-ambient 2.4s infinite;
+.df-tyre-manager__card--scrapped {
+    border-left-color: var(--df-color-neutral-300);
 }
 
-.df-fleet-cc__card-summary {
+.df-tyre-manager__card-summary {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -83,7 +82,7 @@
     cursor: pointer;
 }
 
-.df-fleet-cc__card-main {
+.df-tyre-manager__card-main {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -91,28 +90,29 @@
     min-width: 0;
 }
 
-.df-fleet-cc__card-plate {
+.df-tyre-manager__card-vehicle {
     font-weight: var(--df-font-weight-bold);
     color: var(--df-color-neutral-900);
 }
 
-.df-fleet-cc__card-driver,
-.df-fleet-cc__card-trip {
+.df-tyre-manager__card-position {
     font-size: var(--df-font-size-sm);
     color: var(--df-color-neutral-600);
-    display: flex;
-    align-items: center;
-    gap: 4px;
 }
 
-.df-fleet-cc__card-meta {
+.df-tyre-manager__card-meta {
     display: flex;
     align-items: center;
     gap: var(--df-space-2);
     color: var(--df-color-neutral-600);
 }
 
-.df-fleet-cc__card-detail {
+.df-tyre-manager__card-tread {
+    font-size: var(--df-font-size-sm);
+    font-variant-numeric: tabular-nums;
+}
+
+.df-tyre-manager__card-detail {
     border-top: 1px solid var(--df-color-neutral-300);
     padding: var(--df-space-2);
     display: flex;
@@ -120,7 +120,7 @@
     gap: var(--df-space-2);
 }
 
-.df-fleet-cc__detail-section h3 {
+.df-tyre-manager__detail-section h3 {
     margin: 0 0 4px;
     font-size: var(--df-font-size-sm);
     text-transform: uppercase;
@@ -128,22 +128,16 @@
     color: var(--df-color-neutral-600);
 }
 
-.df-fleet-cc__muted {
-    margin: 0;
-    font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-600);
-}
-
-.df-fleet-cc__detail-list {
+.df-tyre-manager__detail-list {
     list-style: none;
-    margin: 0;
+    margin: 0 0 var(--df-space-1);
     padding: 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.df-fleet-cc__detail-list li {
+.df-tyre-manager__detail-list li {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -156,65 +150,32 @@
     color: var(--df-color-neutral-900);
 }
 
-.df-fleet-cc__profile-form {
+.df-tyre-manager__inline-form,
+.df-tyre-manager__detail-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--df-space-1);
-    align-items: center;
 }
 
-.df-fleet-cc__profile-input,
-.df-fleet-cc__profile-select {
+.df-tyre-manager__input,
+.df-tyre-manager__select {
     min-height: 44px;
     padding: 0 var(--df-space-2);
     border: 1px solid var(--df-color-neutral-300);
     border-radius: var(--df-radius-sm);
     font-size: var(--df-font-size-md);
-    flex: 1 1 160px;
+    flex: 1 1 140px;
     max-width: 100%;
 }
 
-.df-fleet-cc__profile-readonly {
-    font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-600);
-    flex: 1 1 100%;
-}
-
-.df-fleet-cc__tyre-tread {
-    font-variant-numeric: tabular-nums;
-    color: var(--df-color-neutral-600);
-}
-
-.df-fleet-cc__insurance-line {
-    margin: 0;
-    font-size: var(--df-font-size-sm);
-    color: var(--df-color-neutral-900);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--df-space-1);
-}
-
-.df-fleet-cc__detail-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--df-space-1);
-}
-
 @media (max-width: 640px) {
-    .df-fleet-cc__card-summary {
+    .df-tyre-manager__card-summary {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .df-fleet-cc__card-meta {
+    .df-tyre-manager__card-meta {
         width: 100%;
         justify-content: space-between;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .df-fleet-cc__card--breakdown {
-        animation: none;
     }
 }

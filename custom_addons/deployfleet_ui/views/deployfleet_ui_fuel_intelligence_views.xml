@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Fuel Intelligence (doc 20, Fleet & Vehicles domain) - a
+        fleet-wide fuel view replacing the stock deployfleet.fuel.log
+        list/form. Placed at sequence 15, after Vehicle Types (14).
+    -->
+    <record id="action_deployfleet_fuel_intelligence" model="ir.actions.client">
+        <field name="name">Fuel Intelligence</field>
+        <field name="tag">deployfleet_ui.fuel_intelligence</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_fuel_intelligence"
+              name="Fuel Intelligence"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_fuel_intelligence"
+              sequence="15"/>
+</odoo>

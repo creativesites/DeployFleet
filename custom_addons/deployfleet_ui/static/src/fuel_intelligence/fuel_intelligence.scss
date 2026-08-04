@@ -1,0 +1,157 @@
+// Registry styling (Fleet & Vehicles domain, doc 20 gap #3) — same
+// deliberate departure from the card/accordion pattern as the
+// Parts/Asset Registries and Vehicle Types Workspace: a dense fuel-log
+// ledger (header row, table rows, right-aligned figures). Workspace
+// Layer (flat, light, high-contrast).
+.df-fuel-intel {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-fuel-intel__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-fuel-intel__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-fuel-intel__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-fuel-intel__log-form {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-fuel-intel__log-form-title {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-fuel-intel__log-form-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-fuel-intel__select,
+.df-fuel-intel__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 140px;
+    max-width: 100%;
+}
+
+.df-fuel-intel__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-fuel-intel__loading,
+.df-fuel-intel__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-fuel-intel__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-fuel-intel__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-fuel-intel__row:last-child {
+    border-bottom: none;
+}
+
+.df-fuel-intel__row--header {
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-fuel-intel__row--anomalous {
+    background: var(--df-color-danger-bg);
+    border-left: 3px solid var(--df-color-danger);
+}
+
+.df-fuel-intel__col--vehicle {
+    flex: 1 1 140px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-fuel-intel__col--date {
+    flex: 1 1 100px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-fuel-intel__col--qty {
+    flex: 0 0 80px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-fuel-intel__col--status {
+    flex: 0 0 130px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+    .df-fuel-intel__row--header {
+        display: none;
+    }
+
+    .df-fuel-intel__row {
+        flex-wrap: wrap;
+    }
+
+    .df-fuel-intel__col--date,
+    .df-fuel-intel__col--qty {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-fuel-intel__col--status {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}

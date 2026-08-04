@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Vehicle Types Workspace (doc 20, Fleet & Vehicles domain) - a
+        custom registry replacing the stock editable list for
+        deployfleet.vehicle.type. Placed at sequence 14, after the Asset
+        Registry (13).
+    -->
+    <record id="action_deployfleet_vehicle_types_workspace" model="ir.actions.client">
+        <field name="name">Vehicle Types</field>
+        <field name="tag">deployfleet_ui.vehicle_types_workspace</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_vehicle_types_workspace"
+              name="Vehicle Types"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_vehicle_types_workspace"
+              sequence="14"/>
+</odoo>

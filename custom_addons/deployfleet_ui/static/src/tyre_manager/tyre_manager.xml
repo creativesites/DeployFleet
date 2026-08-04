@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.TyreManager">
+        <div class="df-tyre-manager">
+            <header class="df-tyre-manager__header">
+                <h1 class="df-tyre-manager__title">Tyre Manager</h1>
+                <p class="df-tyre-manager__subtitle">Tread depth, position, and replacement history across the fleet.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-tyre-manager__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-tyre-manager__loading">Loading tyres...</p>
+            <p t-if="!state.loading and filteredTyres.length === 0" class="df-tyre-manager__empty">
+                No tyres match this filter.
+            </p>
+
+            <div t-if="!state.loading" class="df-tyre-manager__list">
+                <div t-foreach="filteredTyres" t-as="tyre" t-key="tyre.id"
+                     t-attf-class="df-tyre-manager__card df-tyre-manager__card--{{ tyre.state }}">
+                    <div class="df-tyre-manager__card-summary" t-on-click="() => this.onSelectTyre(tyre.id)">
+                        <div class="df-tyre-manager__card-main">
+                            <span class="df-tyre-manager__card-vehicle" t-esc="tyre.vehicle_id[1]"/>
+                            <span class="df-tyre-manager__card-position" t-esc="this.positionLabel(tyre.position)"/>
+                        </div>
+                        <div class="df-tyre-manager__card-meta">
+                            <span class="df-tyre-manager__card-tread"><t t-esc="tyre.tread_depth_mm"/> mm</span>
+                            <DeployfleetStatusBadge label="this.stateLabel(tyre.state)" status="this.stateBadgeVariant(tyre.state)"/>
+                            <i t-attf-class="fa {{ state.selectedTyreId === tyre.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedTyreId === tyre.id" class="df-tyre-manager__card-detail">
+                        <t t-set="detail" t-value="state.detailByTyreId[tyre.id]"/>
+
+                        <div class="df-tyre-manager__detail-section">
+                            <h3>Tread depth readings</h3>
+                            <p t-if="detail and detail.readings.length === 0" class="df-tyre-manager__muted">No readings recorded.</p>
+                            <ul t-if="detail and detail.readings.length > 0" class="df-tyre-manager__detail-list">
+                                <li t-foreach="detail.readings" t-as="reading" t-key="reading.id">
+                                    <span t-esc="reading.date"/>
+                                    <span><t t-esc="reading.tread_depth_mm"/> mm</span>
+                                </li>
+                            </ul>
+                            <div class="df-tyre-manager__inline-form">
+                                <input type="number" min="0" step="any" class="df-tyre-manager__input" placeholder="Tread depth (mm)"
+                                       t-att-value="(state.newReadingByTyreId[tyre.id] and state.newReadingByTyreId[tyre.id].tread_depth_mm) or ''"
+                                       t-on-input="(ev) => this.onNewReadingInput(tyre.id, 'tread_depth_mm', ev.target.value)"/>
+                                <input type="number" min="0" step="any" class="df-tyre-manager__input" placeholder="Odometer (optional)"
+                                       t-att-value="(state.newReadingByTyreId[tyre.id] and state.newReadingByTyreId[tyre.id].odometer) or ''"
+                                       t-on-input="(ev) => this.onNewReadingInput(tyre.id, 'odometer', ev.target.value)"/>
+                                <DeployfleetButton
+                                    label="'Record Reading'"
+                                    variant="'secondary'"
+                                    loading="state.actingTyreId === tyre.id"
+                                    onClick="() => this.onRecordReading(tyre.id)"/>
+                            </div>
+                        </div>
+
+                        <div class="df-tyre-manager__detail-section">
+                            <h3>History</h3>
+                            <p t-if="detail and detail.events.length === 0" class="df-tyre-manager__muted">No events recorded.</p>
+                            <ul t-if="detail and detail.events.length > 0" class="df-tyre-manager__detail-list">
+                                <li t-foreach="detail.events" t-as="event" t-key="event.id">
+                                    <span t-esc="event.date"/>
+                                    <span t-esc="event.event_type"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="df-tyre-manager__detail-actions">
+                            <select class="df-tyre-manager__select"
+                                    t-att-value="state.rotateTargetByTyreId[tyre.id] or ''"
+                                    t-on-change="(ev) => this.onRotateTargetInput(tyre.id, ev.target.value)">
+                                <option value="">Rotate to...</option>
+                                <option t-foreach="this.tyrePositions" t-as="pos" t-key="pos[0]" t-att-value="pos[0]">
+                                    <t t-esc="pos[1]"/>
+                                </option>
+                            </select>
+                            <DeployfleetButton
+                                t-if="tyre.state === 'fitted'"
+                                label="'Rotate'"
+                                variant="'secondary'"
+                                loading="state.actingTyreId === tyre.id"
+                                onClick="() => this.onRotate(tyre.id)"/>
+                            <DeployfleetButton
+                                t-if="tyre.state === 'fitted'"
+                                label="'Retread'"
+                                variant="'secondary'"
+                                loading="state.actingTyreId === tyre.id"
+                                onClick="() => this.onRetread(tyre.id)"/>
+                            <DeployfleetButton
+                                t-if="tyre.state !== 'scrapped'"
+                                label="'Scrap'"
+                                variant="'destructive'"
+                                loading="state.actingTyreId === tyre.id"
+                                onClick="() => this.onScrap(tyre.id)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

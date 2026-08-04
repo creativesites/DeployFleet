@@ -113,6 +113,22 @@ function extractErrorMessage(error) {
  * Silent when `risk_level` is "low", the same silent-unless-actionable
  * discipline as Mission Control's attention strip — a card for every
  * vehicle regardless of risk would be noise, not signal.
+ *
+ * **Vehicle Profile addition (doc 20 gap #1, Fleet & Vehicles
+ * custom-views work):** the expanded detail now also has a real,
+ * editable "Identity & Capacity" section — `deployfleet.vehicle`'s
+ * stock form had zero tabs and zero related-record rollups (confirmed
+ * by source read before designing, doc 20 §6), so rather than build a
+ * second, separate "Vehicle Profile" screen with its own unverified
+ * per-record action-params plumbing, this screen's already-working
+ * expanded card was evolved into the vehicle's actual profile page:
+ * license plate, model, vehicle type, current driver, and odometer
+ * (all delegated `fleet.vehicle` or `deployfleet.vehicle` fields) plus
+ * the four editable capacity fields, saved via a plain `orm.write`.
+ * `payload_capacity_kg` stays read-only in the summary line — it's a
+ * stored compute (`gross_vehicle_weight_kg` − `tare_weight_kg`), not a
+ * field a user sets directly. "Open full record" remains as a fallback
+ * for any stock-form field this section doesn't yet cover.
  */
 export class DeployfleetFleetCommandCenter extends Component {
     static template = "deployfleet_ui.FleetCommandCenter";
@@ -141,9 +157,27 @@ export class DeployfleetFleetCommandCenter extends Component {
             selectedVehicleId: null,
             statusFilter: "all",
             transitioningVehicleId: null,
+            vehicleTypes: [],
+            driverOptions: [],
+            vehicleModels: [],
+            editByVehicleId: {},
+            savingVehicleId: null,
         });
 
-        onWillStart(() => this.loadVehicles());
+        onWillStart(() => Promise.all([this.loadVehicles(), this.loadEditOptions()]));
+    }
+
+    async loadEditOptions() {
+        const [vehicleTypes, driverOptions, vehicleModels] = await Promise.all([
+            this.orm.searchRead("deployfleet.vehicle.type", [], ["name"], { order: "sequence asc" }),
+            this.orm.searchRead("hr.employee", [["deployfleet_is_driver", "=", true]], ["name"], {
+                order: "name asc",
+            }),
+            this.orm.searchRead("fleet.vehicle.model", [], ["name"], { order: "name asc", limit: 200 }),
+        ]);
+        this.state.vehicleTypes = vehicleTypes;
+        this.state.driverOptions = driverOptions;
+        this.state.vehicleModels = vehicleModels;
     }
 
     get statusFilters() {
@@ -209,7 +243,21 @@ export class DeployfleetFleetCommandCenter extends Component {
         const vehicles = await this.orm.searchRead(
             "deployfleet.vehicle",
             [["status", "!=", "retired"]],
-            ["license_plate", "name", "status", "vehicle_type_id", "current_driver_id", "current_trip_id"],
+            [
+                "license_plate",
+                "name",
+                "status",
+                "vehicle_type_id",
+                "current_driver_id",
+                "current_trip_id",
+                "model_id",
+                "odometer",
+                "max_weight_kg",
+                "max_volume_m3",
+                "gross_vehicle_weight_kg",
+                "tare_weight_kg",
+                "payload_capacity_kg",
+            ],
             { order: "license_plate asc" },
         );
         this.state.vehicles = vehicles;
@@ -222,8 +270,55 @@ export class DeployfleetFleetCommandCenter extends Component {
             return;
         }
         this.state.selectedVehicleId = vehicleId;
+        if (!this.state.editByVehicleId[vehicleId]) {
+            const vehicle = this.state.vehicles.find((v) => v.id === vehicleId);
+            this.state.editByVehicleId[vehicleId] = {
+                license_plate: vehicle.license_plate || "",
+                model_id: vehicle.model_id ? vehicle.model_id[0] : "",
+                vehicle_type_id: vehicle.vehicle_type_id ? vehicle.vehicle_type_id[0] : "",
+                current_driver_id: vehicle.current_driver_id ? vehicle.current_driver_id[0] : "",
+                odometer: vehicle.odometer,
+                max_weight_kg: vehicle.max_weight_kg,
+                max_volume_m3: vehicle.max_volume_m3,
+                gross_vehicle_weight_kg: vehicle.gross_vehicle_weight_kg,
+                tare_weight_kg: vehicle.tare_weight_kg,
+            };
+        }
         if (!this.state.detailByVehicleId[vehicleId]) {
             await this.loadVehicleDetail(vehicleId);
+        }
+    }
+
+    onEditFieldInput(vehicleId, field, value) {
+        this.state.editByVehicleId[vehicleId][field] = value;
+    }
+
+    async onSaveVehicleProfile(vehicleId) {
+        const edit = this.state.editByVehicleId[vehicleId];
+        if (!edit.license_plate || !edit.license_plate.trim()) {
+            this.notification.add("License plate is required.", { type: "danger" });
+            return;
+        }
+        this.state.savingVehicleId = vehicleId;
+        try {
+            await this.orm.write("deployfleet.vehicle", [vehicleId], {
+                license_plate: edit.license_plate.trim(),
+                model_id: edit.model_id ? parseInt(edit.model_id, 10) : false,
+                vehicle_type_id: edit.vehicle_type_id ? parseInt(edit.vehicle_type_id, 10) : false,
+                current_driver_id: edit.current_driver_id ? parseInt(edit.current_driver_id, 10) : false,
+                odometer: parseFloat(edit.odometer) || 0,
+                max_weight_kg: parseFloat(edit.max_weight_kg) || 0,
+                max_volume_m3: parseFloat(edit.max_volume_m3) || 0,
+                gross_vehicle_weight_kg: parseFloat(edit.gross_vehicle_weight_kg) || 0,
+                tare_weight_kg: parseFloat(edit.tare_weight_kg) || 0,
+            });
+            delete this.state.editByVehicleId[vehicleId];
+            await this.loadVehicles();
+            this.notification.add("Vehicle profile updated.", { type: "success" });
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        } finally {
+            this.state.savingVehicleId = null;
         }
     }
 

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.FuelIntelligence">
+        <div class="df-fuel-intel">
+            <header class="df-fuel-intel__header">
+                <h1 class="df-fuel-intel__title">Fuel Intelligence</h1>
+                <p class="df-fuel-intel__subtitle">Fill-ups, consumption, and anomalies across the fleet.</p>
+            </header>
+
+            <section class="df-fuel-intel__log-form">
+                <h3 class="df-fuel-intel__log-form-title">Log Fuel</h3>
+                <div class="df-fuel-intel__log-form-fields">
+                    <select class="df-fuel-intel__select"
+                            t-att-value="state.newLog.vehicle_id"
+                            t-on-change="(ev) => this.onNewLogFieldInput('vehicle_id', ev.target.value)">
+                        <option value="">Vehicle...</option>
+                        <option t-foreach="state.vehicles" t-as="vehicle" t-key="vehicle.id" t-att-value="vehicle.id">
+                            <t t-esc="vehicle.license_plate or vehicle.name"/>
+                        </option>
+                    </select>
+                    <select class="df-fuel-intel__select"
+                            t-att-value="state.newLog.driver_id"
+                            t-on-change="(ev) => this.onNewLogFieldInput('driver_id', ev.target.value)">
+                        <option value="">Driver (optional)...</option>
+                        <option t-foreach="state.drivers" t-as="driver" t-key="driver.id" t-att-value="driver.id">
+                            <t t-esc="driver.name"/>
+                        </option>
+                    </select>
+                    <input type="date" class="df-fuel-intel__input"
+                           t-att-value="state.newLog.date"
+                           t-on-input="(ev) => this.onNewLogFieldInput('date', ev.target.value)"/>
+                    <input type="number" min="0" step="any" class="df-fuel-intel__input" placeholder="Odometer"
+                           t-att-value="state.newLog.odometer"
+                           t-on-input="(ev) => this.onNewLogFieldInput('odometer', ev.target.value)"/>
+                    <input type="number" min="0" step="any" class="df-fuel-intel__input" placeholder="Liters"
+                           t-att-value="state.newLog.liters"
+                           t-on-input="(ev) => this.onNewLogFieldInput('liters', ev.target.value)"/>
+                    <input type="number" min="0" step="any" class="df-fuel-intel__input" placeholder="Total Cost"
+                           t-att-value="state.newLog.total_cost"
+                           t-on-input="(ev) => this.onNewLogFieldInput('total_cost', ev.target.value)"/>
+                    <DeployfleetButton
+                        label="'Log Fuel'"
+                        variant="'primary'"
+                        loading="state.creating"
+                        onClick="() => this.onLogFuel()"/>
+                </div>
+            </section>
+
+            <section t-if="!state.loading" class="df-fuel-intel__filters">
+                <DeployfleetStatusPill t-foreach="logFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.logFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.logFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-fuel-intel__loading">Loading fuel logs...</p>
+            <p t-if="!state.loading and filteredLogs.length === 0" class="df-fuel-intel__empty">
+                No fuel logs match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredLogs.length > 0" class="df-fuel-intel__table">
+                <div class="df-fuel-intel__row df-fuel-intel__row--header">
+                    <span class="df-fuel-intel__col df-fuel-intel__col--vehicle">Vehicle</span>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--date">Date</span>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty">Liters</span>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty">Cost</span>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty">L/100km</span>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--status"/>
+                </div>
+
+                <div t-foreach="filteredLogs" t-as="log" t-key="log.id"
+                     t-attf-class="df-fuel-intel__row {{ log.isAnomalous ? 'df-fuel-intel__row--anomalous' : '' }}">
+                    <span class="df-fuel-intel__col df-fuel-intel__col--vehicle" t-esc="log.vehicle_id[1]"/>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--date" t-esc="log.date"/>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty" t-esc="log.liters"/>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty" t-esc="log.total_cost"/>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--qty" t-esc="log.consumption_l_per_100km.toFixed(1)"/>
+                    <span class="df-fuel-intel__col df-fuel-intel__col--status">
+                        <DeployfleetStatusBadge t-if="log.isAnomalous" label="this.fuelAnomalyLabel(log)" status="'danger'"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

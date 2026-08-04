@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Tyre Manager (doc 20, Fleet & Vehicles domain) - a fleet-wide
+        tyre view replacing the stock deployfleet.tyre list/form.
+        Placed at sequence 16, after Fuel Intelligence (15).
+    -->
+    <record id="action_deployfleet_tyre_manager" model="ir.actions.client">
+        <field name="name">Tyre Manager</field>
+        <field name="tag">deployfleet_ui.tyre_manager</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_tyre_manager"
+              name="Tyre Manager"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_tyre_manager"
+              sequence="16"/>
+</odoo>

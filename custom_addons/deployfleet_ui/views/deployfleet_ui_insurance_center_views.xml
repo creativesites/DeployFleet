@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Insurance Center (doc 20, Fleet & Vehicles domain) - a
+        fleet-wide insurance view replacing the stock
+        deployfleet.insurance.policy list/form. Placed at sequence 17,
+        after Tyre Manager (16).
+    -->
+    <record id="action_deployfleet_insurance_center" model="ir.actions.client">
+        <field name="name">Insurance Center</field>
+        <field name="tag">deployfleet_ui.insurance_center</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_insurance_center"
+              name="Insurance Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_insurance_center"
+              sequence="17"/>
+</odoo>

@@ -51,6 +51,63 @@
                             onAction="() => this.onOpenVehicleForm(vehicle.id)"
                             onDismiss="() => this.onDismissPrediction(vehicle.id)"/>
 
+                        <t t-set="edit" t-value="state.editByVehicleId[vehicle.id]"/>
+                        <div t-if="edit" class="df-fleet-cc__detail-section">
+                            <h3>Identity &amp; Capacity</h3>
+                            <div class="df-fleet-cc__profile-form">
+                                <input type="text" class="df-fleet-cc__profile-input" placeholder="License Plate"
+                                       t-att-value="edit.license_plate"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'license_plate', ev.target.value)"/>
+                                <select class="df-fleet-cc__profile-select"
+                                        t-att-value="edit.model_id"
+                                        t-on-change="(ev) => this.onEditFieldInput(vehicle.id, 'model_id', ev.target.value)">
+                                    <option value="">Model...</option>
+                                    <option t-foreach="state.vehicleModels" t-as="model" t-key="model.id" t-att-value="model.id">
+                                        <t t-esc="model.name"/>
+                                    </option>
+                                </select>
+                                <select class="df-fleet-cc__profile-select"
+                                        t-att-value="edit.vehicle_type_id"
+                                        t-on-change="(ev) => this.onEditFieldInput(vehicle.id, 'vehicle_type_id', ev.target.value)">
+                                    <option value="">Vehicle Type...</option>
+                                    <option t-foreach="state.vehicleTypes" t-as="vtype" t-key="vtype.id" t-att-value="vtype.id">
+                                        <t t-esc="vtype.name"/>
+                                    </option>
+                                </select>
+                                <select class="df-fleet-cc__profile-select"
+                                        t-att-value="edit.current_driver_id"
+                                        t-on-change="(ev) => this.onEditFieldInput(vehicle.id, 'current_driver_id', ev.target.value)">
+                                    <option value="">Current Driver...</option>
+                                    <option t-foreach="state.driverOptions" t-as="driver" t-key="driver.id" t-att-value="driver.id">
+                                        <t t-esc="driver.name"/>
+                                    </option>
+                                </select>
+                                <input type="number" min="0" step="any" class="df-fleet-cc__profile-input" placeholder="Odometer"
+                                       t-att-value="edit.odometer"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'odometer', ev.target.value)"/>
+                                <input type="number" min="0" step="any" class="df-fleet-cc__profile-input" placeholder="Max Weight (kg)"
+                                       t-att-value="edit.max_weight_kg"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'max_weight_kg', ev.target.value)"/>
+                                <input type="number" min="0" step="any" class="df-fleet-cc__profile-input" placeholder="Max Volume (m3)"
+                                       t-att-value="edit.max_volume_m3"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'max_volume_m3', ev.target.value)"/>
+                                <input type="number" min="0" step="any" class="df-fleet-cc__profile-input" placeholder="Gross Vehicle Weight (kg)"
+                                       t-att-value="edit.gross_vehicle_weight_kg"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'gross_vehicle_weight_kg', ev.target.value)"/>
+                                <input type="number" min="0" step="any" class="df-fleet-cc__profile-input" placeholder="Tare Weight (kg)"
+                                       t-att-value="edit.tare_weight_kg"
+                                       t-on-input="(ev) => this.onEditFieldInput(vehicle.id, 'tare_weight_kg', ev.target.value)"/>
+                                <span class="df-fleet-cc__profile-readonly">
+                                    Payload capacity: <t t-esc="vehicle.payload_capacity_kg"/> kg
+                                </span>
+                                <DeployfleetButton
+                                    label="'Save Profile'"
+                                    variant="'primary'"
+                                    loading="state.savingVehicleId === vehicle.id"
+                                    onClick="() => this.onSaveVehicleProfile(vehicle.id)"/>
+                            </div>
+                        </div>
+
                         <div t-if="detail" class="df-fleet-cc__detail-section">
                             <h3>Current trip</h3>
                             <p t-if="!detail.trip" class="df-fleet-cc__muted">No active trip.</p>

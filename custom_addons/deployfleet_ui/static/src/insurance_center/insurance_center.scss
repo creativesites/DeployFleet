@@ -1,0 +1,205 @@
+// Registry-ledger row style (renewal dates are a ledger to scan) with
+// a tap-to-expand claims workflow panel (a queue to work) — a hybrid,
+// deliberately: the policy list itself behaves like the Parts/Asset
+// Registries, but claims underneath behave like the Workshop Board.
+// Workspace Layer (flat, light, high-contrast).
+.df-insurance-center {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-insurance-center__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-insurance-center__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-insurance-center__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-insurance-center__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-insurance-center__loading,
+.df-insurance-center__empty,
+.df-insurance-center__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-insurance-center__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-insurance-center__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-insurance-center__row:last-child {
+    border-bottom: none;
+}
+
+.df-insurance-center__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-insurance-center__row--expired {
+    background: var(--df-color-danger-bg);
+    border-left: 3px solid var(--df-color-danger);
+}
+
+.df-insurance-center__row--expiring {
+    background: var(--df-color-warning-bg);
+    border-left: 3px solid var(--df-color-warning);
+}
+
+.df-insurance-center__col--vehicle {
+    flex: 1 1 120px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-insurance-center__col--policy,
+.df-insurance-center__col--insurer {
+    flex: 1 1 120px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-insurance-center__col--date {
+    flex: 0 0 100px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-insurance-center__col--status {
+    flex: 0 0 130px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-insurance-center__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-insurance-center__detail-title {
+    margin: var(--df-space-1) 0 4px;
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-insurance-center__claim-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-insurance-center__claim-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-insurance-center__claim-main {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+}
+
+.df-insurance-center__claim-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.df-insurance-center__claim-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-insurance-center__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 140px;
+    max-width: 100%;
+}
+
+.df-insurance-center__input--wide {
+    flex: 2 1 240px;
+}
+
+@media (max-width: 640px) {
+    .df-insurance-center__row--header {
+        display: none;
+    }
+
+    .df-insurance-center__row {
+        flex-wrap: wrap;
+    }
+
+    .df-insurance-center__col--policy,
+    .df-insurance-center__col--insurer,
+    .df-insurance-center__col--date {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-insurance-center__col--status {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}
