@@ -1,0 +1,302 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as the
+// Dispatch Board and Workshop Board (doc 16 Principle 1): sustained
+// operational work, not launching/orienting.
+.df-trip-board {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-trip-board__header {
+    margin-bottom: var(--df-space-2);
+}
+
+.df-trip-board__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-trip-board__subtitle {
+    margin: 2px 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-trip-board__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-trip-board__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-trip-board__tab--active {
+    color: var(--df-color-info);
+    border-bottom-color: var(--df-color-info);
+}
+
+.df-trip-board__loading,
+.df-trip-board__empty,
+.df-trip-board__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-trip-board__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin: var(--df-space-3) 0;
+}
+
+.df-trip-board__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-trip-board__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-trip-board__card--planned {
+    border-left-color: var(--df-color-info);
+}
+
+.df-trip-board__card--departed {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-trip-board__card--completed {
+    border-left-color: var(--df-color-success);
+}
+
+.df-trip-board__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-trip-board__card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-trip-board__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-trip-board__card-vehicle,
+.df-trip-board__card-route {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-trip-board__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-trip-board__card-detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-trip-board__detail-line {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-trip-board__detail-line--warning {
+    color: var(--df-color-warning);
+}
+
+.df-trip-board__line-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-trip-board__line-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-trip-board__inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    align-items: center;
+}
+
+.df-trip-board__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 160px;
+    max-width: 100%;
+}
+
+.df-trip-board__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+// ---- Calendar (same recipe as the Leave Planner's / Maintenance Planner's) ----
+
+.df-trip-board__calendar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin: var(--df-space-3) 0 var(--df-space-2);
+}
+
+.df-trip-board__calendar-label {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    min-width: 140px;
+    text-align: center;
+}
+
+.df-trip-board__calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--df-color-neutral-300);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-trip-board__calendar-dow {
+    background: var(--df-color-neutral-100);
+    padding: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    text-align: center;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-trip-board__calendar-day {
+    background: var(--df-color-neutral-0);
+    min-height: 96px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-trip-board__calendar-day--muted {
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-600);
+}
+
+.df-trip-board__calendar-day--today {
+    box-shadow: inset 0 0 0 2px var(--df-color-info);
+}
+
+.df-trip-board__calendar-daynum {
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-trip-board__calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.df-trip-board__calendar-event {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: var(--df-radius-sm);
+    color: var(--df-color-neutral-0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.df-trip-board__calendar-event--info {
+    background: var(--df-color-info);
+}
+
+.df-trip-board__calendar-event--warning {
+    background: var(--df-color-warning);
+}
+
+.df-trip-board__calendar-event--success {
+    background: var(--df-color-success);
+}
+
+.df-trip-board__calendar-event--muted {
+    background: var(--df-color-neutral-600);
+}
+
+@media (max-width: 640px) {
+    .df-trip-board__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-trip-board__card-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .df-trip-board__calendar-day {
+        min-height: 64px;
+    }
+}

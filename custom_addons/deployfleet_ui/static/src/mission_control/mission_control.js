@@ -21,7 +21,7 @@ const ATTENTION_ITEMS = [
         stateKey: "unassignedShipments",
         label: "Unassigned shipments",
         status: "danger",
-        actionXmlId: "deployfleet_dispatch.action_deployfleet_shipment",
+        actionXmlId: "deployfleet_ui.action_deployfleet_dispatch_board",
     },
     {
         stateKey: "expiredDocuments",

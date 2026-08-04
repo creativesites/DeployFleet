@@ -5,19 +5,79 @@
             <header class="df-dispatch-board__header">
                 <h1 class="df-dispatch-board__title">Dispatch Board</h1>
                 <p class="df-dispatch-board__subtitle">
-                    Confirmed shipments awaiting a driver and vehicle assignment.
+                    Book, assign, and track every shipment.
                 </p>
             </header>
 
+            <section class="df-dispatch-board__new-form">
+                <h3 class="df-dispatch-board__section-title">New Shipment</h3>
+                <div class="df-dispatch-board__new-fields">
+                    <select class="df-dispatch-board__select"
+                            t-att-value="state.newShipment.customer_id"
+                            t-on-change="(ev) => this.onNewShipmentInput('customer_id', ev.target.value)">
+                        <option value="">Customer...</option>
+                        <option t-foreach="state.customers" t-as="customer" t-key="customer.id" t-att-value="customer.id">
+                            <t t-esc="customer.name"/>
+                        </option>
+                    </select>
+                    <select class="df-dispatch-board__select"
+                            t-att-value="state.newShipment.pickup_depot_id"
+                            t-on-change="(ev) => this.onNewShipmentInput('pickup_depot_id', ev.target.value)">
+                        <option value="">Pickup depot...</option>
+                        <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                            <t t-esc="depot.name"/>
+                        </option>
+                    </select>
+                    <select class="df-dispatch-board__select"
+                            t-att-value="state.newShipment.dropoff_depot_id"
+                            t-on-change="(ev) => this.onNewShipmentInput('dropoff_depot_id', ev.target.value)">
+                        <option value="">Drop-off depot...</option>
+                        <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                            <t t-esc="depot.name"/>
+                        </option>
+                    </select>
+                    <input type="datetime-local" class="df-dispatch-board__input" title="Requested pickup"
+                           t-att-value="state.newShipment.requested_pickup_date"
+                           t-on-input="(ev) => this.onNewShipmentInput('requested_pickup_date', ev.target.value)"/>
+                    <select class="df-dispatch-board__select"
+                            t-att-value="state.newShipment.required_vehicle_type_id"
+                            t-on-change="(ev) => this.onNewShipmentInput('required_vehicle_type_id', ev.target.value)">
+                        <option value="">Any vehicle type</option>
+                        <option t-foreach="state.vehicleTypes" t-as="vt" t-key="vt.id" t-att-value="vt.id">
+                            <t t-esc="vt.name"/>
+                        </option>
+                    </select>
+                    <input type="number" min="0" step="any" class="df-dispatch-board__input" placeholder="Weight (kg)"
+                           t-att-value="state.newShipment.weight_kg"
+                           t-on-input="(ev) => this.onNewShipmentInput('weight_kg', ev.target.value)"/>
+                    <input type="text" class="df-dispatch-board__input df-dispatch-board__input--wide" placeholder="Cargo description"
+                           t-att-value="state.newShipment.cargo_description"
+                           t-on-input="(ev) => this.onNewShipmentInput('cargo_description', ev.target.value)"/>
+                    <DeployfleetButton
+                        label="'Book Shipment'"
+                        variant="'primary'"
+                        loading="state.creating"
+                        onClick="() => this.onCreateShipment()"/>
+                </div>
+            </section>
+
+            <section t-if="!state.loading" class="df-dispatch-board__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
             <p t-if="state.loading" class="df-dispatch-board__loading">Loading shipments...</p>
-            <p t-if="!state.loading and state.shipments.length === 0" class="df-dispatch-board__empty">
-                <i class="fa fa-check-circle"/> No shipments are waiting on dispatch right now.
+            <p t-if="!state.loading and filteredShipments.length === 0" class="df-dispatch-board__empty">
+                <i class="fa fa-check-circle"/> No shipments match this filter.
             </p>
 
             <div t-if="!state.loading" class="df-dispatch-board__list">
-                <div t-foreach="state.shipments" t-as="shipment" t-key="shipment.id"
+                <div t-foreach="filteredShipments" t-as="shipment" t-key="shipment.id"
                      t-attf-class="df-dispatch-board__card {{ shipment.urgency ? 'df-dispatch-board__card--' + shipment.urgency : '' }}">
-                    <div class="df-dispatch-board__card-summary" t-on-click="() => this.onSelectShipment(shipment.id)">
+                    <div class="df-dispatch-board__card-summary" t-on-click="() => this.onSelectShipment(shipment.id, shipment.state)">
                         <div class="df-dispatch-board__card-main">
                             <span class="df-dispatch-board__card-name" t-esc="shipment.name"/>
                             <span class="df-dispatch-board__card-customer" t-esc="shipment.customer_id[1]"/>
@@ -28,6 +88,7 @@
                             </span>
                         </div>
                         <div class="df-dispatch-board__card-meta">
+                            <DeployfleetStatusBadge label="this.stateLabel(shipment.state)" status="this.stateBadgeVariant(shipment.state)"/>
                             <DeployfleetStatusBadge t-if="shipment.urgency === 'danger'" label="'Overdue'" status="'danger'"/>
                             <DeployfleetStatusBadge t-if="shipment.urgency === 'warning'" label="'Urgent'" status="'warning'"/>
                             <span t-if="shipment.weight_kg" class="df-dispatch-board__card-weight">
@@ -38,41 +99,83 @@
                     </div>
 
                     <div t-if="state.selectedShipmentId === shipment.id" class="df-dispatch-board__card-detail">
+                        <!-- Draft: booking not yet confirmed -->
+                        <div t-if="shipment.state === 'draft'" class="df-dispatch-board__detail-actions">
+                            <DeployfleetButton
+                                label="'Confirm'"
+                                variant="'primary'"
+                                loading="state.actingShipmentId === shipment.id"
+                                onClick="() => this.onShipmentAction(shipment.id, 'action_confirm')"/>
+                        </div>
+
+                        <!-- Confirmed: matching flow -->
+                        <t t-if="shipment.state === 'confirmed'">
+                            <div class="df-dispatch-board__detail-actions">
+                                <DeployfleetButton
+                                    label="'Suggest Assignments'"
+                                    variant="'primary'"
+                                    icon="'fa fa-magic'"
+                                    loading="state.suggestingShipmentId === shipment.id"
+                                    onClick="() => this.onSuggestAssignments(shipment.id)"/>
+                            </div>
+
+                            <p t-if="(state.candidatesByShipment[shipment.id] || []).length === 0"
+                               class="df-dispatch-board__no-candidates">
+                                No candidates suggested yet — tap "Suggest Assignments" to score available vehicles and drivers.
+                            </p>
+
+                            <ul t-if="(state.candidatesByShipment[shipment.id] || []).length > 0" class="df-dispatch-board__candidates">
+                                <li t-foreach="state.candidatesByShipment[shipment.id]" t-as="candidate" t-key="candidate.id"
+                                    class="df-dispatch-board__candidate">
+                                    <div class="df-dispatch-board__candidate-info">
+                                        <span class="df-dispatch-board__candidate-driver" t-esc="candidate.driver_id[1]"/>
+                                        <span class="df-dispatch-board__candidate-vehicle" t-esc="candidate.vehicle_id[1]"/>
+                                        <span class="df-dispatch-board__candidate-score">
+                                            Score: <t t-esc="candidate.score.toFixed(1)"/>
+                                        </span>
+                                    </div>
+                                    <DeployfleetButton
+                                        label="'Confirm'"
+                                        variant="'primary'"
+                                        loading="state.confirmingAssignmentId === candidate.id"
+                                        onClick="() => this.onConfirmCandidate(shipment.id, candidate.id)"/>
+                                </li>
+                            </ul>
+                        </t>
+
+                        <!-- Assigned / in transit / delivered: read-only tracking -->
+                        <t t-if="['assigned', 'in_transit', 'delivered'].includes(shipment.state)">
+                            <t t-set="info" t-value="state.assignmentInfoByShipment[shipment.id]"/>
+                            <div t-if="info" class="df-dispatch-board__assignment-info">
+                                <p class="df-dispatch-board__detail-line">
+                                    <i class="fa fa-user"/> <t t-esc="info.driver_id[1]"/>
+                                    &#160;·&#160;
+                                    <i class="fa fa-truck"/> <t t-esc="info.vehicle_id[1]"/>
+                                </p>
+                                <p t-if="info.planned_departure" class="df-dispatch-board__detail-line">
+                                    Planned departure: <t t-esc="info.planned_departure"/>
+                                </p>
+                            </div>
+                            <p class="df-dispatch-board__muted">
+                                See Trip Board for departure/completion and Delivery Center for proof of delivery.
+                            </p>
+                        </t>
+
+                        <!-- Cancelled -->
+                        <p t-if="shipment.state === 'cancelled'" class="df-dispatch-board__muted">This shipment was cancelled.</p>
+
                         <div class="df-dispatch-board__detail-actions">
                             <DeployfleetButton
-                                label="'Suggest Assignments'"
-                                variant="'primary'"
-                                icon="'fa fa-magic'"
-                                loading="state.suggestingShipmentId === shipment.id"
-                                onClick="() => this.onSuggestAssignments(shipment.id)"/>
+                                t-if="this.isCancellable(shipment.state)"
+                                label="'Cancel'"
+                                variant="'destructive'"
+                                loading="state.actingShipmentId === shipment.id"
+                                onClick="() => this.onShipmentAction(shipment.id, 'action_cancel')"/>
                             <DeployfleetButton
                                 label="'Open full record'"
                                 variant="'ghost'"
                                 onClick="() => this.onOpenShipmentForm(shipment.id)"/>
                         </div>
-
-                        <p t-if="(state.candidatesByShipment[shipment.id] || []).length === 0"
-                           class="df-dispatch-board__no-candidates">
-                            No candidates suggested yet — tap "Suggest Assignments" to score available vehicles and drivers.
-                        </p>
-
-                        <ul t-if="(state.candidatesByShipment[shipment.id] || []).length > 0" class="df-dispatch-board__candidates">
-                            <li t-foreach="state.candidatesByShipment[shipment.id]" t-as="candidate" t-key="candidate.id"
-                                class="df-dispatch-board__candidate">
-                                <div class="df-dispatch-board__candidate-info">
-                                    <span class="df-dispatch-board__candidate-driver" t-esc="candidate.driver_id[1]"/>
-                                    <span class="df-dispatch-board__candidate-vehicle" t-esc="candidate.vehicle_id[1]"/>
-                                    <span class="df-dispatch-board__candidate-score">
-                                        Score: <t t-esc="candidate.score.toFixed(1)"/>
-                                    </span>
-                                </div>
-                                <DeployfleetButton
-                                    label="'Confirm'"
-                                    variant="'primary'"
-                                    loading="state.confirmingAssignmentId === candidate.id"
-                                    onClick="() => this.onConfirmCandidate(shipment.id, candidate.id)"/>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>

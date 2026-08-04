@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DeliveryCenter">
+        <div class="df-delivery-center">
+            <header class="df-delivery-center__header">
+                <h1 class="df-delivery-center__title">Delivery Center</h1>
+                <p class="df-delivery-center__subtitle">Proof of delivery across the fleet.</p>
+            </header>
+
+            <section class="df-delivery-center__new-form">
+                <h3 class="df-delivery-center__section-title">Record Delivery</h3>
+                <div class="df-delivery-center__new-fields">
+                    <select class="df-delivery-center__select"
+                            t-att-value="state.newDelivery.trip_id"
+                            t-on-change="(ev) => this.onNewDeliveryTripInput(ev.target.value)">
+                        <option value="">Trip...</option>
+                        <option t-foreach="state.trips" t-as="trip" t-key="trip.id" t-att-value="trip.id">
+                            <t t-esc="trip.name"/> (<t t-esc="trip.vehicle_id[1]"/>)
+                        </option>
+                    </select>
+                    <select class="df-delivery-center__select"
+                            t-att-value="state.newDelivery.shipment_id"
+                            t-on-change="(ev) => this.onNewDeliveryInput('shipment_id', ev.target.value)">
+                        <option value="">Shipment...</option>
+                        <option t-foreach="state.shipmentOptions" t-as="shipment" t-key="shipment.id" t-att-value="shipment.id">
+                            <t t-esc="shipment.name"/>
+                        </option>
+                    </select>
+                    <input type="text" class="df-delivery-center__input" placeholder="Recipient name"
+                           t-att-value="state.newDelivery.recipient_name"
+                           t-on-input="(ev) => this.onNewDeliveryInput('recipient_name', ev.target.value)"/>
+                    <input type="text" class="df-delivery-center__input" placeholder="GPS stamp (lat,long)"
+                           t-att-value="state.newDelivery.gps_stamp"
+                           t-on-input="(ev) => this.onNewDeliveryInput('gps_stamp', ev.target.value)"/>
+                    <label class="df-delivery-center__file-label">
+                        Signature
+                        <input type="file" accept="image/*" class="df-delivery-center__file-input"
+                               t-on-change="(ev) => this.onFileInput('signature', ev)"/>
+                    </label>
+                    <label class="df-delivery-center__file-label">
+                        Photo
+                        <input type="file" accept="image/*" class="df-delivery-center__file-input"
+                               t-on-change="(ev) => this.onFileInput('photo', ev)"/>
+                    </label>
+                    <DeployfleetButton
+                        label="'Record Delivery'"
+                        variant="'primary'"
+                        loading="state.creating"
+                        onClick="() => this.onCreateDelivery()"/>
+                </div>
+            </section>
+
+            <p t-if="state.loading" class="df-delivery-center__loading">Loading deliveries...</p>
+            <p t-if="!state.loading and state.deliveries.length === 0" class="df-delivery-center__empty">
+                No deliveries recorded yet.
+            </p>
+
+            <div t-if="!state.loading and state.deliveries.length > 0" class="df-delivery-center__table">
+                <div class="df-delivery-center__row df-delivery-center__row--header">
+                    <span class="df-delivery-center__col df-delivery-center__col--name">Delivery</span>
+                    <span class="df-delivery-center__col df-delivery-center__col--shipment">Shipment</span>
+                    <span class="df-delivery-center__col df-delivery-center__col--trip">Trip</span>
+                    <span class="df-delivery-center__col df-delivery-center__col--date">Delivered</span>
+                    <span class="df-delivery-center__col df-delivery-center__col--recipient">Recipient</span>
+                </div>
+
+                <t t-foreach="state.deliveries" t-as="delivery" t-key="delivery.id">
+                    <div class="df-delivery-center__row" t-on-click="() => this.onSelectDelivery(delivery.id)">
+                        <span class="df-delivery-center__col df-delivery-center__col--name" t-esc="delivery.name"/>
+                        <span class="df-delivery-center__col df-delivery-center__col--shipment" t-esc="delivery.shipment_id[1]"/>
+                        <span class="df-delivery-center__col df-delivery-center__col--trip" t-esc="delivery.trip_id[1]"/>
+                        <span class="df-delivery-center__col df-delivery-center__col--date" t-esc="delivery.delivered_at"/>
+                        <span class="df-delivery-center__col df-delivery-center__col--recipient" t-esc="delivery.recipient_name or '—'"/>
+                    </div>
+
+                    <div t-if="state.selectedDeliveryId === delivery.id" class="df-delivery-center__detail">
+                        <t t-set="detail" t-value="state.detailByDeliveryId[delivery.id]"/>
+                        <p t-if="detail and detail.gps_stamp" class="df-delivery-center__detail-line">
+                            GPS: <t t-esc="detail.gps_stamp"/>
+                        </p>
+                        <div t-if="detail" class="df-delivery-center__images">
+                            <img t-if="detail.signature" t-attf-src="data:image/png;base64,{{ detail.signature }}"
+                                 class="df-delivery-center__image" alt="Signature"/>
+                            <img t-if="detail.photo" t-attf-src="data:image/png;base64,{{ detail.photo }}"
+                                 class="df-delivery-center__image" alt="Delivery photo"/>
+                        </div>
+                        <p t-if="detail and !detail.signature and !detail.photo and !detail.gps_stamp"
+                           class="df-delivery-center__muted">No signature, photo, or GPS stamp captured.</p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -433,6 +433,44 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   the backend. Mega Menu tiles repointed accordingly; Driver
   Performance's tile deliberately stays on the stock list — the one
   remaining gap in this domain.
+- **Dispatch Board evolved into the full shipment lifecycle, plus Trip
+  Board, Delivery Center, Route Manager, and Depot Registry**
+  (Dispatch & Trips domain, complete — see
+  ``docs/architecture/20-experience-implementation-strategy.md`` §6c
+  for the full writeup). **Two real backend issues found and fixed**:
+  ``deployfleet.route``/``deployfleet.route.stop``/``deployfleet.depot``
+  granted the dispatcher group read-only access despite a
+  dispatcher-visible menu — fixed with a write/create grant (no
+  unlink, matching the codebase-wide convention); dispatch scoring
+  (``deployfleet_dispatch_compliance``) never checked driver leave —
+  fixed by adding a check against ``deployfleet.leave.request`` at the
+  same extension point as the existing rest-hour/consecutive-day
+  rules, with two new regression tests. **Dispatch Board**
+  (``static/src/dispatch_board/``) — originally scoped to just
+  confirmed-shipment matching, now also covers booking (a "New
+  Shipment" quick-add form creating drafts) and full-lifecycle
+  tracking via state filter chips, the same "evolve, don't duplicate"
+  choice as Fleet Command Center/Driver Scorecards. **Trip Board**
+  (``static/src/trip_board/``) has two tabs: Trips (the Workshop
+  Board's filter-chips-plus-accordion pattern, with the real
+  depart/complete/delay/cancel state machine — and the first UI path
+  anywhere in the product for ``action_complete()``'s ``odometer_end``
+  argument, which the stock form's zero-arg button could never set)
+  and Calendar (closes the "Dispatch Calendar" gap doc 16 §1 flagged
+  at zero ``<calendar>`` views in the whole product). **Delivery
+  Center** (``static/src/delivery_center/``) is a fleet-wide POD ledger
+  plus a trip-scoped quick-add form with the module's first file-upload
+  handling (signature/photo, read via ``FileReader`` into base64).
+  **Route Manager** (``static/src/route_manager/``) is a lane registry
+  with inline stop management — confirmed by source read that
+  ``deployfleet.route`` holds no GPS/coordinate data anywhere, so this
+  is a lane-graph registry, not a map. **Depot Registry**
+  (``static/src/depot_registry/``) mirrors the Vehicle Types
+  Workspace's simple master-data pattern. Also fixed: the Mega Menu's
+  "Dispatch Board" tile had pointed at the stock kanban action since
+  Phase C, never the custom OWL board bearing its name; Mission
+  Control's "Unassigned shipments" pill had the same issue. Both
+  repointed.
 
 Not yet built
 =============

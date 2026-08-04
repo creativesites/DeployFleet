@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.RouteManager">
+        <div class="df-route-manager">
+            <header class="df-route-manager__header">
+                <h1 class="df-route-manager__title">Route Manager</h1>
+                <p class="df-route-manager__subtitle">The lanes your fleet runs between depots.</p>
+            </header>
+
+            <section class="df-route-manager__new-form">
+                <h3 class="df-route-manager__section-title">New Route</h3>
+                <div class="df-route-manager__new-fields">
+                    <input type="text" class="df-route-manager__input" placeholder="Name (e.g. 'Lusaka -&gt; Kitwe')"
+                           t-att-value="state.newRoute.name"
+                           t-on-input="(ev) => this.onNewRouteInput('name', ev.target.value)"/>
+                    <select class="df-route-manager__select"
+                            t-att-value="state.newRoute.origin_depot_id"
+                            t-on-change="(ev) => this.onNewRouteInput('origin_depot_id', ev.target.value)">
+                        <option value="">Origin...</option>
+                        <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                            <t t-esc="depot.name"/>
+                        </option>
+                    </select>
+                    <select class="df-route-manager__select"
+                            t-att-value="state.newRoute.destination_depot_id"
+                            t-on-change="(ev) => this.onNewRouteInput('destination_depot_id', ev.target.value)">
+                        <option value="">Destination...</option>
+                        <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                            <t t-esc="depot.name"/>
+                        </option>
+                    </select>
+                    <input type="number" min="0" step="any" class="df-route-manager__input" placeholder="Distance (km)"
+                           t-att-value="state.newRoute.distance_km"
+                           t-on-input="(ev) => this.onNewRouteInput('distance_km', ev.target.value)"/>
+                    <DeployfleetButton
+                        label="'Add Route'"
+                        variant="'primary'"
+                        loading="state.creating"
+                        onClick="() => this.onCreateRoute()"/>
+                </div>
+            </section>
+
+            <p t-if="state.loading" class="df-route-manager__loading">Loading routes...</p>
+            <p t-if="!state.loading and state.routes.length === 0" class="df-route-manager__empty">
+                No routes configured yet.
+            </p>
+
+            <div t-if="!state.loading and state.routes.length > 0" class="df-route-manager__table">
+                <div class="df-route-manager__row df-route-manager__row--header">
+                    <span class="df-route-manager__col df-route-manager__col--name">Route</span>
+                    <span class="df-route-manager__col df-route-manager__col--distance">Distance</span>
+                </div>
+
+                <t t-foreach="state.routes" t-as="route" t-key="route.id">
+                    <div class="df-route-manager__row" t-on-click="() => this.onSelectRoute(route)">
+                        <span class="df-route-manager__col df-route-manager__col--name">
+                            <span class="df-route-manager__route-name" t-esc="route.name"/>
+                            <span class="df-route-manager__route-lane">
+                                <t t-esc="route.origin_depot_id[1]"/>
+                                <i class="fa fa-arrow-right"/>
+                                <t t-esc="route.destination_depot_id[1]"/>
+                            </span>
+                        </span>
+                        <span class="df-route-manager__col df-route-manager__col--distance">
+                            <t t-esc="route.distance_km"/> km
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedRouteId === route.id" class="df-route-manager__detail">
+                        <t t-set="edit" t-value="state.editByRouteId[route.id]"/>
+                        <div t-if="edit" class="df-route-manager__edit-form">
+                            <input type="text" class="df-route-manager__input"
+                                   t-att-value="edit.name"
+                                   t-on-input="(ev) => this.onEditFieldInput(route.id, 'name', ev.target.value)"/>
+                            <select class="df-route-manager__select"
+                                    t-att-value="edit.origin_depot_id"
+                                    t-on-change="(ev) => this.onEditFieldInput(route.id, 'origin_depot_id', ev.target.value)">
+                                <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                                    <t t-esc="depot.name"/>
+                                </option>
+                            </select>
+                            <select class="df-route-manager__select"
+                                    t-att-value="edit.destination_depot_id"
+                                    t-on-change="(ev) => this.onEditFieldInput(route.id, 'destination_depot_id', ev.target.value)">
+                                <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                                    <t t-esc="depot.name"/>
+                                </option>
+                            </select>
+                            <input type="number" min="0" step="any" class="df-route-manager__input"
+                                   t-att-value="edit.distance_km"
+                                   t-on-input="(ev) => this.onEditFieldInput(route.id, 'distance_km', ev.target.value)"/>
+                            <DeployfleetButton
+                                label="'Save'"
+                                variant="'primary'"
+                                loading="state.savingRouteId === route.id"
+                                onClick="() => this.onSaveRoute(route.id)"/>
+                        </div>
+
+                        <h4 class="df-route-manager__stops-title">Stops</h4>
+                        <t t-set="stops" t-value="state.stopsByRouteId[route.id]"/>
+                        <p t-if="stops and stops.length === 0" class="df-route-manager__muted">No intermediate stops.</p>
+                        <ul t-if="stops and stops.length > 0" class="df-route-manager__stop-list">
+                            <li t-foreach="stops" t-as="stop" t-key="stop.id">
+                                <span t-esc="stop.depot_id[1]"/>
+                                <DeployfleetButton
+                                    icon="'fa fa-times'"
+                                    variant="'ghost'"
+                                    loading="state.removingStopId === stop.id"
+                                    onClick="() => this.onRemoveStop(route.id, stop.id)"/>
+                            </li>
+                        </ul>
+
+                        <div class="df-route-manager__inline-form">
+                            <select class="df-route-manager__select"
+                                    t-att-value="state.newStopDepotByRouteId[route.id]"
+                                    t-on-change="(ev) => this.onNewStopDepotInput(route.id, ev.target.value)">
+                                <option value="">Add stop...</option>
+                                <option t-foreach="state.depots" t-as="depot" t-key="depot.id" t-att-value="depot.id">
+                                    <t t-esc="depot.name"/>
+                                </option>
+                            </select>
+                            <DeployfleetButton
+                                label="'Add Stop'"
+                                variant="'secondary'"
+                                loading="state.addingStopRouteId === route.id"
+                                onClick="() => this.onAddStop(route.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

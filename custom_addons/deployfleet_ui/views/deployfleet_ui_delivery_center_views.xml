@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Delivery Center (doc 20 §6c, Dispatch & Trips domain) - a
+        fleet-wide proof-of-delivery ledger plus a quick-add form,
+        replacing the stock deployfleet.delivery list/form. Placed at
+        sequence 23, after Trip Board (22).
+    -->
+    <record id="action_deployfleet_delivery_center" model="ir.actions.client">
+        <field name="name">Delivery Center</field>
+        <field name="tag">deployfleet_ui.delivery_center</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_delivery_center"
+              name="Delivery Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_delivery_center"
+              sequence="23"/>
+</odoo>

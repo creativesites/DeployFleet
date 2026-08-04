@@ -34,12 +34,12 @@ A trucking company owner should not feel like they are learning an ERP. They sho
 
 ## 3. Domain catalog
 
-Six top-level domains already exist as Mega Menu entries (`deployfleet_ui/static/src/mega_menu/domain_content.js`, built in Phase B): **Fleet & Vehicles, Dispatch & Trips, Compliance, Billing & Finance, Driver & HR, AI & Intelligence.** The user's own example list for this strategy named a slightly different, more granular set — Fleet & Vehicles, Dispatch, Customers, Maintenance, HR — which reads as the *aspirational shape of a fully custom product* rather than a literal instruction to restructure the six shipped Mega Menu domains today. Two real boundary questions came out of reconciling the two lists, and both are **open, not decided** — see §8's questions to the user before any restructuring work begins:
+Six top-level domains already exist as Mega Menu entries (`deployfleet_ui/static/src/mega_menu/domain_content.js`, built in Phase B): **Fleet & Vehicles, Dispatch & Trips, Compliance, Billing & Finance, Driver & HR, AI & Intelligence.** The user's own example list for this strategy named a slightly different, more granular set — Fleet & Vehicles, Dispatch, Customers, Maintenance, HR — which read as the *aspirational shape of a fully custom product* rather than a literal instruction to restructure the six shipped Mega Menu domains. Two real boundary questions came out of reconciling the two lists; **both are now resolved** (confirmed by the user via `AskUserQuestion` during the Fleet & Vehicles gap-closing round, §8 records the resolution):
 
-1. **Should Maintenance become its own top-level domain, split out of Fleet & Vehicles?** Today, Maintenance Schedules, the Workshop Board, and (via AI & Intelligence) Predictive Maintenance already exist, but split across two Mega Menu domains. The user's example list groups Maintenance Planner, Workshop, Predictive Maintenance, and Service History as one unit. This is a real navigation decision, not just a doc question — it would move an already-shipped Mega Menu tile and touch a shared component.
-2. **Should a "Customers" domain be carved out of Billing & Finance / Dispatch & Trips?** Today, Contracts lives under Billing & Finance and Depots lives under Dispatch & Trips; there is no Customer 360 or Communication Timeline screen anywhere yet. The user's example list groups Customer 360, Contracts, Billing, Shipments, and a Communication Timeline as one "Customers" domain.
+1. **Should Maintenance become its own top-level domain, split out of Fleet & Vehicles?** **Resolved: no** — Maintenance stays part of Fleet & Vehicles.
+2. **Should a "Customers" domain be carved out of Billing & Finance / Dispatch & Trips?** **Resolved: no** — Contracts stays under Billing & Finance, Depots stays under Dispatch & Trips, no restructuring for now.
 
-Until those are decided, this document treats the **current six Mega Menu domains as the domain catalog** and plans within them. Below is that catalog with the user's aspirational workspace list mapped onto it, and today's actual state noted against each (✅ built and custom, 🟡 exists but still stock Odoo, ⬜ doesn't exist as a distinct screen yet):
+This document treats the **current six Mega Menu domains as the domain catalog** and plans within them. Below is that catalog with the user's aspirational workspace list mapped onto it, and today's actual state noted against each (✅ built and custom, 🟡 exists but still stock Odoo, ⬜ doesn't exist as a distinct screen yet):
 
 ### Fleet & Vehicles — **complete** (all ten workspaces ✅)
 | Workspace | State |
@@ -59,17 +59,17 @@ This is the first domain to reach full completion under doc 20 §5's domain-comp
 
 This is the domain being re-audited in §6 below — it's the furthest along and the template for every domain after it.
 
-### Dispatch & Trips
+### Dispatch & Trips — **complete** (all eight workspaces ✅)
 | Workspace | State |
 |---|---|
-| Dispatch Board | ✅ |
-| Shipments (Load Booking Workspace) | 🟡 stock views |
-| Trips (Load Tracking / Trip Timeline) | 🟡 stock views |
-| Routes / Route Planning | 🟡 stock views |
-| Deliveries | 🟡 stock views |
-| Depots | 🟡 stock views |
-| Dispatch Calendar | ⬜ no `<calendar>` view exists anywhere in the product (doc 16 §1 flagged this at zero) |
-| Driver Availability | ⬜ |
+| Dispatch Board (evolved into full shipment lifecycle: booking, matching, tracking) | ✅ — see §6c |
+| Shipments (Load Booking Workspace) | ✅ — folded into Dispatch Board, not a separate screen — see §6c |
+| Trip Board (Load Tracking / Trip Timeline) | ✅ — see §6c |
+| Route Manager | ✅ — see §6c |
+| Delivery Center | ✅ — see §6c |
+| Depot Registry | ✅ — see §6c |
+| Dispatch Calendar | ✅ — closed by Trip Board's Calendar tab, see §6c (no `<calendar>` view existed anywhere in the product before this — doc 16 §1 flagged it at zero) |
+| Driver Availability | ✅ — resolved as a backend scoring fix, not a new screen — see §6c |
 
 ### Compliance
 | Workspace | State |
@@ -215,6 +215,31 @@ Second domain tackled under the domain-completeness-first rollout, per the user'
 
 ---
 
+## 6c. Dispatch & Trips — audit, design, and build
+
+Third domain tackled under the domain-completeness-first rollout, per the user's explicit "next let's tackle Dispatch and trips" direction. Audited every model, state machine, view, and ACL across `deployfleet_dispatch`, `deployfleet_dispatch_compliance`, `deployfleet_trip`, `deployfleet_delivery`, `deployfleet_route`, and the dispatch-relevant parts of `deployfleet_customer` (depot/contract) before designing anything — including reading the Dispatch Board (already shipped in Phase C) to see exactly what it did and didn't cover, since this domain (unlike the first two) started with one real workspace already in place, not zero.
+
+**Confirmed via `AskUserQuestion` before building:** (1) evolve the existing Dispatch Board into the full shipment lifecycle (booking, matching, tracking) rather than building a separate "Shipments" workspace alongside it — the same "evolve, don't duplicate" choice as Fleet Command Center/Driver Scorecards; (2) treat Routes'/Depots' dispatcher-read-only ACL as a bug and grant write access, rather than leaving it as a deliberate boundary; (3) fix the missing driver-availability check in dispatch scoring now, as a real backend change, rather than deferring it; (4) build the whole domain in one batch.
+
+**Two real, pre-existing backend issues found during the audit, both fixed:**
+
+1. **`deployfleet.route`/`deployfleet.route.stop`/`deployfleet.depot`: dispatcher-visible menus, read-only ACL.** All three models granted `group_deployfleet_dispatcher` only `perm_read=1`, while their menus were dispatcher-gated — meaning every create/edit action a dispatcher might take on the stock forms would have silently failed. Confirmed as a bug (not a designed boundary, per the user's answer) and fixed by granting dispatcher `perm_write=1`/`perm_create=1` on all three (still no `perm_unlink`, matching the codebase-wide convention that the dispatcher role never gets unlink anywhere).
+2. **Dispatch scoring never checked driver availability.** `deployfleet.shipment._score_candidate()` (extended in `deployfleet_dispatch_compliance` with expired-document/rest-hour/consecutive-driving-day checks) had no check at all against `deployfleet.leave.request` — a driver on approved leave overlapping the requested pickup date could still be suggested and confirmed for a shipment. Fixed by adding `_driver_on_approved_leave()` to the same extension point, disqualifying a candidate with an approved leave request covering the pickup date; `deployfleet_dispatch_compliance` gained `deployfleet_leave` as a manifest dependency (no circular-dependency risk — `deployfleet_leave` depends on `deployfleet_trip`, not on `deployfleet_dispatch_compliance`). Two new regression tests cover both the disqualifying and non-disqualifying cases. This closes the "Driver Availability" row in §3's table as a backend fix, not a new screen — the Leave Planner (built in the Driver & HR domain) already answers "who's on leave when" for browsing, and scoring now actually respects it.
+
+**What was built:**
+
+1. **Dispatch Board evolved** (`static/src/dispatch_board/dispatch_board.js`) — the screen originally scoped to just confirmed-shipment-to-assignment matching now covers the full lifecycle: a "New Shipment" quick-add form (booking, creating `draft` shipments), state filter chips (Active/Draft/Confirmed/Assigned/In Transit/Delivered/Cancelled, "Active" excluding the terminal states by default), Confirm/Cancel for draft shipments, the original suggest-assignments/confirm/override flow unchanged for confirmed shipments, and a read-only assignment summary (driver/vehicle) for assigned/in-transit/delivered shipments with a pointer to Trip Board/Delivery Center for what happens next — this screen deliberately does not duplicate trip departure/completion or POD capture, both of which now have their own workspaces.
+2. **Trip Board** (`static/src/trip_board/trip_board.js`) — two tabs. **Trips**: the same filter-chips-plus-accordion pattern as the Workshop Board, with the real `action_depart`/`action_complete`/`action_report_delay`/`action_cancel` state machine. Notably, `action_complete()`'s `odometer_end` kwarg had **no UI path anywhere in the product before this** — the stock form's Complete button is a bare zero-arg call — so this is the first place a user can actually set it, via an inline input passed as a second positional arg only when filled in (an empty input still calls `action_complete()` with its `None` default, not an accidental `0`/`False` write). **Calendar**: a month grid (the exact `buildCalendarDay`/`calendarGridDays` code from the Leave Planner, adapted to single-day `planned_departure` pins instead of date ranges) — this is what closes the "Dispatch Calendar" gap doc 16 §1 originally flagged at zero `<calendar>` views anywhere in the product.
+3. **Delivery Center** (`static/src/delivery_center/delivery_center.js`) — a fleet-wide proof-of-delivery ledger plus a "Record Delivery" form. `deployfleet.delivery.create()` is itself the completion event (no `action_*` method exists on the model, confirmed by source read), so this screen has no edit path, only create and browse, matching the backend's own design. The form's shipment choices are trip-scoped (picking a trip loads that trip's real shipment lines) to mirror the backend's own `_check_shipment_is_on_trip()` constraint. Signature/photo upload (`Binary` fields) has no prior precedent in `deployfleet_ui` — implemented with a plain `<input type="file">` read via `FileReader` into base64, not a camera-capture widget.
+4. **Route Manager** (`static/src/route_manager/route_manager.js`) — a registry-ledger of lanes (same visual dialect as Parts/Asset Registries/Vehicle Types Workspace) with inline editing and stop management (add/remove, auto-incrementing sequence, no drag-reorder — the same no-HTML5-drag-drop mobile-first reasoning as the Dispatch Board). Confirmed by source read during the audit: `deployfleet.route` holds no GPS/waypoint/coordinate data anywhere — `distance_km` is a manually-entered scalar and `stop_ids` is just an ordered list of named depot references — so this is a lane-graph registry, not a map, the same GPS-less reality that already ruled out Live Fleet Map/Fleet Heat Map in Phase E.
+5. **Depot Registry** (`static/src/depot_registry/depot_registry.js`) — a simple master-data registry, same pattern as the Vehicle Types Workspace (name/street/city, inline edit, delete available to every role with a denied write surfacing as a friendly notification for the dispatcher role, matching that screen's precedent exactly).
+
+**Also fixed while touching this area:** the Mega Menu's "Dispatch Board" tile had pointed at the **stock kanban action** (`deployfleet_dispatch.action_deployfleet_dispatch_assignment`) since Phase C — the custom OWL Dispatch Board built that same phase was only ever reachable via its own top-level menu item, never from the Mega Menu tile bearing its name. Fixed by repointing the tile (now merged with the old "Shipments" tile, since Dispatch Board covers both) to `deployfleet_ui.action_deployfleet_dispatch_board`. Mission Control's "Unassigned shipments" attention-strip pill had the same class of issue (deep-linking to the stock shipment list) and was repointed to the Dispatch Board too.
+
+**Verified**: XML well-formed, JS syntax via `node --check`, full `web.assets_backend` SCSS bundle compiled via libsass (34 files, individually and in manifest order), ruff/pylint clean on `deployfleet_ui`, `deployfleet_dispatch_compliance`, `deployfleet_route`, `deployfleet_customer`, and `deployfleet_leave`, all touched ACL CSVs parse correctly, two new regression tests for the driver-availability scoring fix. **Not yet verified in a live browser** — same standing caveat as every screen in this module, and now the largest single batch to carry that caveat (five workspaces at once).
+
+---
+
 ## 7. What "done" means for a domain
 
 A domain is done when:
@@ -230,10 +255,12 @@ A domain is done when:
 
 ## 8. Open questions for the user before further restructuring
 
-1. Should **Maintenance** split out of Fleet & Vehicles into its own top-level Mega Menu domain (Maintenance Planner, Workshop Board, Predictive Maintenance, Service History), or stay part of Fleet & Vehicles as it does today?
-2. Should a **Customers** domain be carved out of Billing & Finance / Dispatch & Trips (Customer 360, Contracts, Billing, Shipments, Communication Timeline), or do those stay where they are?
-3. For Fleet & Vehicles specifically (§6): confirm the five-gap list (Vehicle Profile, Vehicle Types Workspace, Fuel Intelligence, Tyre Manager, Insurance Center) and the proposed screen shapes before implementation starts, per the design-principle sequence in §5 (audit → design *together* → build).
-4. Confirm the proposed domain build order after Fleet & Vehicles finishes: the next-closest domain today is Driver & HR (Driver Scorecards already shipped, five 🟡 items remain) or Dispatch & Trips (Dispatch Board shipped, but a larger 🟡/⬜ tail including the still entirely-missing Dispatch Calendar). No order is assumed here — this is the user's call per §5.
+All four questions originally raised here are now resolved:
+
+1. ~~Should **Maintenance** split out of Fleet & Vehicles into its own top-level Mega Menu domain?~~ **Resolved: no** — stays part of Fleet & Vehicles.
+2. ~~Should a **Customers** domain be carved out of Billing & Finance / Dispatch & Trips?~~ **Resolved: no** — Contracts stays under Billing & Finance, Depots stays under Dispatch & Trips.
+3. ~~Confirm the five-gap Fleet & Vehicles list and screen shapes.~~ **Resolved and built** — see §6.
+4. ~~Confirm the domain build order after Fleet & Vehicles.~~ **Resolved and progressing**: Driver & HR (§6b) then Dispatch & Trips (§6c), both now complete. Compliance, Billing & Finance, and AI & Intelligence remain — no order confirmed yet for those three; ask before starting the next one, per §5's own audit → design → build sequence.
 
 ---
 

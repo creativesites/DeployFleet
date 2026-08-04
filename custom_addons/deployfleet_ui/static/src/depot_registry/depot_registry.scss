@@ -1,0 +1,123 @@
+// Registry styling — same deliberate departure from the card/accordion
+// pattern as the Parts/Asset Registries and Vehicle Types Workspace: a
+// short reference ledger (header row, table rows, thin dividers) rather
+// than shadowed cards. Workspace Layer (flat, light, high-contrast).
+.df-depot-registry {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-depot-registry__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-depot-registry__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-depot-registry__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-depot-registry__new {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-depot-registry__loading,
+.df-depot-registry__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-depot-registry__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-depot-registry__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-depot-registry__row:last-child {
+    border-bottom: none;
+}
+
+.df-depot-registry__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-depot-registry__col--name {
+    flex: 1 1 auto;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-depot-registry__col--address,
+.df-depot-registry__col--city {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-depot-registry__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-depot-registry__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 160px;
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+    .df-depot-registry__row--header {
+        display: none;
+    }
+
+    .df-depot-registry__new {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .df-depot-registry__input {
+        flex: 1 1 auto;
+    }
+}

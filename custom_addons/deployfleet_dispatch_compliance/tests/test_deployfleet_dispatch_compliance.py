@@ -99,6 +99,30 @@ class TestDeployfleetConsecutiveDrivingDaysConstraint(DeployfleetDispatchComplia
         self.assertIsNotNone(shipment._score_candidate(self.vehicle, self.driver))
 
 
+class TestDeployfleetDriverAvailabilityConstraint(DeployfleetDispatchComplianceTestBase):
+    def _approve_leave(self, date_from, date_to):
+        leave_type = self.env["deployfleet.leave.type"].create({"name": "Test Leave Type"})
+        request = self.env["deployfleet.leave.request"].create({
+            "employee_id": self.driver.id, "leave_type_id": leave_type.id,
+            "date_from": date_from, "date_to": date_to,
+        })
+        request.action_submit()
+        request.action_approve()
+        return request
+
+    def test_driver_on_approved_leave_covering_pickup_date_is_disqualified(self):
+        pickup = datetime.now() + timedelta(days=5)
+        self._approve_leave(pickup.date() - timedelta(days=1), pickup.date() + timedelta(days=1))
+        shipment = self._create_shipment(requested_pickup_date=pickup)
+        self.assertIsNone(shipment._score_candidate(self.vehicle, self.driver))
+
+    def test_driver_on_approved_leave_not_covering_pickup_date_is_not_disqualified(self):
+        pickup = datetime.now() + timedelta(days=5)
+        self._approve_leave(pickup.date() + timedelta(days=10), pickup.date() + timedelta(days=12))
+        shipment = self._create_shipment(requested_pickup_date=pickup)
+        self.assertIsNotNone(shipment._score_candidate(self.vehicle, self.driver))
+
+
 class TestDeployfleetComplianceOverride(DeployfleetDispatchComplianceTestBase):
     def test_confirm_blocked_without_override_reason_when_document_expired(self):
         doc_type = self.env["deployfleet.compliance.document.type"].create({

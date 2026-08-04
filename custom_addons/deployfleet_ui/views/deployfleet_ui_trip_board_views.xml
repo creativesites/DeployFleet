@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Trip Board (doc 20 §6c, Dispatch & Trips domain) - departures,
+        completions, delays, and a month calendar across every trip,
+        replacing the stock deployfleet.trip list/form. Placed at
+        sequence 22, after Payroll Center (21).
+    -->
+    <record id="action_deployfleet_trip_board" model="ir.actions.client">
+        <field name="name">Trip Board</field>
+        <field name="tag">deployfleet_ui.trip_board</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_trip_board"
+              name="Trip Board"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_trip_board"
+              sequence="22"/>
+</odoo>

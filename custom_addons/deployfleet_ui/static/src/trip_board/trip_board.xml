@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.TripBoard">
+        <div class="df-trip-board">
+            <header class="df-trip-board__header">
+                <h1 class="df-trip-board__title">Trip Board</h1>
+                <p class="df-trip-board__subtitle">Departures, completions, and delays across the fleet.</p>
+                <nav class="df-trip-board__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-trip-board__tab {{ state.activeTab === tab.key ? 'df-trip-board__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-trip-board__loading">Loading trips...</p>
+
+            <!-- ============================= BOARD ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'board'">
+                <section class="df-trip-board__filters">
+                    <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                           label="filter.label"
+                                           count="filter.count"
+                                           status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                           onClick="() => this.state.stateFilter = filter.key"/>
+                </section>
+
+                <p t-if="filteredTrips.length === 0" class="df-trip-board__empty">No trips match this filter.</p>
+
+                <div t-if="filteredTrips.length > 0" class="df-trip-board__list">
+                    <div t-foreach="filteredTrips" t-as="trip" t-key="trip.id"
+                         t-attf-class="df-trip-board__card df-trip-board__card--{{ trip.state }}">
+                        <div class="df-trip-board__card-summary" t-on-click="() => this.onSelectTrip(trip.id)">
+                            <div class="df-trip-board__card-main">
+                                <span class="df-trip-board__card-name" t-esc="trip.name"/>
+                                <span class="df-trip-board__card-vehicle">
+                                    <t t-esc="trip.vehicle_id[1]"/> · <t t-esc="trip.driver_id[1]"/>
+                                </span>
+                                <span t-if="trip.route_id" class="df-trip-board__card-route" t-esc="trip.route_id[1]"/>
+                            </div>
+                            <div class="df-trip-board__card-meta">
+                                <DeployfleetStatusBadge label="this.stateLabel(trip.state)" status="this.stateBadgeVariant(trip.state)"/>
+                                <i t-attf-class="fa {{ state.selectedTripId === trip.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                            </div>
+                        </div>
+
+                        <div t-if="state.selectedTripId === trip.id" class="df-trip-board__card-detail">
+                            <p t-if="trip.planned_departure" class="df-trip-board__detail-line">
+                                Planned: <t t-esc="trip.planned_departure"/>
+                                <t t-if="trip.planned_arrival"> → <t t-esc="trip.planned_arrival"/></t>
+                            </p>
+                            <p t-if="trip.actual_departure" class="df-trip-board__detail-line">
+                                Actual departure: <t t-esc="trip.actual_departure"/>
+                            </p>
+                            <p t-if="trip.actual_arrival" class="df-trip-board__detail-line">
+                                Actual arrival: <t t-esc="trip.actual_arrival"/>
+                                <t t-if="trip.odometer_end"> · Odometer: <t t-esc="trip.odometer_end"/></t>
+                            </p>
+                            <p t-if="trip.delay_reason" class="df-trip-board__detail-line df-trip-board__detail-line--warning">
+                                Delay: <t t-esc="trip.delay_reason"/>
+                            </p>
+
+                            <t t-set="lines" t-value="state.shipmentLinesByTripId[trip.id]"/>
+                            <p t-if="lines and lines.length === 0" class="df-trip-board__muted">No shipments on this trip.</p>
+                            <ul t-if="lines and lines.length > 0" class="df-trip-board__line-list">
+                                <li t-foreach="lines" t-as="line" t-key="line.id">
+                                    <span t-esc="line.shipment_id[1]"/>
+                                    <span t-esc="line.weight_portion_kg + ' kg'"/>
+                                </li>
+                            </ul>
+
+                            <div t-if="trip.state === 'planned' or trip.state === 'departed'" class="df-trip-board__inline-form">
+                                <input type="text" class="df-trip-board__input" placeholder="Delay reason..."
+                                       t-att-value="state.delayReasonByTripId[trip.id] or ''"
+                                       t-on-input="(ev) => this.onDelayReasonInput(trip.id, ev.target.value)"/>
+                                <DeployfleetButton
+                                    label="'Report Delay'"
+                                    variant="'secondary'"
+                                    loading="state.actingTripId === trip.id"
+                                    onClick="() => this.onReportDelay(trip.id)"/>
+                            </div>
+
+                            <div t-if="trip.state === 'departed'" class="df-trip-board__inline-form">
+                                <input type="number" min="0" step="any" class="df-trip-board__input" placeholder="Odometer end"
+                                       t-att-value="state.odometerEndByTripId[trip.id] or ''"
+                                       t-on-input="(ev) => this.onOdometerEndInput(trip.id, ev.target.value)"/>
+                            </div>
+
+                            <div class="df-trip-board__detail-actions">
+                                <DeployfleetButton
+                                    t-if="trip.state === 'planned'"
+                                    label="'Depart'"
+                                    variant="'primary'"
+                                    loading="state.actingTripId === trip.id"
+                                    onClick="() => this.onDepart(trip.id)"/>
+                                <DeployfleetButton
+                                    t-if="trip.state === 'departed'"
+                                    label="'Complete'"
+                                    variant="'primary'"
+                                    loading="state.actingTripId === trip.id"
+                                    onClick="() => this.onComplete(trip.id)"/>
+                                <DeployfleetButton
+                                    t-if="trip.state === 'planned' or trip.state === 'departed'"
+                                    label="'Cancel'"
+                                    variant="'destructive'"
+                                    loading="state.actingTripId === trip.id"
+                                    onClick="() => this.onCancel(trip.id)"/>
+                                <DeployfleetButton
+                                    label="'Open full record'"
+                                    variant="'ghost'"
+                                    onClick="() => this.onOpenTripForm(trip.id)"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= CALENDAR ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'calendar'">
+                <section class="df-trip-board__calendar-toolbar">
+                    <DeployfleetButton icon="'fa fa-chevron-left'" variant="'ghost'" onClick="() => this.onCalendarShift(-1)"/>
+                    <span class="df-trip-board__calendar-label" t-esc="calendarLabel"/>
+                    <DeployfleetButton icon="'fa fa-chevron-right'" variant="'ghost'" onClick="() => this.onCalendarShift(1)"/>
+                    <DeployfleetButton label="'Today'" variant="'ghost'" onClick="() => this.onCalendarToday()"/>
+                </section>
+
+                <div class="df-trip-board__calendar-grid">
+                    <div t-foreach="this.weekdayLabels" t-as="dow" t-key="dow" class="df-trip-board__calendar-dow">
+                        <t t-esc="dow"/>
+                    </div>
+                    <div t-foreach="calendarGridDays" t-as="day" t-key="day.iso"
+                         t-attf-class="df-trip-board__calendar-day {{ !day.inCurrentMonth ? 'df-trip-board__calendar-day--muted' : '' }} {{ day.isToday ? 'df-trip-board__calendar-day--today' : '' }}">
+                        <span class="df-trip-board__calendar-daynum" t-esc="day.dayNumber"/>
+                        <div class="df-trip-board__calendar-events">
+                            <span t-foreach="day.events" t-as="event" t-key="event.key"
+                                  t-attf-class="df-trip-board__calendar-event df-trip-board__calendar-event--{{ event.status }}"
+                                  t-att-title="event.label">
+                                <t t-esc="event.label"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

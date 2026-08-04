@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Route Manager (doc 20 §6c, Dispatch & Trips domain) - a
+        fleet-wide lane registry with inline stop management, replacing
+        the stock deployfleet.route list/form. Placed at sequence 24,
+        after Delivery Center (23).
+    -->
+    <record id="action_deployfleet_route_manager" model="ir.actions.client">
+        <field name="name">Route Manager</field>
+        <field name="tag">deployfleet_ui.route_manager</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_route_manager"
+              name="Route Manager"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_route_manager"
+              sequence="24"/>
+</odoo>

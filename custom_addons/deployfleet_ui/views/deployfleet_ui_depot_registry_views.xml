@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Depot Registry (doc 20 §6c, Dispatch & Trips domain) - a
+        fleet-wide depot/terminal registry, replacing the stock
+        deployfleet.depot list/form. Placed at sequence 25, after
+        Route Manager (24).
+    -->
+    <record id="action_deployfleet_depot_registry" model="ir.actions.client">
+        <field name="name">Depot Registry</field>
+        <field name="tag">deployfleet_ui.depot_registry</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_depot_registry"
+              name="Depot Registry"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_depot_registry"
+              sequence="25"/>
+</odoo>

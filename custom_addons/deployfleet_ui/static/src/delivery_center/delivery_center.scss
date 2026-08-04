@@ -1,0 +1,172 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as every
+// other sustained-operational-work screen in this module.
+.df-delivery-center {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-delivery-center__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-delivery-center__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-delivery-center__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-delivery-center__section-title {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-delivery-center__new-form {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-delivery-center__new-fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-delivery-center__select,
+.df-delivery-center__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 160px;
+    max-width: 100%;
+}
+
+.df-delivery-center__file-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    flex: 1 1 160px;
+}
+
+.df-delivery-center__file-input {
+    min-height: 44px;
+}
+
+.df-delivery-center__loading,
+.df-delivery-center__empty,
+.df-delivery-center__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-delivery-center__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-delivery-center__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-delivery-center__row:last-child {
+    border-bottom: none;
+}
+
+.df-delivery-center__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-delivery-center__col {
+    min-width: 0;
+}
+
+.df-delivery-center__col--name {
+    flex: 1 1 120px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-delivery-center__col--shipment,
+.df-delivery-center__col--trip,
+.df-delivery-center__col--date,
+.df-delivery-center__col--recipient {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-delivery-center__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-delivery-center__detail-line {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-delivery-center__images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-2);
+}
+
+.df-delivery-center__image {
+    max-width: 160px;
+    max-height: 160px;
+    object-fit: contain;
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-0);
+}
+
+@media (max-width: 640px) {
+    .df-delivery-center__row--header {
+        display: none;
+    }
+
+    .df-delivery-center__row {
+        flex-wrap: wrap;
+    }
+}

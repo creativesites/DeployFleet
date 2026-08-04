@@ -1,0 +1,174 @@
+// Registry styling (dense ledger — header row, table rows) matching
+// Parts/Asset Registries, not the card/accordion pattern. Workspace
+// Layer (flat, light, high-contrast).
+.df-route-manager {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-route-manager__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-route-manager__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-route-manager__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-route-manager__section-title,
+.df-route-manager__stops-title {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-route-manager__new-form {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-route-manager__new-fields,
+.df-route-manager__edit-form,
+.df-route-manager__inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-route-manager__select,
+.df-route-manager__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 160px;
+    max-width: 100%;
+}
+
+.df-route-manager__loading,
+.df-route-manager__empty,
+.df-route-manager__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-route-manager__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-route-manager__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-route-manager__row:last-child {
+    border-bottom: none;
+}
+
+.df-route-manager__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-route-manager__col--name {
+    flex: 2 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-route-manager__col--distance {
+    flex: 0 0 100px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-route-manager__route-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-route-manager__route-lane {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.df-route-manager__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-route-manager__stop-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-route-manager__stop-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+@media (max-width: 640px) {
+    .df-route-manager__row--header {
+        display: none;
+    }
+
+    .df-route-manager__col--distance {
+        text-align: left;
+    }
+}

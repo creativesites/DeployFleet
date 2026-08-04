@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DepotRegistry">
+        <div class="df-depot-registry">
+            <header class="df-depot-registry__header">
+                <h1 class="df-depot-registry__title">Depot Registry</h1>
+                <p class="df-depot-registry__subtitle">Pickup and drop-off terminals.</p>
+            </header>
+
+            <div class="df-depot-registry__new">
+                <input type="text" class="df-depot-registry__input" placeholder="Name"
+                       t-att-value="state.newDepot.name"
+                       t-on-input="(ev) => this.onNewDepotInput('name', ev.target.value)"/>
+                <input type="text" class="df-depot-registry__input" placeholder="Street"
+                       t-att-value="state.newDepot.street"
+                       t-on-input="(ev) => this.onNewDepotInput('street', ev.target.value)"/>
+                <input type="text" class="df-depot-registry__input" placeholder="City"
+                       t-att-value="state.newDepot.city"
+                       t-on-input="(ev) => this.onNewDepotInput('city', ev.target.value)"/>
+                <DeployfleetButton
+                    label="'Add Depot'"
+                    variant="'primary'"
+                    loading="state.creating"
+                    onClick="() => this.onCreateDepot()"/>
+            </div>
+
+            <p t-if="state.loading" class="df-depot-registry__loading">Loading depots...</p>
+            <p t-if="!state.loading and state.depots.length === 0" class="df-depot-registry__empty">
+                No depots configured yet.
+            </p>
+
+            <div t-if="!state.loading and state.depots.length > 0" class="df-depot-registry__table">
+                <div class="df-depot-registry__row df-depot-registry__row--header">
+                    <span class="df-depot-registry__col df-depot-registry__col--name">Name</span>
+                    <span class="df-depot-registry__col df-depot-registry__col--address">Street</span>
+                    <span class="df-depot-registry__col df-depot-registry__col--city">City</span>
+                </div>
+
+                <t t-foreach="state.depots" t-as="depot" t-key="depot.id">
+                    <div class="df-depot-registry__row" t-on-click="() => this.onSelectDepot(depot.id)">
+                        <span class="df-depot-registry__col df-depot-registry__col--name" t-esc="depot.name"/>
+                        <span class="df-depot-registry__col df-depot-registry__col--address" t-esc="depot.street or '—'"/>
+                        <span class="df-depot-registry__col df-depot-registry__col--city" t-esc="depot.city or '—'"/>
+                    </div>
+
+                    <div t-if="state.selectedDepotId === depot.id" class="df-depot-registry__detail">
+                        <input type="text" class="df-depot-registry__input" placeholder="Name"
+                               t-att-value="state.editByDepotId[depot.id].name"
+                               t-on-input="(ev) => this.onEditFieldInput(depot.id, 'name', ev.target.value)"/>
+                        <input type="text" class="df-depot-registry__input" placeholder="Street"
+                               t-att-value="state.editByDepotId[depot.id].street"
+                               t-on-input="(ev) => this.onEditFieldInput(depot.id, 'street', ev.target.value)"/>
+                        <input type="text" class="df-depot-registry__input" placeholder="City"
+                               t-att-value="state.editByDepotId[depot.id].city"
+                               t-on-input="(ev) => this.onEditFieldInput(depot.id, 'city', ev.target.value)"/>
+                        <DeployfleetButton
+                            label="'Save'"
+                            variant="'primary'"
+                            loading="state.savingDepotId === depot.id"
+                            onClick="() => this.onSaveDepot(depot.id)"/>
+                        <DeployfleetButton
+                            label="'Delete'"
+                            variant="'destructive'"
+                            loading="state.savingDepotId === depot.id"
+                            onClick="() => this.onDeleteDepot(depot.id)"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>
