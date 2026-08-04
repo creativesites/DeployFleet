@@ -33,8 +33,8 @@
                                 t-att-value="state.newRequest.leave_type_id"
                                 t-on-change="(ev) => this.onNewRequestInput('leave_type_id', ev.target.value)">
                             <option value="">Leave type...</option>
-                            <option t-foreach="state.leaveTypes" t-as="lt" t-key="lt.id" t-att-value="lt.id">
-                                <t t-esc="lt.name"/>
+                            <option t-foreach="state.leaveTypes" t-as="leaveType" t-key="leaveType.id" t-att-value="leaveType.id">
+                                <t t-esc="leaveType.name"/>
                             </option>
                         </select>
                         <input type="date" class="df-leave-planner__input"

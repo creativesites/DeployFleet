@@ -153,8 +153,8 @@
                                         t-att-value="(state.newLeaveByDriverId[driver.id] and state.newLeaveByDriverId[driver.id].leave_type_id) or ''"
                                         t-on-change="(ev) => this.onNewLeaveInput(driver.id, 'leave_type_id', ev.target.value)">
                                     <option value="">Leave type...</option>
-                                    <option t-foreach="state.leaveTypes" t-as="lt" t-key="lt.id" t-att-value="lt.id">
-                                        <t t-esc="lt.name"/>
+                                    <option t-foreach="state.leaveTypes" t-as="leaveType" t-key="leaveType.id" t-att-value="leaveType.id">
+                                        <t t-esc="leaveType.name"/>
                                     </option>
                                 </select>
                                 <input type="date" class="df-driver-scorecards__profile-input"

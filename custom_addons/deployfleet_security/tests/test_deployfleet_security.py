@@ -26,6 +26,35 @@ class TestDeployfleetSecurityGroups(TransactionCase):
         })
         self.assertIn(driver, user.group_ids)
 
+    def test_owner_implies_payroll_officer_and_system_auditor(self):
+        owner = self.env.ref("deployfleet_security.group_deployfleet_owner")
+        payroll_officer = self.env.ref("deployfleet_security.group_deployfleet_hr_payroll_officer")
+        system_auditor = self.env.ref("deployfleet_security.group_deployfleet_system_auditor")
+        self.assertIn(payroll_officer, owner.implied_ids)
+        self.assertIn(system_auditor, owner.implied_ids)
+
+    def test_user_in_owner_group_gets_payroll_and_audit_access_too(self):
+        owner = self.env.ref("deployfleet_security.group_deployfleet_owner")
+        payroll_officer = self.env.ref("deployfleet_security.group_deployfleet_hr_payroll_officer")
+        system_auditor = self.env.ref("deployfleet_security.group_deployfleet_system_auditor")
+        user = self.env["res.users"].create({
+            "name": "Test Owner",
+            "login": "test_owner@example.com",
+            "group_ids": [(6, 0, [owner.id])],
+        })
+        self.assertIn(payroll_officer, user.group_ids)
+        self.assertIn(system_auditor, user.group_ids)
+
+    def test_manager_does_not_get_payroll_access(self):
+        manager = self.env.ref("deployfleet_security.group_deployfleet_manager")
+        payroll_officer = self.env.ref("deployfleet_security.group_deployfleet_hr_payroll_officer")
+        user = self.env["res.users"].create({
+            "name": "Test Manager Only",
+            "login": "test_manager_only@example.com",
+            "group_ids": [(6, 0, [manager.id])],
+        })
+        self.assertNotIn(payroll_officer, user.group_ids)
+
 
 @tagged("post_install", "-at_install")
 class TestDeployfleetLicense(TransactionCase):
