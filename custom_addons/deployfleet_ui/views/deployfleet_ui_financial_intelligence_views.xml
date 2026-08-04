@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Financial Intelligence (Billing & Finance domain) - closes the
+         Financial Forecast gap deferred from the AI & Intelligence
+         domain audit. -->
+    <record id="action_deployfleet_financial_intelligence" model="ir.actions.client">
+        <field name="name">Financial Intelligence</field>
+        <field name="tag">deployfleet_ui.financial_intelligence</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_financial_intelligence"
+              name="Financial Intelligence"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_financial_intelligence"
+              sequence="34"/>
+</odoo>

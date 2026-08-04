@@ -79,17 +79,18 @@ This is the domain being re-audited in §6 below — it's the furthest along and
 | Compliance Overrides log | 🟡 stock views |
 | Compliance Center (expiry-first dashboard, doc 16 §7.11-adjacent) | ⬜ |
 
-### Billing & Finance
+### Billing & Finance — **complete** (all seven workspaces ✅)
 | Workspace | State |
 |---|---|
-| Invoices | 🟡 stock views |
-| Rate Cards | 🟡 stock views |
-| Contracts | 🟡 stock views |
-| Freight Calculator | 🟡 stock wizard |
-| Load Expenses | 🟡 stock views |
-| ZRA Submissions | 🟡 stock views |
-| Client Summary Report | 🟡 stock wizard |
-| Financial Intelligence (doc 16 §7.13) | ⬜ |
+| Invoice Ledger (invoices + ZRA submission status joined together) | ✅ — see §6e |
+| Contracts & Rate Cards (rate cards folded into their parent contract) | ✅ — see §6e |
+| Customer 360 (per-customer balance, contracts, shipments, invoices) | ✅ — see §6e |
+| Freight Calculator | 🟡 stock wizard — left as-is, a self-contained one-shot calculation tool, not a record-browsing surface the New UI Rule targets |
+| Calculation Rules & Parameters | ✅ — see §6e |
+| Load Expense Ledger | ✅ — see §6e |
+| ZRA Compliance (submission ledger + device config status) | ✅ — see §6e |
+| Client Summary Report | 🟡 stock wizard — same reasoning as Freight Calculator |
+| Financial Intelligence (doc 16 §7.13) | ✅ — see §6e; also closes AI & Intelligence's deferred "Financial Forecast" gap |
 
 ### Driver & HR — five of six workspaces ✅, one gap remains (Driver Performance ledger)
 | Workspace | State |
@@ -260,6 +261,24 @@ Fourth domain tackled under the domain-completeness-first rollout. Audited every
 
 **Doc 21 §10's Phase 1 (plain-text, persisted, multi-session chat) is now built**, per the user's explicit follow-up direction to wire up chat history persistence rather than leave the whole initiative purely designed. `deployfleet.ai.chat.session`/`.message` — modeled since Phase 0, confirmed by the AI & Intelligence audit as having zero consumers anywhere in the codebase — finally got a real one: the Copilot Rail gained a second tab (Approvals | Chat) alongside its existing ambient approval queue. A new session picks one of the six `deployfleet.ai.agent` personas up front; `deployfleet.ai.chat.session.action_send_message()` persists both the user's and the assistant's turns and folds a bounded recent-history transcript into the existing `deployfleet.ai.core.complete()` call for multi-turn context, without changing that method's signature or adding a second call path to a provider. Session rename/favorite/archive are real writes, not mockup UI. **Deliberately still not built** (doc 21 §10 Phases 1b–4, explicitly not attempted in this pass): the 5 read-only tools and `useCopilotContext()` hook (§2/§3 — today's Chat has no live tool-backed data retrieval and no awareness of the screen/record the user has open), structured/rich responses (§7/§8), the auto-executable action tier (§4), and the memory/context layer (§6). Three new regression tests cover message persistence, multi-turn transcript building, and the feature-enabled gate.
 
+**Doc 21 §10 Phases 1b–4 were subsequently built in full** (tool-calling + context awareness, structured/rich responses, the auto-executable action tier, and the entity-summary cache/company-profile memory layer) — see CLAUDE.md's own detailed writeup for the complete build; not duplicated here since it's a Copilot Rail initiative tracked primarily by doc 21, not a new domain workspace under this document's own table.
+
+---
+
+## 6e. Billing & Finance — audit, design, and build
+
+Fifth domain tackled under the domain-completeness-first rollout, per the user's explicit "now lets move on to billing and finance" direction. Audited every model, view, and ACL across `deployfleet_billing`, `deployfleet_accounting`, `deployfleet_zra`, `deployfleet_customer` (contracts/rate cards), `deployfleet_freight_calculator`, `deployfleet_load_expense`, and `deployfleet_client_reports` before designing anything. Unlike the Fleet & Vehicles/Dispatch & Trips/AI & Intelligence audits, this one found no ACL gaps to fix — the dispatcher-read/manager-write pattern was already correctly applied across every money-shaped model in the domain.
+
+**Design conversation, via `AskUserQuestion`:** (1) keep the ZRA Retry action manager-only, no new tile-regating mechanism; (2) build Calculation Rules & Parameters as its own registry workspace rather than folding it elsewhere; (3) build Customer 360 now, not deferred; (4) build the whole domain in one batch.
+
+**One deliberate mechanism deviation from the question's own wording, disclosed rather than left implicit:** "regate the Mega Menu tile to manager-only" isn't a real option — `mega_menu.js` has no group/role-check logic anywhere in the component. The ZRA Retry button instead follows the exact precedent Insurance Center's `onClaimAction()` already established: visible to every role, with a denied write surfacing as a friendly notification on the resulting `AccessError` rather than a hidden control. The server-side ACL is what actually enforces manager-only — same outcome the user agreed to, different (and lower-risk, since it reuses an already-shipped pattern rather than building new infrastructure) implementation than the question named.
+
+**Seven workspaces built.** Invoice Ledger (invoices + ZRA submission status joined per row — the first screen to show billing and tax-compliance status together), Contracts & Rate Cards (rate cards nested inside their parent contract, the same "evolve, don't duplicate" choice as Vehicle Profile/Payroll Center), Load Expense Ledger (with receipt upload via the same lazy-binary-load pattern Delivery Center established), ZRA Compliance (submission ledger + device config readout), Calculation Rules & Parameters (a two-tab Rules | Parameters workspace, the same shape as AI Predictions), Customer 360 (the domain's first customer-centric screen — searchable, with a real outstanding-balance rollup), and Financial Intelligence (four KPI cards plus a plain scannable forecast trend table — no charting library exists in `deployfleet_ui` yet, a standing gap). Financial Intelligence's "Gross Margin (approx.)" is deliberately not a Rate-Card-vs-Calculation-Rule figure — the two models carry no field linking one to the other per shipment (confirmed by source read) — so it's computed instead from confirmed invoice revenue minus recorded Load Expense actuals, with UI caption text stating plainly what's excluded (fuel, driver pay, overhead).
+
+**Mega Menu repointed**: all 9 Billing & Finance tiles now target real workspaces. Separately, AI & Intelligence's "Financial Forecast" tile — left pointing at the bare stock forecast list when that domain was built, per §6d's own deferred decision — is repointed to this new Financial Intelligence workspace, closing that gap without building it twice.
+
+**Verified**: XML well-formed (14 new files), JS syntax via `node --check`, a full OWL-compiler pass (45/45 templates), the full `web.assets_backend` SCSS bundle compiled via libsass (43 files, individually and in manifest order), manifest confirmed parseable. No backend Python files were touched this round. **Not yet verified in a live browser** — same standing caveat as every domain before it.
+
 ---
 
 ## 7. What "done" means for a domain
@@ -282,7 +301,7 @@ All four questions originally raised here are now resolved:
 1. ~~Should **Maintenance** split out of Fleet & Vehicles into its own top-level Mega Menu domain?~~ **Resolved: no** — stays part of Fleet & Vehicles.
 2. ~~Should a **Customers** domain be carved out of Billing & Finance / Dispatch & Trips?~~ **Resolved: no** — Contracts stays under Billing & Finance, Depots stays under Dispatch & Trips.
 3. ~~Confirm the five-gap Fleet & Vehicles list and screen shapes.~~ **Resolved and built** — see §6.
-4. ~~Confirm the domain build order after Fleet & Vehicles.~~ **Resolved and progressing**: Driver & HR (§6b) then Dispatch & Trips (§6c), both now complete. Compliance, Billing & Finance, and AI & Intelligence remain — no order confirmed yet for those three; ask before starting the next one, per §5's own audit → design → build sequence.
+4. ~~Confirm the domain build order after Fleet & Vehicles.~~ **Resolved and progressing**: Driver & HR (§6b), Dispatch & Trips (§6c), AI & Intelligence (§6d), and Billing & Finance (§6e) are all now complete. Compliance remains — the last domain in scope; no order question left to ask, since it's the only one left, but the audit-then-design-then-build sequence still applies before writing any code for it.
 
 ---
 

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.LoadExpenseLedger">
+        <div class="df-load-expense-ledger">
+            <header class="df-load-expense-ledger__header">
+                <h1 class="df-load-expense-ledger__title">Load Expenses</h1>
+                <p class="df-load-expense-ledger__subtitle">Tolls, fuel, and other per-trip costs actually incurred.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-load-expense-ledger__filters">
+                <DeployfleetStatusPill t-foreach="typeFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.typeFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.typeFilter = filter.key"/>
+            </section>
+
+            <section t-if="!state.loading" class="df-load-expense-ledger__new-expense">
+                <select class="df-load-expense-ledger__select"
+                        t-att-value="state.newExpense.shipment_id"
+                        t-on-change="(ev) => this.onNewExpenseInput('shipment_id', ev.target.value)">
+                    <option value="">Shipment...</option>
+                    <option t-foreach="state.shipments" t-as="shipment" t-key="shipment.id" t-att-value="shipment.id">
+                        <t t-esc="shipment.name"/>
+                    </option>
+                </select>
+                <select class="df-load-expense-ledger__select"
+                        t-att-value="state.newExpense.expense_type"
+                        t-on-change="(ev) => this.onNewExpenseInput('expense_type', ev.target.value)">
+                    <option t-foreach="expenseTypeOptions" t-as="option" t-key="option.key" t-att-value="option.key">
+                        <t t-esc="option.label"/>
+                    </option>
+                </select>
+                <input type="number" min="0" step="any"
+                       class="df-load-expense-ledger__amount-input"
+                       placeholder="Amount"
+                       t-att-value="state.newExpense.amount"
+                       t-on-input="(ev) => this.onNewExpenseInput('amount', ev.target.value)"/>
+                <label class="df-load-expense-ledger__file-label">
+                    <i class="fa fa-camera"/> Receipt
+                    <input type="file" accept="image/*" class="df-load-expense-ledger__file-input"
+                           t-on-change="(ev) => this.onReceiptFileInput(ev)"/>
+                </label>
+                <DeployfleetButton
+                    label="'Record Expense'"
+                    variant="'primary'"
+                    loading="state.creating"
+                    onClick="() => this.onCreateExpense()"/>
+            </section>
+
+            <p t-if="state.loading" class="df-load-expense-ledger__loading">Loading expenses...</p>
+            <p t-if="!state.loading and filteredExpenses.length === 0" class="df-load-expense-ledger__empty">
+                No expenses match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredExpenses.length > 0" class="df-load-expense-ledger__table">
+                <div class="df-load-expense-ledger__row df-load-expense-ledger__row--header">
+                    <span class="df-load-expense-ledger__col df-load-expense-ledger__col--shipment">Shipment</span>
+                    <span class="df-load-expense-ledger__col df-load-expense-ledger__col--type">Type</span>
+                    <span class="df-load-expense-ledger__col df-load-expense-ledger__col--recorded">Recorded By</span>
+                    <span class="df-load-expense-ledger__col df-load-expense-ledger__col--amount">Amount</span>
+                </div>
+
+                <t t-foreach="filteredExpenses" t-as="expense" t-key="expense.id">
+                    <div class="df-load-expense-ledger__row" t-on-click="() => this.onSelectExpense(expense.id)">
+                        <span class="df-load-expense-ledger__col df-load-expense-ledger__col--shipment"
+                              t-esc="expense.shipment_id ? expense.shipment_id[1] : '—'"/>
+                        <span class="df-load-expense-ledger__col df-load-expense-ledger__col--type"
+                              t-esc="this.expenseTypeLabel(expense.expense_type)"/>
+                        <span class="df-load-expense-ledger__col df-load-expense-ledger__col--recorded"
+                              t-esc="expense.recorded_by ? expense.recorded_by[1] : '—'"/>
+                        <span class="df-load-expense-ledger__col df-load-expense-ledger__col--amount" t-esc="expense.amount"/>
+                    </div>
+
+                    <div t-if="state.selectedExpenseId === expense.id" class="df-load-expense-ledger__detail">
+                        <div t-if="expense.trip_id" class="df-load-expense-ledger__detail-row">
+                            <span class="df-load-expense-ledger__detail-label">Trip</span>
+                            <span t-esc="expense.trip_id[1]"/>
+                        </div>
+                        <img t-if="state.receiptByExpenseId[expense.id]"
+                             t-attf-src="data:image/png;base64,{{ state.receiptByExpenseId[expense.id] }}"
+                             class="df-load-expense-ledger__receipt-image" alt="Receipt"/>
+                        <p t-if="state.receiptByExpenseId[expense.id] === null" class="df-load-expense-ledger__muted">
+                            No receipt photo attached.
+                        </p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

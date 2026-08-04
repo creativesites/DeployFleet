@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Load Expense Ledger (Billing & Finance domain). -->
+    <record id="action_deployfleet_load_expense_ledger" model="ir.actions.client">
+        <field name="name">Load Expenses</field>
+        <field name="tag">deployfleet_ui.load_expense_ledger</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_load_expense_ledger"
+              name="Load Expenses"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_load_expense_ledger"
+              sequence="30"/>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Invoice Ledger (Billing & Finance domain, first deliverable). -->
+    <record id="action_deployfleet_invoice_ledger" model="ir.actions.client">
+        <field name="name">Invoice Ledger</field>
+        <field name="tag">deployfleet_ui.invoice_ledger</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_invoice_ledger"
+              name="Invoice Ledger"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_invoice_ledger"
+              sequence="28"/>
+</odoo>

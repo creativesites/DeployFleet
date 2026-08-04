@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.Customer360">
+        <div class="df-customer-360">
+            <header class="df-customer-360__header">
+                <h1 class="df-customer-360__title">Customers</h1>
+                <p class="df-customer-360__subtitle">Contracts, active shipments, and outstanding balance in one place.</p>
+                <input type="text" class="df-customer-360__search"
+                       placeholder="Search customers..."
+                       t-att-value="state.searchQuery"
+                       t-on-input="onSearchInput"/>
+            </header>
+
+            <p t-if="state.loading" class="df-customer-360__loading">Loading customers...</p>
+            <p t-if="!state.loading and filteredCustomers.length === 0" class="df-customer-360__empty">
+                No customers match this search.
+            </p>
+
+            <div t-if="!state.loading and filteredCustomers.length > 0" class="df-customer-360__list">
+                <t t-foreach="filteredCustomers" t-as="customer" t-key="customer.id">
+                    <div class="df-customer-360__row" t-on-click="() => this.onSelectCustomer(customer.id)">
+                        <span class="df-customer-360__customer-name" t-esc="customer.name"/>
+                        <span class="df-customer-360__customer-contact" t-esc="customer.email or customer.phone or ''"/>
+                    </div>
+
+                    <div t-if="state.selectedCustomerId === customer.id" class="df-customer-360__detail">
+                        <t t-if="state.detailByCustomerId[customer.id]">
+                            <div class="df-customer-360__balance">
+                                <span class="df-customer-360__balance-label">Outstanding Balance</span>
+                                <span class="df-customer-360__balance-amount" t-esc="state.detailByCustomerId[customer.id].outstandingBalance"/>
+                                <span class="df-customer-360__balance-count">
+                                    across <t t-esc="state.detailByCustomerId[customer.id].outstandingInvoices.length"/> unpaid invoice(s)
+                                </span>
+                            </div>
+
+                            <h3 class="df-customer-360__section-title">Contracts</h3>
+                            <p t-if="state.detailByCustomerId[customer.id].contracts.length === 0" class="df-customer-360__empty">No contracts.</p>
+                            <div t-if="state.detailByCustomerId[customer.id].contracts.length > 0" class="df-customer-360__mini-list">
+                                <div t-foreach="state.detailByCustomerId[customer.id].contracts" t-as="contract" t-key="contract.id"
+                                     class="df-customer-360__mini-row">
+                                    <span t-esc="contract.name"/>
+                                    <DeployfleetStatusBadge label="contract.state" status="this.contractBadgeVariant(contract.state)"/>
+                                </div>
+                            </div>
+
+                            <h3 class="df-customer-360__section-title">Active Shipments</h3>
+                            <p t-if="state.detailByCustomerId[customer.id].shipments.length === 0" class="df-customer-360__empty">No active shipments.</p>
+                            <div t-if="state.detailByCustomerId[customer.id].shipments.length > 0" class="df-customer-360__mini-list">
+                                <div t-foreach="state.detailByCustomerId[customer.id].shipments" t-as="shipment" t-key="shipment.id"
+                                     class="df-customer-360__mini-row">
+                                    <span t-esc="shipment.name"/>
+                                    <DeployfleetStatusBadge label="shipment.state" status="this.shipmentBadgeVariant(shipment.state)"/>
+                                </div>
+                            </div>
+
+                            <h3 class="df-customer-360__section-title">Recent Invoices</h3>
+                            <p t-if="state.detailByCustomerId[customer.id].invoices.length === 0" class="df-customer-360__empty">No confirmed invoices.</p>
+                            <div t-if="state.detailByCustomerId[customer.id].invoices.length > 0" class="df-customer-360__mini-list">
+                                <div t-foreach="state.detailByCustomerId[customer.id].invoices" t-as="invoice" t-key="invoice.id"
+                                     class="df-customer-360__mini-row">
+                                    <span t-esc="invoice.name"/>
+                                    <span t-esc="invoice.amount_total"/>
+                                </div>
+                            </div>
+
+                            <DeployfleetButton
+                                label="'Open full customer record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenCustomerForm(customer.id)"/>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

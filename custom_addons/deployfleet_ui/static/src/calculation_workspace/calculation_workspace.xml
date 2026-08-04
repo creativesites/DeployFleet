@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.CalculationWorkspace">
+        <div class="df-calculation-workspace">
+            <header class="df-calculation-workspace__header">
+                <h1 class="df-calculation-workspace__title">Calculation Rules &amp; Parameters</h1>
+                <p class="df-calculation-workspace__subtitle">The formulas and inputs behind the Freight Calculator.</p>
+                <nav class="df-calculation-workspace__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-calculation-workspace__tab {{ state.activeTab === tab.key ? 'df-calculation-workspace__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-calculation-workspace__loading">Loading...</p>
+
+            <!-- ============================= RULES ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'rules'">
+                <section class="df-calculation-workspace__new-row">
+                    <input type="text" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                           placeholder="Key" t-att-value="state.newRule.key"
+                           t-on-input="(ev) => this.onNewRuleInput('key', ev.target.value)"/>
+                    <input type="text" class="df-calculation-workspace__input"
+                           placeholder="Name" t-att-value="state.newRule.name"
+                           t-on-input="(ev) => this.onNewRuleInput('name', ev.target.value)"/>
+                    <input type="text" class="df-calculation-workspace__input df-calculation-workspace__input--wide"
+                           placeholder="Formula, e.g. distance_km * cost_per_km" t-att-value="state.newRule.formula"
+                           t-on-input="(ev) => this.onNewRuleInput('formula', ev.target.value)"/>
+                    <DeployfleetButton label="'New Rule'" variant="'primary'" loading="state.saving" onClick="() => this.onCreateRule()"/>
+                </section>
+
+                <p t-if="state.rules.length === 0" class="df-calculation-workspace__empty">No calculation rules yet.</p>
+
+                <div t-if="state.rules.length > 0" class="df-calculation-workspace__table">
+                    <div class="df-calculation-workspace__row df-calculation-workspace__row--header">
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--key">Key</span>
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--name">Name</span>
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--formula">Formula</span>
+                    </div>
+
+                    <t t-foreach="state.rules" t-as="rule" t-key="rule.id">
+                        <div class="df-calculation-workspace__row" t-on-click="() => this.onSelectRule(rule.id)">
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--key" t-esc="rule.key"/>
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--name" t-esc="rule.name"/>
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--formula" t-esc="rule.formula"/>
+                        </div>
+
+                        <div t-if="state.selectedRuleId === rule.id" class="df-calculation-workspace__detail">
+                            <h3 class="df-calculation-workspace__detail-title">Variables</h3>
+                            <p t-if="!state.variablesByRuleId[rule.id] or state.variablesByRuleId[rule.id].length === 0"
+                               class="df-calculation-workspace__empty">No variables defined yet.</p>
+                            <div t-if="state.variablesByRuleId[rule.id] and state.variablesByRuleId[rule.id].length > 0"
+                                 class="df-calculation-workspace__variable-list">
+                                <div t-foreach="state.variablesByRuleId[rule.id]" t-as="variable" t-key="variable.id"
+                                     class="df-calculation-workspace__variable-row">
+                                    <span class="df-calculation-workspace__variable-name" t-esc="variable.name"/>
+                                    <span class="df-calculation-workspace__variable-source" t-esc="variable.source"/>
+                                    <span t-if="variable.parameter_key" t-esc="variable.parameter_key"/>
+                                </div>
+                            </div>
+
+                            <div class="df-calculation-workspace__new-row df-calculation-workspace__new-row--nested">
+                                <input type="text" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                                       placeholder="Variable name" t-att-value="state.newVariable.name"
+                                       t-on-input="(ev) => this.onNewVariableInput('name', ev.target.value)"/>
+                                <select class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                                        t-att-value="state.newVariable.source"
+                                        t-on-change="(ev) => this.onNewVariableInput('source', ev.target.value)">
+                                    <option value="parameter">Company Parameter</option>
+                                    <option value="input">Provided at call time</option>
+                                </select>
+                                <input type="text" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                                       placeholder="Parameter key (optional)" t-att-value="state.newVariable.parameter_key"
+                                       t-on-input="(ev) => this.onNewVariableInput('parameter_key', ev.target.value)"/>
+                                <DeployfleetButton label="'Add Variable'" variant="'secondary'" loading="state.saving"
+                                                   onClick="() => this.onAddVariable(rule.id)"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <!-- ============================= PARAMETERS ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'parameters'">
+                <section class="df-calculation-workspace__new-row">
+                    <input type="text" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                           placeholder="Key" t-att-value="state.newParameter.key"
+                           t-on-input="(ev) => this.onNewParameterInput('key', ev.target.value)"/>
+                    <input type="text" class="df-calculation-workspace__input"
+                           placeholder="Name" t-att-value="state.newParameter.name"
+                           t-on-input="(ev) => this.onNewParameterInput('name', ev.target.value)"/>
+                    <input type="number" step="any" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                           placeholder="Value" t-att-value="state.newParameter.value"
+                           t-on-input="(ev) => this.onNewParameterInput('value', ev.target.value)"/>
+                    <select class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                            t-att-value="state.newParameter.vehicle_type_id"
+                            t-on-change="(ev) => this.onNewParameterInput('vehicle_type_id', ev.target.value)">
+                        <option value="">Any vehicle type</option>
+                        <option t-foreach="state.vehicleTypes" t-as="vehicleType" t-key="vehicleType.id" t-att-value="vehicleType.id">
+                            <t t-esc="vehicleType.name"/>
+                        </option>
+                    </select>
+                    <DeployfleetButton label="'New Parameter'" variant="'primary'" loading="state.saving" onClick="() => this.onCreateParameter()"/>
+                </section>
+
+                <p t-if="state.parameters.length === 0" class="df-calculation-workspace__empty">No calculation parameters yet.</p>
+
+                <div t-if="state.parameters.length > 0" class="df-calculation-workspace__table">
+                    <div class="df-calculation-workspace__row df-calculation-workspace__row--header">
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--key">Key</span>
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--name">Name</span>
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--vehicle-type">Vehicle Type</span>
+                        <span class="df-calculation-workspace__col df-calculation-workspace__col--value">Value</span>
+                    </div>
+
+                    <t t-foreach="state.parameters" t-as="parameter" t-key="parameter.id">
+                        <div class="df-calculation-workspace__row"
+                             t-on-click="() => this.onStartEditParameter(parameter.id, parameter.value)">
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--key" t-esc="parameter.key"/>
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--name" t-esc="parameter.name"/>
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--vehicle-type"
+                                  t-esc="parameter.vehicle_type_id ? parameter.vehicle_type_id[1] : 'Any'"/>
+                            <span class="df-calculation-workspace__col df-calculation-workspace__col--value" t-esc="parameter.value"/>
+                        </div>
+
+                        <div t-if="state.editingParameterId === parameter.id" class="df-calculation-workspace__detail">
+                            <div class="df-calculation-workspace__new-row">
+                                <input type="number" step="any" class="df-calculation-workspace__input df-calculation-workspace__input--small"
+                                       t-att-value="state.editParameterValue"
+                                       t-on-input="(ev) => this.onEditParameterValueInput(ev.target.value)"/>
+                                <DeployfleetButton label="'Save'" variant="'primary'" loading="state.saving"
+                                                   onClick="() => this.onSaveParameterValue(parameter.id)"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

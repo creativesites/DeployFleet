@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ZraCompliance">
+        <div class="df-zra-compliance">
+            <header class="df-zra-compliance__header">
+                <h1 class="df-zra-compliance__title">ZRA Compliance</h1>
+                <p class="df-zra-compliance__subtitle">Smart Invoice submission status per invoice.</p>
+            </header>
+
+            <div t-if="state.config" class="df-zra-compliance__device-status">
+                <span class="df-zra-compliance__device-label">Device:</span>
+                <DeployfleetStatusBadge
+                    label="state.config.initialized ? 'Initialized' : 'Not Initialized'"
+                    status="state.config.initialized ? 'success' : 'warning'"/>
+                <span class="df-zra-compliance__device-detail" t-esc="state.config.environment"/>
+                <span class="df-zra-compliance__device-detail" t-if="state.config.tpin">TPIN <t t-esc="state.config.tpin"/></span>
+            </div>
+            <div t-if="!state.loading and !state.config" class="df-zra-compliance__device-status df-zra-compliance__device-status--missing">
+                <i class="fa fa-exclamation-triangle"/> No ZRA device configuration for this company yet.
+            </div>
+
+            <section t-if="!state.loading" class="df-zra-compliance__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-zra-compliance__loading">Loading submissions...</p>
+            <p t-if="!state.loading and filteredSubmissions.length === 0" class="df-zra-compliance__empty">
+                No submissions match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredSubmissions.length > 0" class="df-zra-compliance__table">
+                <div class="df-zra-compliance__row df-zra-compliance__row--header">
+                    <span class="df-zra-compliance__col df-zra-compliance__col--invoice">Invoice</span>
+                    <span class="df-zra-compliance__col df-zra-compliance__col--receipt">Receipt No.</span>
+                    <span class="df-zra-compliance__col df-zra-compliance__col--submitted">Submitted</span>
+                    <span class="df-zra-compliance__col df-zra-compliance__col--status">Status</span>
+                </div>
+
+                <t t-foreach="filteredSubmissions" t-as="submission" t-key="submission.id">
+                    <div class="df-zra-compliance__row" t-on-click="() => this.onSelectSubmission(submission.id)">
+                        <span class="df-zra-compliance__col df-zra-compliance__col--invoice"
+                              t-esc="submission.invoice_id ? submission.invoice_id[1] : '—'"/>
+                        <span class="df-zra-compliance__col df-zra-compliance__col--receipt"
+                              t-esc="submission.zra_receipt_no or '—'"/>
+                        <span class="df-zra-compliance__col df-zra-compliance__col--submitted"
+                              t-esc="submission.submitted_date or '—'"/>
+                        <span class="df-zra-compliance__col df-zra-compliance__col--status">
+                            <DeployfleetStatusBadge label="submission.state" status="this.stateBadgeVariant(submission.state)"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedSubmissionId === submission.id" class="df-zra-compliance__detail">
+                        <p t-if="submission.error_message" class="df-zra-compliance__error" t-esc="submission.error_message"/>
+                        <div class="df-zra-compliance__detail-actions">
+                            <DeployfleetButton
+                                t-if="submission.state !== 'accepted'"
+                                label="'Retry'"
+                                variant="'primary'"
+                                loading="state.retryingSubmissionId === submission.id"
+                                onClick="() => this.onRetrySubmission(submission.id)"/>
+                            <DeployfleetButton
+                                t-if="submission.invoice_id"
+                                label="'Open invoice'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenInvoiceForm(submission.invoice_id[0])"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

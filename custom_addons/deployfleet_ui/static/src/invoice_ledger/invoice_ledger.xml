@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.InvoiceLedger">
+        <div class="df-invoice-ledger">
+            <header class="df-invoice-ledger__header">
+                <h1 class="df-invoice-ledger__title">Invoice Ledger</h1>
+                <p class="df-invoice-ledger__subtitle">Customer invoices, payment status, and ZRA submission status in one place.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-invoice-ledger__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-invoice-ledger__loading">Loading invoices...</p>
+            <p t-if="!state.loading and filteredInvoices.length === 0" class="df-invoice-ledger__empty">
+                No invoices match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredInvoices.length > 0" class="df-invoice-ledger__table">
+                <div class="df-invoice-ledger__row df-invoice-ledger__row--header">
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--name">Invoice</span>
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--customer">Customer</span>
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--amount">Amount</span>
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--status">Status</span>
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--status">Payment</span>
+                    <span class="df-invoice-ledger__col df-invoice-ledger__col--status">ZRA</span>
+                </div>
+
+                <t t-foreach="filteredInvoices" t-as="invoice" t-key="invoice.id">
+                    <div class="df-invoice-ledger__row" t-on-click="() => this.onSelectInvoice(invoice.id)">
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--name">
+                            <span class="df-invoice-ledger__invoice-name" t-esc="invoice.name"/>
+                            <span class="df-invoice-ledger__invoice-date" t-esc="invoice.invoice_date"/>
+                        </span>
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--customer"
+                              t-esc="invoice.customer_id ? invoice.customer_id[1] : '—'"/>
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--amount" t-esc="invoice.amount_total"/>
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--status">
+                            <DeployfleetStatusBadge label="invoice.state" status="this.stateBadgeVariant(invoice.state)"/>
+                        </span>
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--status">
+                            <DeployfleetStatusBadge label="this.paymentStateLabel(invoice.payment_state)" status="invoice.payment_state === 'paid' ? 'success' : 'info'"/>
+                        </span>
+                        <span class="df-invoice-ledger__col df-invoice-ledger__col--status">
+                            <DeployfleetStatusBadge
+                                t-if="this.zraSubmissionFor(invoice.id)"
+                                label="this.zraSubmissionFor(invoice.id).state"
+                                status="this.zraBadgeVariant(this.zraSubmissionFor(invoice.id).state)"/>
+                            <span t-else="" class="df-invoice-ledger__no-zra">—</span>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedInvoiceId === invoice.id" class="df-invoice-ledger__detail">
+                        <div class="df-invoice-ledger__detail-row" t-if="invoice.contract_id">
+                            <span class="df-invoice-ledger__detail-label">Contract</span>
+                            <span t-esc="invoice.contract_id[1]"/>
+                        </div>
+                        <div class="df-invoice-ledger__detail-row" t-if="invoice.trip_id">
+                            <span class="df-invoice-ledger__detail-label">Trip</span>
+                            <span t-esc="invoice.trip_id[1]"/>
+                        </div>
+                        <div class="df-invoice-ledger__detail-row" t-if="this.zraSubmissionFor(invoice.id) and this.zraSubmissionFor(invoice.id).zra_receipt_no">
+                            <span class="df-invoice-ledger__detail-label">ZRA Receipt No.</span>
+                            <span t-esc="this.zraSubmissionFor(invoice.id).zra_receipt_no"/>
+                        </div>
+                        <div class="df-invoice-ledger__detail-actions">
+                            <DeployfleetButton
+                                t-if="invoice.state === 'draft'"
+                                label="'Confirm'"
+                                variant="'primary'"
+                                loading="state.actingInvoiceId === invoice.id"
+                                onClick="() => this.onConfirmInvoice(invoice.id)"/>
+                            <DeployfleetButton
+                                t-if="invoice.state !== 'cancelled'"
+                                label="'Cancel'"
+                                variant="'destructive'"
+                                loading="state.actingInvoiceId === invoice.id"
+                                onClick="() => this.onCancelInvoice(invoice.id)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenInvoiceForm(invoice.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

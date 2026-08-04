@@ -1,0 +1,216 @@
+.df-calculation-workspace {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-calculation-workspace__header {
+    margin-bottom: var(--df-space-2);
+}
+
+.df-calculation-workspace__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-calculation-workspace__subtitle {
+    margin: 2px 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-calculation-workspace__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-calculation-workspace__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-calculation-workspace__tab--active {
+    color: var(--df-color-info);
+    border-bottom-color: var(--df-color-info);
+}
+
+.df-calculation-workspace__loading,
+.df-calculation-workspace__empty {
+    color: var(--df-color-neutral-600);
+    margin-top: var(--df-space-2);
+}
+
+.df-calculation-workspace__new-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin: var(--df-space-2) 0 var(--df-space-3);
+}
+
+.df-calculation-workspace__new-row--nested {
+    margin: var(--df-space-2) 0 0;
+}
+
+.df-calculation-workspace__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-base);
+    font-family: var(--df-font-family);
+    width: 160px;
+    max-width: 100%;
+}
+
+.df-calculation-workspace__input--small {
+    width: 110px;
+}
+
+.df-calculation-workspace__input--wide {
+    width: 280px;
+}
+
+.df-calculation-workspace__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-calculation-workspace__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-calculation-workspace__row:last-child {
+    border-bottom: none;
+}
+
+.df-calculation-workspace__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-calculation-workspace__col {
+    min-width: 0;
+}
+
+.df-calculation-workspace__col--key {
+    flex: 0 0 140px;
+    font-family: monospace;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-calculation-workspace__col--name {
+    flex: 1 1 160px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-calculation-workspace__col--formula {
+    flex: 2 1 auto;
+    font-family: monospace;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.df-calculation-workspace__col--vehicle-type {
+    flex: 1 1 140px;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-calculation-workspace__col--value {
+    flex: 0 0 100px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-calculation-workspace__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-calculation-workspace__detail-title {
+    margin: 0 0 var(--df-space-1) 0;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-calculation-workspace__variable-list {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    overflow: hidden;
+}
+
+.df-calculation-workspace__variable-row {
+    display: flex;
+    gap: var(--df-space-2);
+    padding: var(--df-space-1) var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-calculation-workspace__variable-row:last-child {
+    border-bottom: none;
+}
+
+.df-calculation-workspace__variable-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-calculation-workspace__variable-source {
+    color: var(--df-color-neutral-600);
+}
+
+@media (max-width: 640px) {
+    .df-calculation-workspace__row--header {
+        display: none;
+    }
+
+    .df-calculation-workspace__row {
+        flex-wrap: wrap;
+    }
+
+    .df-calculation-workspace__col--formula,
+    .df-calculation-workspace__col--vehicle-type,
+    .df-calculation-workspace__col--value {
+        flex: 1 1 100%;
+        text-align: left;
+    }
+}

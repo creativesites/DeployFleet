@@ -1,0 +1,202 @@
+.df-contract-workspace {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-contract-workspace__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-contract-workspace__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-contract-workspace__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-contract-workspace__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-contract-workspace__new-contract,
+.df-contract-workspace__new-rate-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-contract-workspace__new-rate-card {
+    margin-top: var(--df-space-2);
+    margin-bottom: 0;
+    padding-top: var(--df-space-2);
+    border-top: 1px solid var(--df-color-neutral-300);
+}
+
+.df-contract-workspace__select,
+.df-contract-workspace__date-input,
+.df-contract-workspace__amount-input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-base);
+    font-family: var(--df-font-family);
+}
+
+.df-contract-workspace__amount-input {
+    width: 120px;
+    max-width: 100%;
+}
+
+.df-contract-workspace__loading,
+.df-contract-workspace__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-contract-workspace__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-contract-workspace__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-contract-workspace__row:last-child {
+    border-bottom: none;
+}
+
+.df-contract-workspace__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-contract-workspace__col {
+    min-width: 0;
+}
+
+.df-contract-workspace__col--name {
+    flex: 2 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-contract-workspace__col--customer {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-contract-workspace__col--basis {
+    flex: 0 0 120px;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-contract-workspace__col--status {
+    flex: 0 0 100px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-contract-workspace__contract-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-contract-workspace__contract-dates {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-contract-workspace__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-contract-workspace__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-contract-workspace__rate-cards-title {
+    margin: 0 0 var(--df-space-1) 0;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-contract-workspace__rate-card-list {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    overflow: hidden;
+}
+
+.df-contract-workspace__rate-card-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--df-space-1) var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-contract-workspace__rate-card-row:last-child {
+    border-bottom: none;
+}
+
+.df-contract-workspace__rate-card-amount {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--df-font-weight-bold);
+}
+
+@media (max-width: 640px) {
+    .df-contract-workspace__row--header {
+        display: none;
+    }
+
+    .df-contract-workspace__row {
+        flex-wrap: wrap;
+    }
+
+    .df-contract-workspace__col--customer,
+    .df-contract-workspace__col--basis,
+    .df-contract-workspace__col--status {
+        flex: 1 1 45%;
+        text-align: left;
+        justify-content: flex-start;
+    }
+}

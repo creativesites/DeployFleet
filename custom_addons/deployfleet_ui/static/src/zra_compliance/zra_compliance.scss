@@ -1,0 +1,157 @@
+.df-zra-compliance {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-zra-compliance__header {
+    margin-bottom: var(--df-space-2);
+}
+
+.df-zra-compliance__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-zra-compliance__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-zra-compliance__device-status {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+    padding: var(--df-space-2);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-zra-compliance__device-status--missing {
+    color: var(--df-color-warning);
+    background: var(--df-color-warning-bg);
+    border-color: var(--df-color-warning);
+}
+
+.df-zra-compliance__device-label {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-zra-compliance__device-detail {
+    color: var(--df-color-neutral-600);
+}
+
+.df-zra-compliance__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-zra-compliance__loading,
+.df-zra-compliance__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-zra-compliance__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-zra-compliance__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-zra-compliance__row:last-child {
+    border-bottom: none;
+}
+
+.df-zra-compliance__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-zra-compliance__col {
+    min-width: 0;
+}
+
+.df-zra-compliance__col--invoice {
+    flex: 2 1 auto;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-zra-compliance__col--receipt,
+.df-zra-compliance__col--submitted {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-zra-compliance__col--status {
+    flex: 0 0 110px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-zra-compliance__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-zra-compliance__error {
+    color: var(--df-color-danger);
+    font-size: var(--df-font-size-sm);
+    margin: 0 0 var(--df-space-1) 0;
+}
+
+.df-zra-compliance__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-zra-compliance__row--header {
+        display: none;
+    }
+
+    .df-zra-compliance__row {
+        flex-wrap: wrap;
+    }
+
+    .df-zra-compliance__col--receipt,
+    .df-zra-compliance__col--submitted,
+    .df-zra-compliance__col--status {
+        flex: 1 1 45%;
+        text-align: left;
+        justify-content: flex-start;
+    }
+}

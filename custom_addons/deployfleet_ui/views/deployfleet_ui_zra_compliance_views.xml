@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ZRA Compliance (Billing & Finance domain). -->
+    <record id="action_deployfleet_zra_compliance" model="ir.actions.client">
+        <field name="name">ZRA Compliance</field>
+        <field name="tag">deployfleet_ui.zra_compliance</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_zra_compliance"
+              name="ZRA Compliance"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_zra_compliance"
+              sequence="31"/>
+</odoo>

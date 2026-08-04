@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Contract & Rate Card workspace (Billing & Finance domain). -->
+    <record id="action_deployfleet_contract_workspace" model="ir.actions.client">
+        <field name="name">Contracts &amp; Rate Cards</field>
+        <field name="tag">deployfleet_ui.contract_workspace</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_contract_workspace"
+              name="Contracts &amp; Rate Cards"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_contract_workspace"
+              sequence="29"/>
+</odoo>

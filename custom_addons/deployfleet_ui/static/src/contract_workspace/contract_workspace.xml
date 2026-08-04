@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ContractWorkspace">
+        <div class="df-contract-workspace">
+            <header class="df-contract-workspace__header">
+                <h1 class="df-contract-workspace__title">Contracts &amp; Rate Cards</h1>
+                <p class="df-contract-workspace__subtitle">Customer contract terms and the pricing rules that back them.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-contract-workspace__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <section t-if="!state.loading" class="df-contract-workspace__new-contract">
+                <select class="df-contract-workspace__select"
+                        t-att-value="state.newContract.customer_id"
+                        t-on-change="(ev) => this.onNewContractInput('customer_id', ev.target.value)">
+                    <option value="">New contract for...</option>
+                    <option t-foreach="state.customers" t-as="customer" t-key="customer.id" t-att-value="customer.id">
+                        <t t-esc="customer.name"/>
+                    </option>
+                </select>
+                <select class="df-contract-workspace__select"
+                        t-att-value="state.newContract.rate_basis"
+                        t-on-change="(ev) => this.onNewContractInput('rate_basis', ev.target.value)">
+                    <option t-foreach="rateBasisOptions" t-as="option" t-key="option.key" t-att-value="option.key">
+                        <t t-esc="option.label"/>
+                    </option>
+                </select>
+                <input type="date" class="df-contract-workspace__date-input"
+                       t-att-value="state.newContract.start_date"
+                       t-on-change="(ev) => this.onNewContractInput('start_date', ev.target.value)"/>
+                <DeployfleetButton
+                    label="'New Contract'"
+                    variant="'primary'"
+                    loading="state.creatingContract"
+                    onClick="() => this.onCreateContract()"/>
+            </section>
+
+            <p t-if="state.loading" class="df-contract-workspace__loading">Loading contracts...</p>
+            <p t-if="!state.loading and filteredContracts.length === 0" class="df-contract-workspace__empty">
+                No contracts match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredContracts.length > 0" class="df-contract-workspace__table">
+                <div class="df-contract-workspace__row df-contract-workspace__row--header">
+                    <span class="df-contract-workspace__col df-contract-workspace__col--name">Contract</span>
+                    <span class="df-contract-workspace__col df-contract-workspace__col--customer">Customer</span>
+                    <span class="df-contract-workspace__col df-contract-workspace__col--basis">Basis</span>
+                    <span class="df-contract-workspace__col df-contract-workspace__col--status">Status</span>
+                </div>
+
+                <t t-foreach="filteredContracts" t-as="contract" t-key="contract.id">
+                    <div class="df-contract-workspace__row" t-on-click="() => this.onSelectContract(contract.id)">
+                        <span class="df-contract-workspace__col df-contract-workspace__col--name">
+                            <span class="df-contract-workspace__contract-name" t-esc="contract.name"/>
+                            <span class="df-contract-workspace__contract-dates">
+                                <t t-esc="contract.start_date"/><t t-if="contract.end_date"> — <t t-esc="contract.end_date"/></t>
+                            </span>
+                        </span>
+                        <span class="df-contract-workspace__col df-contract-workspace__col--customer"
+                              t-esc="contract.customer_id ? contract.customer_id[1] : '—'"/>
+                        <span class="df-contract-workspace__col df-contract-workspace__col--basis"
+                              t-esc="this.rateBasisLabel(contract.rate_basis)"/>
+                        <span class="df-contract-workspace__col df-contract-workspace__col--status">
+                            <DeployfleetStatusBadge label="contract.state" status="this.stateBadgeVariant(contract.state)"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedContractId === contract.id" class="df-contract-workspace__detail">
+                        <div class="df-contract-workspace__detail-actions">
+                            <DeployfleetButton
+                                t-if="contract.state === 'draft'"
+                                label="'Activate'"
+                                variant="'primary'"
+                                loading="state.actingContractId === contract.id"
+                                onClick="() => this.onActivateContract(contract.id)"/>
+                            <DeployfleetButton
+                                t-if="contract.state !== 'terminated'"
+                                label="'Terminate'"
+                                variant="'destructive'"
+                                loading="state.actingContractId === contract.id"
+                                onClick="() => this.onTerminateContract(contract.id)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenContractForm(contract.id)"/>
+                        </div>
+
+                        <h3 class="df-contract-workspace__rate-cards-title">Rate Cards</h3>
+                        <p t-if="!state.rateCardsByContractId[contract.id] or state.rateCardsByContractId[contract.id].length === 0"
+                           class="df-contract-workspace__empty">No rate cards yet.</p>
+                        <div t-if="state.rateCardsByContractId[contract.id] and state.rateCardsByContractId[contract.id].length > 0"
+                             class="df-contract-workspace__rate-card-list">
+                            <div t-foreach="state.rateCardsByContractId[contract.id]" t-as="rateCard" t-key="rateCard.id"
+                                 class="df-contract-workspace__rate-card-row">
+                                <span t-esc="rateCard.vehicle_type_id ? rateCard.vehicle_type_id[1] : 'Any vehicle type'"/>
+                                <span class="df-contract-workspace__rate-card-amount" t-esc="rateCard.unit_amount"/>
+                            </div>
+                        </div>
+
+                        <div class="df-contract-workspace__new-rate-card">
+                            <select class="df-contract-workspace__select"
+                                    t-att-value="state.newRateCard.vehicle_type_id"
+                                    t-on-change="(ev) => this.onNewRateCardInput('vehicle_type_id', ev.target.value)">
+                                <option value="">Any vehicle type</option>
+                                <option t-foreach="state.vehicleTypes" t-as="vehicleType" t-key="vehicleType.id" t-att-value="vehicleType.id">
+                                    <t t-esc="vehicleType.name"/>
+                                </option>
+                            </select>
+                            <input type="number" min="0" step="any"
+                                   class="df-contract-workspace__amount-input"
+                                   placeholder="Rate"
+                                   t-att-value="state.newRateCard.unit_amount"
+                                   t-on-input="(ev) => this.onNewRateCardInput('unit_amount', ev.target.value)"/>
+                            <DeployfleetButton
+                                label="'Add Rate Card'"
+                                variant="'secondary'"
+                                loading="state.savingRateCard"
+                                onClick="() => this.onAddRateCard(contract.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

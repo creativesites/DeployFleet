@@ -1,0 +1,177 @@
+.df-load-expense-ledger {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-load-expense-ledger__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-load-expense-ledger__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-load-expense-ledger__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-load-expense-ledger__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-load-expense-ledger__new-expense {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-load-expense-ledger__select,
+.df-load-expense-ledger__amount-input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-base);
+    font-family: var(--df-font-family);
+}
+
+.df-load-expense-ledger__amount-input {
+    width: 120px;
+    max-width: 100%;
+}
+
+.df-load-expense-ledger__file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    cursor: pointer;
+}
+
+.df-load-expense-ledger__file-input {
+    display: none;
+}
+
+.df-load-expense-ledger__loading,
+.df-load-expense-ledger__empty,
+.df-load-expense-ledger__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-load-expense-ledger__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-load-expense-ledger__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-load-expense-ledger__row:last-child {
+    border-bottom: none;
+}
+
+.df-load-expense-ledger__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-load-expense-ledger__col {
+    min-width: 0;
+}
+
+.df-load-expense-ledger__col--shipment {
+    flex: 2 1 auto;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-load-expense-ledger__col--type,
+.df-load-expense-ledger__col--recorded {
+    flex: 1 1 120px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-load-expense-ledger__col--amount {
+    flex: 0 0 100px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-load-expense-ledger__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-load-expense-ledger__detail-row {
+    display: flex;
+    gap: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-load-expense-ledger__detail-label {
+    color: var(--df-color-neutral-600);
+    min-width: 60px;
+}
+
+.df-load-expense-ledger__receipt-image {
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+}
+
+@media (max-width: 640px) {
+    .df-load-expense-ledger__row--header {
+        display: none;
+    }
+
+    .df-load-expense-ledger__row {
+        flex-wrap: wrap;
+    }
+
+    .df-load-expense-ledger__col--type,
+    .df-load-expense-ledger__col--recorded,
+    .df-load-expense-ledger__col--amount {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+}

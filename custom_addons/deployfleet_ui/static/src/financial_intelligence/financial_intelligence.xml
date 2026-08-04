@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.FinancialIntelligence">
+        <div class="df-financial-intelligence">
+            <header class="df-financial-intelligence__header">
+                <h1 class="df-financial-intelligence__title">Financial Intelligence</h1>
+                <p class="df-financial-intelligence__subtitle">Revenue, outstanding balance, actual costs, and the forecast trend.</p>
+            </header>
+
+            <p t-if="state.loading" class="df-financial-intelligence__loading">Loading...</p>
+
+            <section t-if="!state.loading" class="df-financial-intelligence__kpis">
+                <DeployfleetMetricCard
+                    label="'Confirmed Revenue'"
+                    value="formattedConfirmedRevenue"
+                    icon="'fa fa-money'"
+                    status="'success'"/>
+                <DeployfleetMetricCard
+                    label="'Outstanding Balance'"
+                    value="formattedOutstandingBalance"
+                    icon="'fa fa-exclamation-circle'"
+                    caption="state.unpaidInvoiceCount + ' unpaid invoice(s)'"
+                    status="state.outstandingBalance > 0 ? 'warning' : 'success'"/>
+                <DeployfleetMetricCard
+                    label="'Load Expenses'"
+                    value="formattedLoadExpenseTotal"
+                    icon="'fa fa-credit-card'"
+                    caption="'Recorded actual costs, all-time'"
+                    status="'info'"/>
+                <DeployfleetMetricCard
+                    label="'Gross Margin (approx.)'"
+                    value="formattedGrossMargin"
+                    icon="'fa fa-balance-scale'"
+                    caption="'Revenue minus recorded load expenses only'"
+                    status="state.grossMargin >= 0 ? 'success' : 'danger'"/>
+            </section>
+
+            <section t-if="!state.loading" class="df-financial-intelligence__forecast">
+                <h2 class="df-financial-intelligence__section-title">Financial Forecast</h2>
+                <p t-if="!latestForecast" class="df-financial-intelligence__empty">
+                    No forecast has been computed yet.
+                </p>
+                <t t-if="latestForecast">
+                    <div class="df-financial-intelligence__forecast-summary">
+                        <div class="df-financial-intelligence__forecast-figure">
+                            <span class="df-financial-intelligence__forecast-label">Next Period Revenue</span>
+                            <span class="df-financial-intelligence__forecast-value" t-esc="this.formatAmount(latestForecast.forecast_revenue)"/>
+                        </div>
+                        <div class="df-financial-intelligence__forecast-figure">
+                            <span class="df-financial-intelligence__forecast-label">Next Period Fuel Cost</span>
+                            <span class="df-financial-intelligence__forecast-value" t-esc="this.formatAmount(latestForecast.forecast_fuel_cost)"/>
+                        </div>
+                    </div>
+                    <p class="df-financial-intelligence__forecast-basis" t-esc="latestForecast.basis"/>
+
+                    <h3 class="df-financial-intelligence__section-title">Recent Computations</h3>
+                    <div class="df-financial-intelligence__trend-table">
+                        <div class="df-financial-intelligence__trend-row df-financial-intelligence__trend-row--header">
+                            <span>Computed</span>
+                            <span>Revenue</span>
+                            <span>Fuel Cost</span>
+                        </div>
+                        <div t-foreach="state.forecasts" t-as="forecast" t-key="forecast.id" class="df-financial-intelligence__trend-row">
+                            <span t-esc="forecast.computed_date"/>
+                            <span t-esc="this.formatAmount(forecast.forecast_revenue)"/>
+                            <span t-esc="this.formatAmount(forecast.forecast_fuel_cost)"/>
+                        </div>
+                    </div>
+                </t>
+            </section>
+        </div>
+    </t>
+</templates>

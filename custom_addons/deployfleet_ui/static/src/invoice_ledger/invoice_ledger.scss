@@ -1,0 +1,163 @@
+// Registry/ledger dialect (Billing & Finance domain) — same visual
+// language as Parts Registry/Load Expense Ledger: a dense table to scan,
+// not an operational review queue. Workspace Layer (flat, light,
+// high-contrast).
+.df-invoice-ledger {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-invoice-ledger__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-invoice-ledger__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-invoice-ledger__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-invoice-ledger__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-invoice-ledger__loading,
+.df-invoice-ledger__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-invoice-ledger__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-invoice-ledger__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-invoice-ledger__row:last-child {
+    border-bottom: none;
+}
+
+.df-invoice-ledger__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-invoice-ledger__col {
+    min-width: 0;
+}
+
+.df-invoice-ledger__col--name {
+    flex: 2 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-invoice-ledger__col--customer {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-invoice-ledger__col--amount {
+    flex: 0 0 100px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-invoice-ledger__col--status {
+    flex: 0 0 100px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-invoice-ledger__invoice-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-invoice-ledger__invoice-date {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-invoice-ledger__no-zra {
+    color: var(--df-color-neutral-600);
+}
+
+.df-invoice-ledger__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-invoice-ledger__detail-row {
+    display: flex;
+    gap: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-invoice-ledger__detail-label {
+    color: var(--df-color-neutral-600);
+    min-width: 100px;
+}
+
+.df-invoice-ledger__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-top: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-invoice-ledger__row--header {
+        display: none;
+    }
+
+    .df-invoice-ledger__row {
+        flex-wrap: wrap;
+    }
+
+    .df-invoice-ledger__col--customer,
+    .df-invoice-ledger__col--amount,
+    .df-invoice-ledger__col--status {
+        flex: 1 1 45%;
+        text-align: left;
+        justify-content: flex-start;
+    }
+}

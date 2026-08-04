@@ -1,0 +1,118 @@
+.df-financial-intelligence {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-financial-intelligence__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-financial-intelligence__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-financial-intelligence__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-financial-intelligence__loading {
+    color: var(--df-color-neutral-600);
+}
+
+.df-financial-intelligence__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-financial-intelligence__forecast {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-3);
+}
+
+.df-financial-intelligence__section-title {
+    margin: 0 0 var(--df-space-2) 0;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-financial-intelligence__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-financial-intelligence__forecast-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-4);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-financial-intelligence__forecast-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-financial-intelligence__forecast-label {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-financial-intelligence__forecast-value {
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    font-variant-numeric: tabular-nums;
+}
+
+.df-financial-intelligence__forecast-basis {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    margin: 0 0 var(--df-space-3) 0;
+}
+
+.df-financial-intelligence__trend-table {
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    overflow: hidden;
+}
+
+.df-financial-intelligence__trend-row {
+    display: flex;
+    gap: var(--df-space-2);
+    padding: var(--df-space-1) var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-financial-intelligence__trend-row:last-child {
+    border-bottom: none;
+}
+
+.df-financial-intelligence__trend-row > span {
+    flex: 1 1 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.df-financial-intelligence__trend-row--header {
+    background: var(--df-color-neutral-100);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
