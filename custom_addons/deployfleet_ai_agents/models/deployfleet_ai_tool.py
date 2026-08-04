@@ -7,7 +7,7 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
-def _tool_get_vehicle_summary(env, arguments):
+def _tool_get_vehicle_summary(env, arguments, _feature_key):
     vehicle_id = arguments.get("vehicle_id")
     if not vehicle_id:
         return {"error": "vehicle_id is required."}
@@ -24,7 +24,7 @@ def _tool_get_vehicle_summary(env, arguments):
     }
 
 
-def _tool_get_due_maintenance(env, _arguments):
+def _tool_get_due_maintenance(env, _arguments, _feature_key):
     schedules = env["deployfleet.maintenance.schedule"].sudo().search(
         [("is_due", "=", True)], order="next_due_date asc", limit=20,
     )
@@ -42,7 +42,7 @@ def _tool_get_due_maintenance(env, _arguments):
     }
 
 
-def _tool_get_available_drivers(env, arguments):
+def _tool_get_available_drivers(env, arguments, _feature_key):
     """Driver availability is derived, not stored (confirmed by reading
     deployfleet_dispatch_compliance's own _driver_on_approved_leave() —
     there is no single boolean "driver status" field anywhere in the
@@ -75,7 +75,7 @@ def _tool_get_available_drivers(env, arguments):
     }
 
 
-def _tool_get_unassigned_shipments(env, _arguments):
+def _tool_get_unassigned_shipments(env, _arguments, _feature_key):
     shipments = env["deployfleet.shipment"].sudo().search(
         [("state", "=", "confirmed")], order="requested_pickup_date asc", limit=20,
     )
@@ -95,7 +95,7 @@ def _tool_get_unassigned_shipments(env, _arguments):
     }
 
 
-def _tool_get_expiring_documents(env, _arguments):
+def _tool_get_expiring_documents(env, _arguments, _feature_key):
     documents = env["deployfleet.compliance.document"].sudo().search(
         [("state", "in", ("expiring_soon", "expired"))], order="expiry_date asc", limit=20,
     )
@@ -115,6 +115,48 @@ def _tool_get_expiring_documents(env, _arguments):
     }
 
 
+def _tool_mark_vehicle_available(env, arguments, feature_key):
+    """The first write tool (doc 21 §3/§4/§10 Phase 3): proposes marking
+    a vehicle available via the exact same suggestion -> permission
+    check -> human approval -> execute -> audit pipeline every other
+    AI-initiated write goes through (deployfleet.ai.action.request.
+    propose()) - this tool never writes deployfleet.vehicle directly.
+    Whether the proposal auto-executes or lands in the approval queue is
+    entirely propose()'s own decision (doc 21 §4's allow-list), not
+    something this handler special-cases. Deliberately no sudo(): the
+    calling user's own ACLs govern the write, exactly as if they clicked
+    the Fleet Command Center's own "Mark Available" button themselves."""
+    vehicle_id = arguments.get("vehicle_id")
+    if not vehicle_id:
+        return {"error": "vehicle_id is required."}
+    vehicle = env["deployfleet.vehicle"].browse(int(vehicle_id))
+    if not vehicle.exists():
+        return {"error": f"No vehicle found with id {vehicle_id}."}
+
+    request = env["deployfleet.ai.action.request"].propose(
+        feature_key=feature_key,
+        action_type="mark_vehicle_available",
+        target_model="deployfleet.vehicle",
+        target_id=vehicle.id,
+        proposed_vals={},
+        action_method="action_set_available",
+        source_context="copilot_chat",
+    )
+    if request.state == "executed":
+        return {
+            "status": "executed",
+            "vehicle_id": vehicle.id,
+            "message": f"Vehicle {vehicle.license_plate} marked available.",
+        }
+    if request.state == "failed":
+        return {"status": "failed", "error": request.error_message}
+    return {
+        "status": "pending_approval",
+        "request_name": request.name,
+        "message": "Submitted for manager approval - not yet executed.",
+    }
+
+
 # Fixed dispatch table, keyed by deployfleet.ai.tool.key — see the model
 # docstring below for why this is dict-dispatch rather than dynamic
 # getattr(model, method_name): a tool key is ultimately LLM-selected
@@ -125,6 +167,7 @@ _TOOL_HANDLERS = {
     "get_available_drivers": _tool_get_available_drivers,
     "get_unassigned_shipments": _tool_get_unassigned_shipments,
     "get_expiring_documents": _tool_get_expiring_documents,
+    "mark_vehicle_available": _tool_mark_vehicle_available,
 }
 
 
@@ -206,17 +249,22 @@ class DeployfleetAITool(models.Model):
             parameters = {"type": "object", "properties": {}}
         return {"name": self.key, "description": self.description, "parameters": parameters}
 
-    def execute(self, arguments):
+    def execute(self, arguments, feature_key=None):
         """Runs this tool's handler via the fixed dispatch table. Never
         raises — an unknown key or a handler exception both become an
         {"error": ...} dict so a bad tool call degrades to something the
-        model can react to, rather than aborting the whole chat turn."""
+        model can react to, rather than aborting the whole chat turn.
+
+        `feature_key` is passed through to the handler so a write tool
+        can attribute its deployfleet.ai.action.request.propose() call to
+        the same feature the calling agent/session is already using -
+        every read-only handler ignores it."""
         self.ensure_one()
         handler = _TOOL_HANDLERS.get(self.key)
         if not handler:
             return {"error": f"Tool '{self.key}' has no registered handler."}
         try:
-            return handler(self.env, arguments or {})
+            return handler(self.env, arguments or {}, feature_key)
         except Exception as exc:  # noqa: BLE001 — feed failures back to the model, don't crash the chat turn
             _logger.exception("deployfleet.ai.tool '%s' handler raised", self.key)
             return {"error": str(exc)}
@@ -235,13 +283,17 @@ class DeployfleetAITool(models.Model):
         for a key not in this agent's own tool set is refused, not
         silently run against some other agent's tool — an agent's tool
         set (§3's `agent_ids`) is itself part of the access boundary this
-        registry exists to enforce."""
+        registry exists to enforce. Closes over this agent's own
+        feature_id.key so a write tool's propose() call (doc 21 §4)
+        attributes to the same feature the calling session is already
+        using, not a hardcoded one."""
         tools_by_key = {tool.key: tool for tool in self.search([("agent_ids", "=", agent.id)])}
+        feature_key = agent.feature_id.key
 
         def executor(name, arguments):
             tool = tools_by_key.get(name)
             if not tool:
                 return {"error": f"Tool '{name}' is not available to this agent."}
-            return tool.execute(arguments)
+            return tool.execute(arguments, feature_key=feature_key)
 
         return executor

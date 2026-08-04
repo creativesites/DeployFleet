@@ -61,4 +61,25 @@
         <field name="agent_ids" eval="[(6, 0, [ref('agent_compliance_agent')])]"/>
         <field name="sequence">50</field>
     </record>
+
+    <!-- Phase 3's first write tool (doc 21 §3/§4/§10): every call still
+         goes through deployfleet.ai.action.request.propose() - whether it
+         auto-executes or waits for approval is that method's decision via
+         the deployfleet.ai.auto.executable.action allow-list, not this
+         tool's own read_only=False flag (which only tells the router this
+         tool is a candidate for the tiering pipeline at all, not a bypass
+         of it). Scoped to the Dispatch Agent, the natural fit for a
+         vehicle-status action surfaced in the same domain as the Dispatch
+         Board/Fleet Command Center. -->
+    <record id="tool_mark_vehicle_available" model="deployfleet.ai.tool">
+        <field name="key">mark_vehicle_available</field>
+        <field name="name">Mark Vehicle Available</field>
+        <field name="description">Propose marking a vehicle as available again (e.g. after maintenance or a breakdown is resolved). Subject to human approval unless allow-listed for auto-execution.</field>
+        <field name="parameters_schema"><![CDATA[{"type": "object", "properties": {"vehicle_id": {"type": "integer", "description": "The deployfleet.vehicle record id."}}, "required": ["vehicle_id"]}]]></field>
+        <field name="read_only" eval="False"/>
+        <field name="model_name">deployfleet.vehicle</field>
+        <field name="method_name">action_set_available</field>
+        <field name="agent_ids" eval="[(6, 0, [ref('agent_dispatch_agent')])]"/>
+        <field name="sequence">60</field>
+    </record>
 </odoo>

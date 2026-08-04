@@ -7,7 +7,7 @@
     "author": "DeployFleet",
     "license": "LGPL-3",
     "depends": [
-        "deployfleet_ai_core", "deployfleet_ai_permissions", "deployfleet_maintenance",
+        "deployfleet_ai_core", "deployfleet_ai_permissions", "deployfleet_ai_actions", "deployfleet_maintenance",
         "deployfleet_workshop", "deployfleet_fuel", "deployfleet_dispatch", "deployfleet_billing",
         "deployfleet_security", "deployfleet_compliance", "deployfleet_leave",
     ],

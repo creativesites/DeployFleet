@@ -9,6 +9,7 @@
     "data": [
         "security/ir.model.access.csv",
         "data/deployfleet_ai_action_sequence.xml",
+        "data/deployfleet_ai_auto_executable_action_data.xml",
         "views/deployfleet_ai_action_request_views.xml",
     ],
 }

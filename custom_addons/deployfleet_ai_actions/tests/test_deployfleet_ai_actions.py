@@ -134,3 +134,111 @@ class TestDeployfleetAIActionPipeline(TestDeployfleetAIActionRequestBase):
         self.assertEqual(request.with_user(self.auditor_user).state, "pending_approval")
         with self.assertRaises(UserError):
             request.with_user(self.auditor_user).action_approve()
+
+
+class TestDeployfleetAIActionMethodExecution(TestDeployfleetAIActionRequestBase):
+    """Regression tests for _execute()'s action_method branch (doc 21
+    §3/§4/§10 Phase 3) - the concrete lever most real dispatch/fleet
+    actions actually are, not a field write. deployfleet.vehicle.
+    action_set_available() is a real zero-arg state-transition method,
+    already reused as the safe test target the same way the pipeline
+    tests above reuse deployfleet.vehicle.type."""
+
+    def test_action_method_call_executes_and_records_result(self):
+        vehicle = self.env["deployfleet.vehicle"].create({
+            "license_plate": "AI-EXEC-1", "vehicle_type_id": self._vehicle_type().id,
+        })
+        vehicle.status = "maintenance"
+        request = self._create_request(
+            action_type="mark_vehicle_available", target_model="deployfleet.vehicle",
+            target_id=vehicle.id, proposed_vals=json.dumps({}), action_method="action_set_available",
+        )
+        request.action_submit_for_approval()
+        request.with_user(self.manager_user).action_approve()
+        self.assertEqual(request.state, "executed")
+        self.assertEqual(request.result_record_id, vehicle.id)
+        self.assertEqual(vehicle.status, "available")
+
+    def test_action_method_must_start_with_action_prefix(self):
+        with self.assertRaises(UserError):
+            self._create_request(
+                action_type="mark_vehicle_available", target_model="deployfleet.vehicle",
+                target_id=1, proposed_vals=json.dumps({}), action_method="set_available",
+            )
+
+    def test_action_method_requires_a_target_id(self):
+        with self.assertRaises(UserError):
+            self._create_request(
+                action_type="mark_vehicle_available", target_model="deployfleet.vehicle",
+                target_id=0, proposed_vals=json.dumps({}), action_method="action_set_available",
+            )
+
+    def _vehicle_type(self):
+        return self.env["deployfleet.vehicle.type"].create({"name": "AI Actions Test Type"})
+
+
+class TestDeployfleetAIActionPropose(TestDeployfleetAIActionRequestBase):
+    """Regression tests for propose() and the auto-executable allow-list
+    (doc 21 §4/§10 Phase 3)."""
+
+    def test_propose_without_allow_list_match_stays_pending_approval(self):
+        request = self.env["deployfleet.ai.action.request"].propose(
+            feature_key=self.feature.key, action_type="rename_vehicle_type",
+            target_model="deployfleet.vehicle.type", target_id=0,
+            proposed_vals={"name": "Proposed Type"},
+        )
+        self.assertEqual(request.state, "pending_approval")
+        self.assertFalse(request.auto_executed)
+        self.assertFalse(request.approved_by)
+
+    def test_propose_with_allow_list_match_auto_executes(self):
+        vehicle = self.env["deployfleet.vehicle"].create({
+            "license_plate": "AI-EXEC-2",
+            "vehicle_type_id": self.env["deployfleet.vehicle.type"].create({"name": "Auto Exec Type"}).id,
+        })
+        vehicle.status = "maintenance"
+        self.env["deployfleet.ai.auto.executable.action"].create({
+            "action_type": "mark_vehicle_available", "target_model": "deployfleet.vehicle",
+            "action_method": "action_set_available", "description": "Test allow-list entry.",
+        })
+        request = self.env["deployfleet.ai.action.request"].propose(
+            feature_key=self.feature.key, action_type="mark_vehicle_available",
+            target_model="deployfleet.vehicle", target_id=vehicle.id, proposed_vals={},
+            action_method="action_set_available",
+        )
+        self.assertEqual(request.state, "executed")
+        self.assertTrue(request.auto_executed)
+        self.assertFalse(request.approved_by, "auto-execution has no human approver")
+        self.assertEqual(vehicle.status, "available")
+
+    def test_payroll_data_category_never_auto_executes_even_with_allow_list_match(self):
+        payroll_feature = self.env["deployfleet.ai.feature"].create({
+            "key": "actions_test_payroll_feature", "name": "Payroll Test Feature",
+            "enabled": True, "data_category": "payroll",
+        })
+        vehicle = self.env["deployfleet.vehicle"].create({
+            "license_plate": "AI-EXEC-3",
+            "vehicle_type_id": self.env["deployfleet.vehicle.type"].create({"name": "Payroll Guard Type"}).id,
+        })
+        vehicle.status = "maintenance"
+        self.env["deployfleet.ai.auto.executable.action"].create({
+            "action_type": "mark_vehicle_available", "target_model": "deployfleet.vehicle",
+            "action_method": "action_set_available", "description": "Test allow-list entry.",
+        })
+        request = self.env["deployfleet.ai.action.request"].propose(
+            feature_key=payroll_feature.key, action_type="mark_vehicle_available",
+            target_model="deployfleet.vehicle", target_id=vehicle.id, proposed_vals={},
+            action_method="action_set_available",
+        )
+        self.assertEqual(request.state, "pending_approval")
+        self.assertFalse(request.auto_executed)
+        self.assertEqual(vehicle.status, "maintenance", "no write should have happened at all")
+
+    def test_propose_raises_for_disabled_feature(self):
+        self.feature.enabled = False
+        with self.assertRaises(UserError):
+            self.env["deployfleet.ai.action.request"].propose(
+                feature_key=self.feature.key, action_type="rename_vehicle_type",
+                target_model="deployfleet.vehicle.type", target_id=0,
+                proposed_vals={"name": "Should Not Be Created"},
+            )

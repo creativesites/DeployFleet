@@ -1,1 +1,1 @@
-from . import deployfleet_ai_action_request
+from . import deployfleet_ai_action_request, deployfleet_ai_auto_executable_action

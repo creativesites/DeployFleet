@@ -5,7 +5,7 @@ from odoo.tests.common import TransactionCase, tagged
 
 _EXPECTED_TOOL_KEYS = {
     "get_vehicle_summary", "get_due_maintenance", "get_available_drivers",
-    "get_unassigned_shipments", "get_expiring_documents",
+    "get_unassigned_shipments", "get_expiring_documents", "mark_vehicle_available",
 }
 
 
@@ -16,7 +16,7 @@ class TestDeployfleetAITool(TransactionCase):
     per-agent tool scoping, and the constraint keeping a tool record from
     naming a key this module doesn't actually implement."""
 
-    def test_five_tools_seeded(self):
+    def test_expected_tools_seeded(self):
         tools = self.env["deployfleet.ai.tool"].search([])
         self.assertEqual(set(tools.mapped("key")), _EXPECTED_TOOL_KEYS)
 
@@ -133,3 +133,52 @@ class TestDeployfleetAIChatSessionToolCalling(TransactionCase):
         message = session.message_ids.filtered(lambda m: m.role == "assistant")
         self.assertTrue(message.tool_calls)
         self.assertIn("get_vehicle_summary", message.tool_calls)
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetAIMarkVehicleAvailableTool(TransactionCase):
+    """Regression tests for the first write tool (doc 21 §3/§4/§10 Phase
+    3) — every call still goes through deployfleet.ai.action.request.
+    propose(), never a direct write; the seeded
+    auto_exec_mark_vehicle_available allow-list entry (deployfleet_ai_actions)
+    means this specific tool auto-executes in practice, exercised here
+    end to end rather than mocked."""
+
+    def _vehicle(self, plate):
+        return self.env["deployfleet.vehicle"].create({
+            "license_plate": plate,
+            "vehicle_type_id": self.env["deployfleet.vehicle.type"].create({"name": f"Type {plate}"}).id,
+        })
+
+    def test_tool_proposes_and_auto_executes_via_seeded_allow_list(self):
+        vehicle = self._vehicle("TOOL-EXEC-1")
+        vehicle.status = "maintenance"
+        agent = self.env.ref("deployfleet_ai_agents.agent_dispatch_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(agent)
+        result = executor("mark_vehicle_available", {"vehicle_id": vehicle.id})
+        self.assertEqual(result["status"], "executed")
+        self.assertEqual(vehicle.status, "available")
+
+        request = self.env["deployfleet.ai.action.request"].search(
+            [("target_model", "=", "deployfleet.vehicle"), ("target_id", "=", vehicle.id)], limit=1,
+        )
+        self.assertTrue(request.auto_executed)
+        self.assertEqual(request.feature_id.key, "dispatch_agent")
+
+    def test_tool_requires_vehicle_id(self):
+        agent = self.env.ref("deployfleet_ai_agents.agent_dispatch_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(agent)
+        result = executor("mark_vehicle_available", {})
+        self.assertIn("error", result)
+
+    def test_tool_reports_unknown_vehicle(self):
+        agent = self.env.ref("deployfleet_ai_agents.agent_dispatch_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(agent)
+        result = executor("mark_vehicle_available", {"vehicle_id": 999999})
+        self.assertIn("error", result)
+
+    def test_tool_not_available_to_other_agents(self):
+        compliance_agent = self.env.ref("deployfleet_ai_agents.agent_compliance_agent")
+        executor = self.env["deployfleet.ai.tool"].build_executor(compliance_agent)
+        result = executor("mark_vehicle_available", {"vehicle_id": 1})
+        self.assertIn("error", result)
