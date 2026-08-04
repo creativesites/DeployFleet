@@ -1,1 +1,1 @@
-from . import test_deployfleet_ai_core
+from . import test_deployfleet_ai_core, test_deployfleet_ai_entity_summary

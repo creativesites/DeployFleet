@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 
@@ -7,13 +8,49 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
+def _vehicle_summary_signature(vehicle):
+    """Cheap fingerprint of the fields _vehicle_summary_text() actually
+    reads - a change to any of them invalidates the cache on the next
+    read, without needing a bus event for every possible field (doc 21
+    §6's hybrid invalidation - see deployfleet.ai.entity.summary's own
+    docstring in deployfleet_ai_core)."""
+    raw = f"{vehicle.status}|{vehicle.current_driver_id.id}|{vehicle.odometer}|{vehicle.vehicle_type_id.id}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def _vehicle_summary_text(vehicle):
+    driver = vehicle.current_driver_id.name or "unassigned"
+    vehicle_type = vehicle.vehicle_type_id.name or "unknown type"
+    return (
+        f"{vehicle.license_plate} ({vehicle_type}): status={vehicle.status}, "
+        f"driver={driver}, odometer={vehicle.odometer} km"
+    )
+
+
 def _tool_get_vehicle_summary(env, arguments, _feature_key):
+    """The one real consumer of deployfleet.ai.entity.summary (doc 21 §6,
+    deployfleet_ai_core) - reads the cached summary_text when the
+    vehicle's own source_signature still matches, recomputes and
+    upserts it otherwise. The cache never replaces the live field read
+    below (id/license_plate/status/... always come straight from the
+    ORM record, never from the cache) - only the human-readable
+    `summary` string is what gets cached."""
     vehicle_id = arguments.get("vehicle_id")
     if not vehicle_id:
         return {"error": "vehicle_id is required."}
     vehicle = env["deployfleet.vehicle"].sudo().browse(int(vehicle_id))
     if not vehicle.exists():
         return {"error": f"No vehicle found with id {vehicle_id}."}
+
+    signature = _vehicle_summary_signature(vehicle)
+    cache_model = env["deployfleet.ai.entity.summary"].sudo()
+    cached = cache_model.get_cached("deployfleet.vehicle", vehicle.id)
+    if cached and cached.source_signature == signature:
+        summary_text = cached.summary_text
+    else:
+        summary_text = _vehicle_summary_text(vehicle)
+        cache_model.upsert("deployfleet.vehicle", vehicle.id, summary_text, signature)
+
     return {
         "id": vehicle.id,
         "license_plate": vehicle.license_plate,
@@ -21,6 +58,7 @@ def _tool_get_vehicle_summary(env, arguments, _feature_key):
         "vehicle_type": vehicle.vehicle_type_id.name or None,
         "current_driver": vehicle.current_driver_id.name or None,
         "odometer": vehicle.odometer,
+        "summary": summary_text,
     }
 
 

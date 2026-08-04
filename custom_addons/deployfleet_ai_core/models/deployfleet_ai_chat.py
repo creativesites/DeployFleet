@@ -123,8 +123,26 @@ class DeployfleetAIChatSession(models.Model):
         point exists without deployfleet_ai_core ever needing to depend
         on deployfleet_ai_agents."""
         self.ensure_one()
-        text = self.env["deployfleet.ai.core"].complete(self.feature_id.key, self.system_prompt, transcript)
+        text = self.env["deployfleet.ai.core"].complete(
+            self.feature_id.key, self._effective_system_prompt(), transcript,
+        )
         return {"text": text, "tool_calls": []}
+
+    def _effective_system_prompt(self):
+        """The session's own system_prompt snapshot, with the company's
+        AI profile (doc 21 §6 - deployfleet.ai.company.profile) prepended
+        when one exists. Deliberately computed fresh on every call rather
+        than folded into the stored system_prompt snapshot - the company
+        profile can be edited after the session started, and the next
+        turn should see the current text, the same reasoning that already
+        keeps context_note out of the persisted transcript."""
+        self.ensure_one()
+        profile = self.env["deployfleet.ai.company.profile"].sudo().search(
+            [("company_id", "=", self.env.company.id)], limit=1,
+        )
+        if profile and profile.profile_text:
+            return f"Company context: {profile.profile_text}\n\n{self.system_prompt}"
+        return self.system_prompt
 
     def _extract_rich_payload(self, text):
         """Pulls an optional trailing ```json {...} ``` block out of a

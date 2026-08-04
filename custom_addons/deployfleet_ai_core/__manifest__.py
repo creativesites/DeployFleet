@@ -11,6 +11,7 @@
         "security/ir.model.access.csv",
         "data/deployfleet_ai_policy_data.xml",
         "data/deployfleet_ai_config_data.xml",
+        "data/deployfleet_ai_entity_summary_event_subscriptions.xml",
         "views/deployfleet_ai_views.xml",
     ],
 }

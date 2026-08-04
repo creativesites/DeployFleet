@@ -158,6 +158,30 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <!-- Company Profile (doc 21 §6) -->
+    <record id="view_deployfleet_ai_company_profile_form" model="ir.ui.view">
+        <field name="name">deployfleet.ai.company.profile.form</field>
+        <field name="model">deployfleet.ai.company.profile</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="company_id"/>
+                        <field name="updated_date" readonly="1"/>
+                    </group>
+                    <group string="Profile">
+                        <field name="profile_text" nolabel="1" placeholder="Fleet size, operating regions, business-rule notes the Copilot should already know without being told every conversation..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_deployfleet_ai_company_profile" model="ir.actions.act_window">
+        <field name="name">AI Company Profile</field>
+        <field name="res_model">deployfleet.ai.company.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <!--
         Deliberately no `groups` restriction on the root itself, matching
         deployfleet_core.menu_deployfleet_root's own unrestricted pattern
@@ -190,4 +214,6 @@
               action="action_deployfleet_ai_budget" groups="base.group_system" sequence="40"/>
     <menuitem id="menu_deployfleet_ai_usage" name="Usage Log" parent="menu_deployfleet_ai_root"
               action="action_deployfleet_ai_usage" groups="base.group_system" sequence="50"/>
+    <menuitem id="menu_deployfleet_ai_company_profile" name="Company Profile" parent="menu_deployfleet_ai_root"
+              action="action_deployfleet_ai_company_profile" groups="base.group_system" sequence="60"/>
 </odoo>

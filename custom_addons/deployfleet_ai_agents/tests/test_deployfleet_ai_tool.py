@@ -182,3 +182,53 @@ class TestDeployfleetAIMarkVehicleAvailableTool(TransactionCase):
         executor = self.env["deployfleet.ai.tool"].build_executor(compliance_agent)
         result = executor("mark_vehicle_available", {"vehicle_id": 1})
         self.assertIn("error", result)
+
+
+@tagged("post_install", "-at_install")
+class TestDeployfleetAIGetVehicleSummaryToolCache(TransactionCase):
+    """Regression tests for get_vehicle_summary's use of
+    deployfleet.ai.entity.summary (doc 21 §6 - deployfleet_ai_core) - the
+    one real consumer of that cache."""
+
+    def _vehicle(self, plate):
+        return self.env["deployfleet.vehicle"].create({
+            "license_plate": plate,
+            "vehicle_type_id": self.env["deployfleet.vehicle.type"].create({"name": f"Type {plate}"}).id,
+        })
+
+    def _executor(self):
+        agent = self.env.ref("deployfleet_ai_agents.agent_fleet_analyst")
+        return self.env["deployfleet.ai.tool"].build_executor(agent)
+
+    def test_first_call_populates_the_cache(self):
+        vehicle = self._vehicle("CACHE-1")
+        executor = self._executor()
+        result = executor("get_vehicle_summary", {"vehicle_id": vehicle.id})
+        self.assertIn("summary", result)
+        cached = self.env["deployfleet.ai.entity.summary"].get_cached("deployfleet.vehicle", vehicle.id)
+        self.assertTrue(cached)
+        self.assertEqual(cached.summary_text, result["summary"])
+
+    def test_second_call_with_no_change_serves_the_cached_text(self):
+        """Manually corrupts the cached summary_text, then confirms an
+        unchanged vehicle's second tool call returns the (now-wrong)
+        cached text rather than recomputing - proving the signature
+        check actually short-circuits recomputation, not just that the
+        cache exists."""
+        vehicle = self._vehicle("CACHE-2")
+        executor = self._executor()
+        executor("get_vehicle_summary", {"vehicle_id": vehicle.id})
+        cached = self.env["deployfleet.ai.entity.summary"].get_cached("deployfleet.vehicle", vehicle.id)
+        cached.summary_text = "DELIBERATELY STALE MARKER"
+
+        result = executor("get_vehicle_summary", {"vehicle_id": vehicle.id})
+        self.assertEqual(result["summary"], "DELIBERATELY STALE MARKER")
+
+    def test_status_change_invalidates_and_recomputes(self):
+        vehicle = self._vehicle("CACHE-3")
+        executor = self._executor()
+        first = executor("get_vehicle_summary", {"vehicle_id": vehicle.id})
+        vehicle.status = "maintenance"
+        second = executor("get_vehicle_summary", {"vehicle_id": vehicle.id})
+        self.assertNotEqual(first["summary"], second["summary"])
+        self.assertIn("maintenance", second["summary"])

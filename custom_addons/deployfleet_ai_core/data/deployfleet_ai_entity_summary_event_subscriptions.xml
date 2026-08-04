@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- doc 21 §6's context/memory layer invalidation (docs/architecture/
+         21-copilot-rail-architecture.md): the moment a trip completes or a
+         dispatch assigns a vehicle, that vehicle's cached AI summary is
+         stale. Subscribing by plain event-name string (deployfleet_event_bus's
+         own loose-coupling design) means deployfleet_ai_core never needs to
+         depend on deployfleet_trip/deployfleet_dispatch to react to their
+         events. -->
+    <record id="subscription_ai_entity_summary_on_trip_completed" model="deployfleet.event.subscription">
+        <field name="event_pattern">deployfleet.trip.completed</field>
+        <field name="model_name">deployfleet.ai.entity.summary</field>
+        <field name="method_name">_handle_bus_event</field>
+    </record>
+    <record id="subscription_ai_entity_summary_on_dispatch_assigned" model="deployfleet.event.subscription">
+        <field name="event_pattern">deployfleet.dispatch.assigned</field>
+        <field name="model_name">deployfleet.ai.entity.summary</field>
+        <field name="method_name">_handle_bus_event</field>
+    </record>
+</odoo>
