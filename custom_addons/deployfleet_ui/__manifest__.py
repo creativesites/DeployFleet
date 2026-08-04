@@ -29,6 +29,8 @@
         "views/deployfleet_ui_delivery_center_views.xml",
         "views/deployfleet_ui_route_manager_views.xml",
         "views/deployfleet_ui_depot_registry_views.xml",
+        "views/deployfleet_ui_ai_predictions_views.xml",
+        "views/deployfleet_ui_ai_action_history_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -110,6 +112,12 @@
             "deployfleet_ui/static/src/depot_registry/*.scss",
             "deployfleet_ui/static/src/depot_registry/*.js",
             "deployfleet_ui/static/src/depot_registry/*.xml",
+            "deployfleet_ui/static/src/ai_predictions/*.scss",
+            "deployfleet_ui/static/src/ai_predictions/*.js",
+            "deployfleet_ui/static/src/ai_predictions/*.xml",
+            "deployfleet_ui/static/src/ai_action_history/*.scss",
+            "deployfleet_ui/static/src/ai_action_history/*.js",
+            "deployfleet_ui/static/src/ai_action_history/*.xml",
         ],
     },
 }

@@ -246,16 +246,10 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 actionXmlId: "deployfleet_ai_agents.action_deployfleet_ai_agent",
             },
             {
-                title: "Predictive Maintenance",
-                description: "Which vehicles are predicted to need service soon.",
+                title: "AI Predictions",
+                description: "Predicted maintenance risk and statistical fuel anomalies, fleet-wide.",
                 icon: "fa fa-wrench",
-                actionXmlId: "deployfleet_ai_agents.action_deployfleet_maintenance_prediction",
-            },
-            {
-                title: "Fuel Anomalies",
-                description: "Fill-ups that look statistically unusual.",
-                icon: "fa fa-exclamation-circle",
-                actionXmlId: "deployfleet_ai_agents.action_deployfleet_fuel_anomaly",
+                actionXmlId: "deployfleet_ui.action_deployfleet_ai_predictions",
             },
             {
                 title: "Financial Forecast",
@@ -264,10 +258,10 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 actionXmlId: "deployfleet_ai_agents.action_deployfleet_financial_forecast",
             },
             {
-                title: "Action Requests",
-                description: "The approval queue for every AI-suggested action.",
+                title: "AI Action History",
+                description: "Every AI-proposed action, from draft through execution.",
                 icon: "fa fa-check-circle-o",
-                actionXmlId: "deployfleet_ai_actions.action_deployfleet_ai_action_request",
+                actionXmlId: "deployfleet_ui.action_deployfleet_ai_action_history",
             },
             {
                 title: "Permissions",

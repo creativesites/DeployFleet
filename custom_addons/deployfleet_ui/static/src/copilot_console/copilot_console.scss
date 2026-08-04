@@ -171,6 +171,49 @@
     font-family: monospace;
 }
 
+.df-copilot-console__agent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-copilot-console__agent-edit {
+    margin-top: var(--df-space-1);
+    padding-top: var(--df-space-1);
+    border-top: 1px solid var(--df-color-neutral-300);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-copilot-console__agent-edit-label {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-copilot-console__agent-edit-textarea {
+    width: 100%;
+    min-height: 100px;
+    box-sizing: border-box;
+    padding: 6px var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    resize: vertical;
+}
+
+.df-copilot-console__agent-edit-input {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 0 var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+}
+
 .df-copilot-console__agent-ask {
     margin-top: var(--df-space-1);
     padding-top: var(--df-space-1);

@@ -1,0 +1,164 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as every
+// other sustained-review screen in this module.
+.df-ai-predictions {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-ai-predictions__header {
+    margin-bottom: var(--df-space-2);
+}
+
+.df-ai-predictions__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-predictions__subtitle {
+    margin: 2px 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-predictions__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-ai-predictions__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-ai-predictions__tab--active {
+    color: var(--df-color-ai);
+    border-bottom-color: var(--df-color-ai);
+}
+
+.df-ai-predictions__loading,
+.df-ai-predictions__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-predictions__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin: var(--df-space-3) 0;
+}
+
+.df-ai-predictions__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-ai-predictions__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-ai-predictions__card--high {
+    border-left-color: var(--df-color-danger);
+}
+
+.df-ai-predictions__card--medium {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-ai-predictions__card--low {
+    border-left-color: var(--df-color-success);
+}
+
+.df-ai-predictions__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-ai-predictions__card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-ai-predictions__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-predictions__card-meta {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-predictions__card-score {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-predictions__score-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-predictions__detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-ai-predictions__basis {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+    white-space: pre-line;
+}
+
+.df-ai-predictions__detail-line {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+@media (max-width: 640px) {
+    .df-ai-predictions__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-ai-predictions__card-score {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

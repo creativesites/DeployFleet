@@ -196,3 +196,19 @@ class TestDeployfleetUi(TransactionCase):
     def test_depot_registry_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_depot_registry")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_ai_predictions_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_ai_predictions")
+        self.assertEqual(action.tag, "deployfleet_ui.ai_predictions")
+
+    def test_ai_predictions_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_ai_predictions")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_ai_action_history_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_ai_action_history")
+        self.assertEqual(action.tag, "deployfleet_ui.ai_action_history")
+
+    def test_ai_action_history_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_ai_action_history")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

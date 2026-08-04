@@ -1,0 +1,156 @@
+// Workspace Layer (flat, light, high-contrast) — an audit trail to
+// browse, same reasoning as every other sustained-review screen.
+.df-ai-action-history {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-ai-action-history__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-ai-action-history__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-action-history__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-action-history__loading,
+.df-ai-action-history__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-action-history__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-ai-action-history__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-ai-action-history__card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-ai);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-ai-action-history__card-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-ai-action-history__card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.df-ai-action-history__card-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-action-history__card-meta {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-action-history__card-meta-right {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-action-history__detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.df-ai-action-history__detail-line {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-ai-action-history__detail-line--danger {
+    color: var(--df-color-danger);
+}
+
+.df-ai-action-history__payload {
+    margin-top: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-ai-action-history__payload summary {
+    cursor: pointer;
+    color: var(--df-color-neutral-600);
+}
+
+.df-ai-action-history__payload pre {
+    margin: var(--df-space-1) 0 0;
+    padding: var(--df-space-1);
+    background: var(--df-color-neutral-100);
+    border-radius: var(--df-radius-sm);
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+.df-ai-action-history__approval {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-top: var(--df-space-1);
+}
+
+.df-ai-action-history__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 200px;
+}
+
+@media (max-width: 640px) {
+    .df-ai-action-history__card-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .df-ai-action-history__card-meta-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

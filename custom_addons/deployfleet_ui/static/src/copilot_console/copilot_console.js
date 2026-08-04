@@ -36,6 +36,17 @@ function extractErrorMessage(error) {
  * and a recent-calls log) — real ORM queries and a real write on
  * `enabled`, not mockup data.
  *
+ * **Agent edit surface (AI & Intelligence domain, built per the user's
+ * explicit choice during that domain's design conversation):** each
+ * card also has an Edit toggle for `system_prompt_template`/
+ * `related_models` — previously only the stock `deployfleet.ai.agent`
+ * form could change these; the stock form remains reachable for
+ * anything not covered here (e.g. `key`/`sequence`). Write access is
+ * `group_deployfleet_manager`+ (a real ACL grant added alongside this,
+ * `deployfleet.ai.agent` was previously owner-only) — a denied write
+ * surfaces as a friendly notification, the same established pattern
+ * every other screen in this module already uses.
+ *
  * **Natural-language query interface (doc 16 §7.16/§5):** each Agent
  * Catalog card also has a real "Ask" box. Submitting a question calls
  * `deployfleet.ai.core.complete(feature.key, agent.system_prompt_template,
@@ -99,6 +110,9 @@ export class DeployfleetCopilotConsole extends Component {
             questionByAgentId: {},
             answerByAgentId: {},
             askingAgentId: null,
+            editingAgentId: null,
+            editByAgentId: {},
+            savingAgentId: null,
         });
 
         onWillStart(() => this.loadData());
@@ -204,6 +218,47 @@ export class DeployfleetCopilotConsole extends Component {
 
     get formattedCacheHitRate() {
         return `${this.state.cacheHitRate.toFixed(1)}%`;
+    }
+
+    onToggleEditAgent(agent) {
+        if (this.state.editingAgentId === agent.id) {
+            this.state.editingAgentId = null;
+            return;
+        }
+        this.state.editingAgentId = agent.id;
+        if (!this.state.editByAgentId[agent.id]) {
+            this.state.editByAgentId[agent.id] = {
+                system_prompt_template: agent.system_prompt_template,
+                related_models: agent.related_models || "",
+            };
+        }
+    }
+
+    onEditAgentFieldInput(agentId, field, value) {
+        this.state.editByAgentId[agentId][field] = value;
+    }
+
+    async onSaveAgent(agentId) {
+        const edit = this.state.editByAgentId[agentId];
+        if (!edit.system_prompt_template.trim()) {
+            this.notification.add("System prompt template is required.", { type: "danger" });
+            return;
+        }
+        this.state.savingAgentId = agentId;
+        try {
+            await this.orm.write("deployfleet.ai.agent", [agentId], {
+                system_prompt_template: edit.system_prompt_template,
+                related_models: edit.related_models,
+            });
+            const agent = this.state.agents.find((a) => a.id === agentId);
+            agent.system_prompt_template = edit.system_prompt_template;
+            agent.related_models = edit.related_models;
+            this.state.editingAgentId = null;
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        } finally {
+            this.state.savingAgentId = null;
+        }
     }
 
     onQuestionInput(agentId, ev) {

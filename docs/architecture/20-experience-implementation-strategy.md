@@ -101,12 +101,15 @@ This is the domain being re-audited in §6 below — it's the furthest along and
 | Driver Performance (fleet-wide events ledger, not just per-driver history) | 🟡 stock list/form; **the one remaining gap** — Driver Scorecards/360 shows one driver's own recent events, but a fleet-wide "browse all incidents this week across every driver" ledger doesn't exist yet, deliberately deferred out of this round for the same reason the Maintenance Planner was deferred out of the first Fleet & Vehicles batch |
 | Payroll Dashboard | merged into Payroll Center, not a separate workspace — see §6b |
 
-### AI & Intelligence
+### AI & Intelligence — flagship screens complete; the Copilot Rail's Chat vision is a separate, larger initiative (doc 21)
 | Workspace | State |
 |---|---|
-| Copilot Console (Agent Catalog + Usage Dashboard + NL query) | ✅ |
+| Copilot Console (Agent Catalog incl. edit + Usage Dashboard + NL query) | ✅ — see §6d |
 | Copilot Rail (ambient approval queue) | ✅ |
-| Predictive Maintenance / Fuel Anomalies / Financial Forecast standalone views | 🟡 stock views |
+| AI Predictions (Predictive Maintenance + Fuel Anomalies, merged) | ✅ — see §6d |
+| AI Action History (full audit trail, all states) | ✅ — see §6d |
+| Financial Forecast | 🟡 stock views — deliberately deferred to Billing & Finance's own "Financial Intelligence" gap, not built twice |
+| Copilot Rail Chat (tool-calling, multi-session, rich components, memory) | ⬜ — designed, not built; see [21-copilot-rail-architecture.md](21-copilot-rail-architecture.md) |
 
 This table is the honest baseline. Most of the product is still 🟡. That is expected — Fleet & Vehicles is domain #1 under this strategy specifically *because* it's the one already closest to done.
 
@@ -237,6 +240,22 @@ Third domain tackled under the domain-completeness-first rollout, per the user's
 **Also fixed while touching this area:** the Mega Menu's "Dispatch Board" tile had pointed at the **stock kanban action** (`deployfleet_dispatch.action_deployfleet_dispatch_assignment`) since Phase C — the custom OWL Dispatch Board built that same phase was only ever reachable via its own top-level menu item, never from the Mega Menu tile bearing its name. Fixed by repointing the tile (now merged with the old "Shipments" tile, since Dispatch Board covers both) to `deployfleet_ui.action_deployfleet_dispatch_board`. Mission Control's "Unassigned shipments" attention-strip pill had the same class of issue (deep-linking to the stock shipment list) and was repointed to the Dispatch Board too.
 
 **Verified**: XML well-formed, JS syntax via `node --check`, full `web.assets_backend` SCSS bundle compiled via libsass (34 files, individually and in manifest order), ruff/pylint clean on `deployfleet_ui`, `deployfleet_dispatch_compliance`, `deployfleet_route`, `deployfleet_customer`, and `deployfleet_leave`, all touched ACL CSVs parse correctly, two new regression tests for the driver-availability scoring fix. **Not yet verified in a live browser** — same standing caveat as every screen in this module, and now the largest single batch to carry that caveat (five workspaces at once).
+
+---
+
+## 6d. AI & Intelligence — audit, headline bug fixes, and build
+
+Fourth domain tackled under the domain-completeness-first rollout. Audited every model, ACL, view, and menu across `deployfleet_ai_core`, `deployfleet_ai_permissions`, `deployfleet_ai_actions`, `deployfleet_ai_agents`, and `deployfleet_ai_whatsapp`. Unlike every prior domain, the audit surfaced a bug severe enough to fix before any design conversation: the entire AI call pipeline was unreachable by every real DeployFleet role (see CLAUDE.md's AI & Intelligence writeup for the full root-cause trace — `deployfleet.ai.config`/`.response.cache`/`.budget` were `base.group_system`-only, and `menu_deployfleet_ai_root` hid every AI submenu from every role regardless of each submenu's own `groups`). Both fixed (`sudo()` on the router's internal reads, the menu gate moved down onto the five genuinely admin-only submenus) alongside three smaller ACL parity fixes (`deployfleet.ai.action.request` dispatcher write, `action_reject()` role-check parity, a System Auditor read grant) — five new regression tests, one exercising the pipeline end-to-end as a real dispatcher user.
+
+**Design conversation, via `AskUserQuestion`, after the bug fixes landed:** (1) build a dedicated fleet-wide AI Predictions screen despite `deployfleet.maintenance.prediction`/`deployfleet.fuel.anomaly` already being surfaced inline elsewhere (Fleet Command Center, Maintenance Planner, Fuel Intelligence); (2) defer Financial Forecast to Billing & Finance's own still-open "Financial Intelligence" gap rather than build it twice; (3) build a full AI Action History workspace, since the Copilot Rail only ever shows currently-pending items and the just-fixed System Auditor role had nowhere custom to look; (4) give AI Agents a non-stock edit surface for `system_prompt_template`/`related_models`, previously reachable only via the stock form.
+
+**Three workspaces built.** **AI Predictions** (`static/src/ai_predictions/`) — two tabs (Maintenance Risk, Fuel Anomalies) rather than one merged list, since the two models have genuinely different schemas (confirmed by source read: `risk_score`/`risk_level`/`basis` vs. a bare `z_score`); read-only data (both models are populated by their own daily crons), with an "Open Vehicle" escape hatch rather than attempting per-record deep-linking into Fleet Command Center. **AI Action History** (`static/src/ai_action_history/`) — all six states filterable, not just pending, reusing the exact `action_approve`/`action_reject` calls the Copilot Rail already makes so a manager can act from either surface without duplicated logic. **Copilot Console's Agent Catalog gained a real edit surface** (`system_prompt_template`/`related_models`, via a new `group_deployfleet_manager` write ACL grant on `deployfleet.ai.agent` — previously owner-only) alongside its existing enable/disable toggle and "Ask" box.
+
+**Mega Menu updated**: added a Copilot Console tile (previously reachable only via an unrestricted top-navbar item, with no Mega Menu/Launcher entry point at all — the same class of gap already fixed for the Dispatch Board in §6c); merged the "Predictive Maintenance" and "Fuel Anomalies" tiles into one "AI Predictions" tile, the same "evolve, don't duplicate" choice as Payroll Center absorbing Payslips+Loans; repointed "Action Requests" to the new AI Action History workspace.
+
+**Verified**: XML well-formed, JS syntax via `node --check`, a full OWL-compiler pass (35/35 templates), the full `web.assets_backend` SCSS bundle compiled via libsass (36 files, individually and in manifest order), ruff/pylint clean, all touched ACL CSVs parse correctly, new registration tests for both new actions/menus.
+
+**Separately, in the same session, a much larger initiative was scoped but deliberately not built yet**: a full agentic Copilot Rail (persistent multi-session chat, tool-calling, rich in-chat components, a context/memory layer, structured outputs) per an explicit user vision brief. Per the user's own direction ("write an architecture doc first"), this became [21-copilot-rail-architecture.md](21-copilot-rail-architecture.md) rather than inline implementation — sized honestly as a four-phase initiative larger than any single domain's workspace batch, and containing the one deliberate, narrowly-bounded change to an existing hard rule in this codebase (a curated, opt-in auto-execute tier for chat-initiated writes, doc 21 §4). Not yet started.
 
 ---
 

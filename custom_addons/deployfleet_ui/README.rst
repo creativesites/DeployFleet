@@ -471,6 +471,34 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Phase C, never the custom OWL board bearing its name; Mission
   Control's "Unassigned shipments" pill had the same issue. Both
   repointed.
+- **AI Predictions, AI Action History, and an Agent edit surface**
+  (AI & Intelligence domain, complete — see
+  ``docs/architecture/20-experience-implementation-strategy.md`` §6d).
+  Preceded by a severe backend fix: the entire AI call pipeline was
+  unreachable by every real role (``deployfleet.ai.config`` and related
+  models were ``base.group_system``-only; ``menu_deployfleet_ai_root``
+  hid every AI submenu regardless of each submenu's own ``groups``) —
+  fixed with ``sudo()`` on the router's internal reads and by moving
+  the menu restriction down onto the five genuinely admin-only
+  submenus. **AI Predictions** (``static/src/ai_predictions/``) has two
+  tabs (Maintenance Risk, Fuel Anomalies) since the two backing models
+  use genuinely different schemas; read-only, cron-populated data.
+  **AI Action History** (``static/src/ai_action_history/``) is a
+  fleet-wide, all-six-states browse over
+  ``deployfleet.ai.action.request``, reusing the Copilot Rail's own
+  ``action_approve``/``action_reject`` calls. **Copilot Console**'s
+  Agent Catalog gained a real edit surface for
+  ``system_prompt_template``/``related_models`` (previously stock-form
+  only), via a new manager write ACL grant. Mega Menu gained a Copilot
+  Console tile (it had none), merged the old Predictive
+  Maintenance/Fuel Anomalies tiles into one, and repointed Action
+  Requests to the new history workspace. Financial Forecast stays
+  deliberately deferred to Billing & Finance's own "Financial
+  Intelligence" gap. See also
+  ``docs/architecture/21-copilot-rail-architecture.md`` for a much
+  larger, separately-scoped Copilot Rail Chat initiative (tool-calling,
+  persistent multi-session chat, rich in-chat components, a
+  context/memory layer) — designed, not yet implemented.
 
 Not yet built
 =============

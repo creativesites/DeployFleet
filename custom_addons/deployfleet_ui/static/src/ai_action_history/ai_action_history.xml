@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.AiActionHistory">
+        <div class="df-ai-action-history">
+            <header class="df-ai-action-history__header">
+                <h1 class="df-ai-action-history__title">AI Action History</h1>
+                <p class="df-ai-action-history__subtitle">Every AI-proposed action, from draft through execution — the audit trail.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-ai-action-history__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-ai-action-history__loading">Loading...</p>
+            <p t-if="!state.loading and filteredRequests.length === 0" class="df-ai-action-history__empty">
+                No action requests match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredRequests.length > 0" class="df-ai-action-history__list">
+                <div t-foreach="filteredRequests" t-as="request" t-key="request.id" class="df-ai-action-history__card">
+                    <div class="df-ai-action-history__card-summary" t-on-click="() => this.onSelectRequest(request.id)">
+                        <div class="df-ai-action-history__card-main">
+                            <span class="df-ai-action-history__card-name" t-esc="request.name"/>
+                            <span class="df-ai-action-history__card-meta">
+                                <t t-esc="request.feature_id[1]"/> · <t t-esc="request.action_type"/>
+                            </span>
+                        </div>
+                        <div class="df-ai-action-history__card-meta-right">
+                            <DeployfleetStatusBadge label="this.stateLabel(request.state)" status="this.stateBadgeVariant(request.state)"/>
+                            <i t-attf-class="fa {{ state.selectedRequestId === request.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                        </div>
+                    </div>
+
+                    <div t-if="state.selectedRequestId === request.id" class="df-ai-action-history__detail">
+                        <p class="df-ai-action-history__detail-line">
+                            Target: <t t-esc="request.target_model"/>
+                            <t t-if="request.target_id"> #<t t-esc="request.target_id"/></t>
+                            <t t-else=""> (create)</t>
+                        </p>
+                        <p t-if="request.source_context" class="df-ai-action-history__detail-line">
+                            Source: <t t-esc="request.source_context"/>
+                        </p>
+                        <p class="df-ai-action-history__detail-line">
+                            Requested by: <t t-esc="request.requested_by[1]"/>
+                        </p>
+                        <p t-if="request.approved_by" class="df-ai-action-history__detail-line">
+                            Approved by: <t t-esc="request.approved_by[1]"/>
+                        </p>
+                        <p t-if="request.executed_at" class="df-ai-action-history__detail-line">
+                            Executed: <t t-esc="request.executed_at"/>
+                            <t t-if="request.result_record_id"> → record #<t t-esc="request.result_record_id"/></t>
+                        </p>
+                        <p t-if="request.rejection_reason" class="df-ai-action-history__detail-line df-ai-action-history__detail-line--danger">
+                            Rejected: <t t-esc="request.rejection_reason"/>
+                        </p>
+                        <p t-if="request.error_message" class="df-ai-action-history__detail-line df-ai-action-history__detail-line--danger">
+                            Error: <t t-esc="request.error_message"/>
+                        </p>
+
+                        <details class="df-ai-action-history__payload">
+                            <summary>Proposed values</summary>
+                            <pre t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                        </details>
+
+                        <div t-if="request.state === 'pending_approval'" class="df-ai-action-history__approval">
+                            <DeployfleetButton
+                                label="'Approve'"
+                                variant="'primary'"
+                                loading="state.actingRequestId === request.id"
+                                onClick="() => this.onApprove(request.id)"/>
+                            <input type="text" class="df-ai-action-history__input" placeholder="Rejection reason..."
+                                   t-att-value="state.rejectReasonByRequestId[request.id] or ''"
+                                   t-on-input="(ev) => this.onRejectReasonInput(request.id, ev.target.value)"/>
+                            <DeployfleetButton
+                                label="'Reject'"
+                                variant="'destructive'"
+                                loading="state.actingRequestId === request.id"
+                                onClick="() => this.onReject(request.id)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

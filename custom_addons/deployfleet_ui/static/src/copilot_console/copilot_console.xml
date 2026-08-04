@@ -98,11 +98,34 @@
                                 <span t-foreach="this.relatedModelsList(agent.related_models)" t-as="modelName" t-key="modelName"
                                       class="df-copilot-console__agent-model-chip" t-esc="modelName"/>
                             </div>
-                            <DeployfleetButton
-                                label="state.featureById[agent.feature_id[0]].enabled ? 'Disable' : 'Enable'"
-                                variant="state.featureById[agent.feature_id[0]].enabled ? 'destructive' : 'primary'"
-                                loading="state.togglingFeatureId === agent.feature_id[0]"
-                                onClick="() => this.onToggleFeature(agent.feature_id[0])"/>
+                            <div class="df-copilot-console__agent-actions">
+                                <DeployfleetButton
+                                    label="state.featureById[agent.feature_id[0]].enabled ? 'Disable' : 'Enable'"
+                                    variant="state.featureById[agent.feature_id[0]].enabled ? 'destructive' : 'primary'"
+                                    loading="state.togglingFeatureId === agent.feature_id[0]"
+                                    onClick="() => this.onToggleFeature(agent.feature_id[0])"/>
+                                <DeployfleetButton
+                                    label="state.editingAgentId === agent.id ? 'Cancel' : 'Edit'"
+                                    variant="'ghost'"
+                                    onClick="() => this.onToggleEditAgent(agent)"/>
+                            </div>
+
+                            <div t-if="state.editingAgentId === agent.id" class="df-copilot-console__agent-edit">
+                                <label class="df-copilot-console__agent-edit-label">System prompt template</label>
+                                <textarea
+                                    class="df-copilot-console__agent-edit-textarea"
+                                    t-att-value="state.editByAgentId[agent.id].system_prompt_template"
+                                    t-on-input="(ev) => this.onEditAgentFieldInput(agent.id, 'system_prompt_template', ev.target.value)"/>
+                                <label class="df-copilot-console__agent-edit-label">Related models (comma-separated)</label>
+                                <input type="text" class="df-copilot-console__agent-edit-input"
+                                       t-att-value="state.editByAgentId[agent.id].related_models"
+                                       t-on-input="(ev) => this.onEditAgentFieldInput(agent.id, 'related_models', ev.target.value)"/>
+                                <DeployfleetButton
+                                    label="'Save'"
+                                    variant="'primary'"
+                                    loading="state.savingAgentId === agent.id"
+                                    onClick="() => this.onSaveAgent(agent.id)"/>
+                            </div>
 
                             <div class="df-copilot-console__agent-ask">
                                 <textarea

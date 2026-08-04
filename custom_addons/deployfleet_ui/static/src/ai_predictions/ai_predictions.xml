@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.AiPredictions">
+        <div class="df-ai-predictions">
+            <header class="df-ai-predictions__header">
+                <h1 class="df-ai-predictions__title">AI Predictions</h1>
+                <p class="df-ai-predictions__subtitle">Predictive maintenance risk and statistical fuel anomalies, fleet-wide.</p>
+                <nav class="df-ai-predictions__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-ai-predictions__tab {{ state.activeTab === tab.key ? 'df-ai-predictions__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-ai-predictions__loading">Loading...</p>
+
+            <!-- ============================= MAINTENANCE RISK ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'maintenance'">
+                <section class="df-ai-predictions__filters">
+                    <DeployfleetStatusPill t-foreach="riskFilters" t-as="filter" t-key="filter.key"
+                                           label="filter.label"
+                                           count="filter.count"
+                                           status="filter.key === state.riskFilter ? 'info' : 'success'"
+                                           onClick="() => this.state.riskFilter = filter.key"/>
+                </section>
+
+                <p t-if="filteredPredictions.length === 0" class="df-ai-predictions__empty">No predictions match this filter.</p>
+
+                <div t-if="filteredPredictions.length > 0" class="df-ai-predictions__list">
+                    <div t-foreach="filteredPredictions" t-as="prediction" t-key="prediction.id"
+                         t-attf-class="df-ai-predictions__card df-ai-predictions__card--{{ prediction.risk_level }}">
+                        <div class="df-ai-predictions__card-summary" t-on-click="() => this.onSelectPrediction(prediction.id)">
+                            <div class="df-ai-predictions__card-main">
+                                <span class="df-ai-predictions__card-name" t-esc="prediction.vehicle_id[1]"/>
+                                <span class="df-ai-predictions__card-meta">Computed <t t-esc="prediction.computed_date"/></span>
+                            </div>
+                            <div class="df-ai-predictions__card-score">
+                                <DeployfleetStatusBadge label="this.riskLabel(prediction.risk_level)" status="this.riskBadgeVariant(prediction.risk_level)"/>
+                                <span class="df-ai-predictions__score-value"><t t-esc="prediction.risk_score"/></span>
+                                <i t-attf-class="fa {{ state.selectedPredictionId === prediction.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                            </div>
+                        </div>
+
+                        <div t-if="state.selectedPredictionId === prediction.id" class="df-ai-predictions__detail">
+                            <p class="df-ai-predictions__basis" t-esc="prediction.basis"/>
+                            <p class="df-ai-predictions__detail-line">
+                                Consumption trend: <t t-esc="prediction.consumption_trend_slope.toFixed(2)"/> L/100km per fill-up
+                            </p>
+                            <p class="df-ai-predictions__detail-line">
+                                Recent job cards: <t t-esc="prediction.recent_job_card_count"/>
+                            </p>
+                            <DeployfleetButton label="'Open Vehicle'" variant="'ghost'" onClick="() => this.onOpenVehicle(prediction.vehicle_id[0])"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= FUEL ANOMALIES ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'fuel'">
+                <p t-if="state.anomalies.length === 0" class="df-ai-predictions__empty">No fuel anomalies detected.</p>
+
+                <div t-if="state.anomalies.length > 0" class="df-ai-predictions__list">
+                    <div t-foreach="state.anomalies" t-as="anomaly" t-key="anomaly.id" class="df-ai-predictions__card">
+                        <div class="df-ai-predictions__card-summary" t-on-click="() => this.onSelectAnomaly(anomaly.id, anomaly.fuel_log_id[0])">
+                            <div class="df-ai-predictions__card-main">
+                                <span class="df-ai-predictions__card-name" t-esc="anomaly.vehicle_id[1]"/>
+                                <span class="df-ai-predictions__card-meta">Detected <t t-esc="anomaly.detected_date"/></span>
+                            </div>
+                            <div class="df-ai-predictions__card-score">
+                                <span class="df-ai-predictions__score-value">z = <t t-esc="anomaly.z_score.toFixed(2)"/></span>
+                                <i t-attf-class="fa {{ state.selectedAnomalyId === anomaly.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                            </div>
+                        </div>
+
+                        <div t-if="state.selectedAnomalyId === anomaly.id" class="df-ai-predictions__detail">
+                            <t t-set="log" t-value="state.fuelLogById[anomaly.fuel_log_id[0]]"/>
+                            <t t-if="log">
+                                <p class="df-ai-predictions__detail-line">Fill-up date: <t t-esc="log.date"/></p>
+                                <p class="df-ai-predictions__detail-line">Liters: <t t-esc="log.liters"/></p>
+                                <p class="df-ai-predictions__detail-line">Consumption: <t t-esc="log.consumption_l_per_100km.toFixed(2)"/> L/100km</p>
+                            </t>
+                            <DeployfleetButton label="'Open Vehicle'" variant="'ghost'" onClick="() => this.onOpenVehicle(anomaly.vehicle_id[0])"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

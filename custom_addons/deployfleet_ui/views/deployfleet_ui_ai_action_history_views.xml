@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        AI Action History (AI & Intelligence domain) - a fleet-wide,
+        filterable history/audit view over deployfleet.ai.action.request
+        across all states, not just pending. Placed at sequence 27,
+        after AI Predictions (26).
+    -->
+    <record id="action_deployfleet_ai_action_history" model="ir.actions.client">
+        <field name="name">AI Action History</field>
+        <field name="tag">deployfleet_ui.ai_action_history</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_ai_action_history"
+              name="AI Action History"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_ai_action_history"
+              sequence="27"/>
+</odoo>
