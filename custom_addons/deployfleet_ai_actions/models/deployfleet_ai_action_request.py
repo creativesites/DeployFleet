@@ -100,6 +100,13 @@ class DeployfleetAIActionRequest(models.Model):
             request.state = "pending_approval"
 
     def action_reject(self, reason=None):
+        """Deliberately re-checks the rejecter's own authority in Python,
+        the same defense-in-depth reasoning as action_approve() below -
+        a view restriction (or an ACL row) is a UI convenience, not a
+        security boundary a method should silently rely on alone."""
+        approver_group = "deployfleet_security.group_deployfleet_manager"
+        if not self.env.user.has_group(approver_group):
+            raise UserError(self.env._("Only a fleet manager or above may reject AI-proposed actions."))
         for request in self:
             if request.state != "pending_approval":
                 raise UserError(self.env._("Only a pending request can be rejected."))

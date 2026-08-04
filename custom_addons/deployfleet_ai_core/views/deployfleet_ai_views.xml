@@ -158,19 +158,36 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <!--
+        Deliberately no `groups` restriction on the root itself, matching
+        deployfleet_core.menu_deployfleet_root's own unrestricted pattern
+        (that root has none either — see deployfleet_menus.xml's own
+        comment). This used to be `groups="base.group_system"`, which
+        hid every AI submenu from every DeployFleet role (owner/manager/
+        dispatcher never imply base.group_system), including submenus
+        that had their own, more permissive `groups` attribute — an
+        ancestor gate silently overrides a child's own visibility rule.
+        True admin-only screens (Policy/Configuration/Features/Budget/
+        Usage Log — the ones CLAUDE.md §5 exempts from custom-view work)
+        now carry that same base.group_system restriction individually
+        instead, so they stay exactly as locked down as before; every
+        other AI submenu (Agents, Predictions, Action Requests,
+        Permissions, WhatsApp — each already declares its own `groups`
+        in its owning module) is reachable again for whichever role its
+        own menu already names.
+    -->
     <menuitem id="menu_deployfleet_ai_root"
               name="AI"
               parent="deployfleet_core.menu_deployfleet_root"
-              groups="base.group_system"
               sequence="80"/>
     <menuitem id="menu_deployfleet_ai_policy" name="Policy" parent="menu_deployfleet_ai_root"
-              action="action_deployfleet_ai_policy" sequence="10"/>
+              action="action_deployfleet_ai_policy" groups="base.group_system" sequence="10"/>
     <menuitem id="menu_deployfleet_ai_config" name="Configuration" parent="menu_deployfleet_ai_root"
-              action="action_deployfleet_ai_config" sequence="20"/>
+              action="action_deployfleet_ai_config" groups="base.group_system" sequence="20"/>
     <menuitem id="menu_deployfleet_ai_feature" name="Features" parent="menu_deployfleet_ai_root"
-              action="action_deployfleet_ai_feature" sequence="30"/>
+              action="action_deployfleet_ai_feature" groups="base.group_system" sequence="30"/>
     <menuitem id="menu_deployfleet_ai_budget" name="Budget" parent="menu_deployfleet_ai_root"
-              action="action_deployfleet_ai_budget" sequence="40"/>
+              action="action_deployfleet_ai_budget" groups="base.group_system" sequence="40"/>
     <menuitem id="menu_deployfleet_ai_usage" name="Usage Log" parent="menu_deployfleet_ai_root"
-              action="action_deployfleet_ai_usage" sequence="50"/>
+              action="action_deployfleet_ai_usage" groups="base.group_system" sequence="50"/>
 </odoo>

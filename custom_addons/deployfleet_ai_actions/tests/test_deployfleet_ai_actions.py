@@ -14,6 +14,7 @@ class TestDeployfleetAIActionRequestBase(TransactionCase):
         })
         cls.manager_group = cls.env.ref("deployfleet_security.group_deployfleet_manager")
         cls.dispatcher_group = cls.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        cls.auditor_group = cls.env.ref("deployfleet_security.group_deployfleet_system_auditor")
         cls.manager_user = cls.env["res.users"].create({
             "name": "AI Actions Manager", "login": "ai_actions_manager@example.com",
             "email": "ai_actions_manager@example.com",
@@ -23,6 +24,11 @@ class TestDeployfleetAIActionRequestBase(TransactionCase):
             "name": "AI Actions Dispatcher", "login": "ai_actions_dispatcher@example.com",
             "email": "ai_actions_dispatcher@example.com",
             "group_ids": [(6, 0, [cls.dispatcher_group.id])],
+        })
+        cls.auditor_user = cls.env["res.users"].create({
+            "name": "AI Actions Auditor", "login": "ai_actions_auditor@example.com",
+            "email": "ai_actions_auditor@example.com",
+            "group_ids": [(6, 0, [cls.auditor_group.id])],
         })
 
     def _create_request(self, **extra):
@@ -104,3 +110,27 @@ class TestDeployfleetAIActionPipeline(TestDeployfleetAIActionRequestBase):
     def test_forbidden_target_model_is_rejected_at_creation(self):
         with self.assertRaises(UserError):
             self._create_request(target_model="res.users", proposed_vals=json.dumps({"name": "Hacked"}))
+
+    def test_dispatcher_can_submit_own_draft_request(self):
+        """Regression test for the dispatcher write=0 ACL bug (same class
+        as the previously-fixed deployfleet.leave.request gap): a
+        dispatcher could create a draft but never call
+        action_submit_for_approval() on it, since that's a write."""
+        request = self._create_request().with_user(self.dispatcher_user)
+        request.action_submit_for_approval()
+        self.assertEqual(request.state, "pending_approval")
+
+    def test_non_manager_cannot_reject(self):
+        request = self._create_request()
+        request.action_submit_for_approval()
+        with self.assertRaises(UserError):
+            request.with_user(self.dispatcher_user).action_reject(reason="No thanks")
+        self.assertEqual(request.state, "pending_approval")
+
+    def test_system_auditor_can_read_but_not_write(self):
+        request = self._create_request()
+        request.action_submit_for_approval()
+        # Read access: the audit trail is exactly what this role exists to see.
+        self.assertEqual(request.with_user(self.auditor_user).state, "pending_approval")
+        with self.assertRaises(UserError):
+            request.with_user(self.auditor_user).action_approve()

@@ -54,7 +54,19 @@ class DeployfleetAICore(models.AbstractModel):
                 feature=feature_key, category=feature.data_category,
             ))
 
-        config = self.env["deployfleet.ai.config"].get_active_config(company)
+        # sudo() from here down: deployfleet.ai.config holds provider API
+        # keys and is deliberately locked to base.group_system-only ACLs
+        # (nobody should be able to browse another user's credentials by
+        # opening the model directly) — but that same lockdown was also
+        # silently blocking every real operational role from using AI at
+        # all, since complete() itself couldn't read its own config,
+        # budget, or cache. The policy/feature/permission checks above
+        # this point (and the AI-permissions check that runs before
+        # complete() is even entered — see deployfleet_ai_permissions)
+        # are the actual access boundary; everything below is this
+        # router's own trusted internal bookkeeping, not something a
+        # caller should need direct model access to.
+        config = self.env["deployfleet.ai.config"].sudo().get_active_config(company)
         provider = feature.provider_override or config.active_provider
 
         if provider != "local" and not policy.external_providers_allowed:
@@ -64,13 +76,13 @@ class DeployfleetAICore(models.AbstractModel):
                 company=company.display_name, feature=feature_key, provider=provider,
             ))
 
-        budget = self.env["deployfleet.ai.budget"].search([("company_id", "=", company.id)], limit=1)
+        budget = self.env["deployfleet.ai.budget"].sudo().search([("company_id", "=", company.id)], limit=1)
         if budget:
             budget._check_budget()
 
         cache_key = self._make_cache_key(feature_key, system_prompt, user_message)
         if config.enable_response_cache:
-            cached = self.env["deployfleet.ai.response.cache"].search([("cache_key", "=", cache_key)], limit=1)
+            cached = self.env["deployfleet.ai.response.cache"].sudo().search([("cache_key", "=", cache_key)], limit=1)
             if cached:
                 cached.hit_count += 1
                 self._log_usage(
@@ -102,7 +114,7 @@ class DeployfleetAICore(models.AbstractModel):
         cost = self._estimate_cost(provider, tokens_in, tokens_out)
 
         if config.enable_response_cache:
-            self.env["deployfleet.ai.response.cache"].create({
+            self.env["deployfleet.ai.response.cache"].sudo().create({
                 "cache_key": cache_key, "feature": feature_key, "response": response_text,
             })
 
@@ -135,7 +147,11 @@ class DeployfleetAICore(models.AbstractModel):
     def _log_usage(self, company, feature, provider, model_name, tokens_in, tokens_out, cost,
                     duration_ms, cache_hit, state, request_preview=None, response_preview=None,
                     error_message=None):
-        self.env["deployfleet.ai.usage"].create({
+        # sudo(): the usage log is an audit trail the router itself
+        # populates, not something a caller should need direct create
+        # access to (base.group_user is deliberately read-only on this
+        # model so the Copilot Console's dashboard can still list it).
+        self.env["deployfleet.ai.usage"].sudo().create({
             "company_id": company.id,
             "feature": feature.key,
             "provider": provider,

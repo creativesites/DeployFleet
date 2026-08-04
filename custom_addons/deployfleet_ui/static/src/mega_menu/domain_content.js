@@ -234,6 +234,12 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
         subtitle: "Predictions, suggestions, and the six-agent catalog behind them.",
         tiles: [
             {
+                title: "Copilot Console",
+                description: "Ask any agent a question, toggle features, and track cost.",
+                icon: "fa fa-comments",
+                actionXmlId: "deployfleet_ui.action_deployfleet_copilot_console",
+            },
+            {
                 title: "Agents",
                 description: "The six-agent catalog and their configuration.",
                 icon: "fa fa-magic",

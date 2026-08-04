@@ -4,6 +4,7 @@ access_deployfleet_ai_policy_user,deployfleet.ai.policy user,model_deployfleet_a
 access_deployfleet_ai_config_system,deployfleet.ai.config system,model_deployfleet_ai_config,base.group_system,1,1,1,1
 access_deployfleet_ai_feature_system,deployfleet.ai.feature system,model_deployfleet_ai_feature,base.group_system,1,1,1,1
 access_deployfleet_ai_feature_user,deployfleet.ai.feature user,model_deployfleet_ai_feature,base.group_user,1,0,0,0
+access_deployfleet_ai_feature_manager,deployfleet.ai.feature manager,model_deployfleet_ai_feature,deployfleet_security.group_deployfleet_manager,1,1,0,0
 access_deployfleet_ai_response_cache_system,deployfleet.ai.response.cache system,model_deployfleet_ai_response_cache,base.group_system,1,1,1,1
 access_deployfleet_ai_context_cache_system,deployfleet.ai.context.cache system,model_deployfleet_ai_context_cache,base.group_system,1,1,1,1
 access_deployfleet_ai_usage_system,deployfleet.ai.usage system,model_deployfleet_ai_usage,base.group_system,1,1,1,1

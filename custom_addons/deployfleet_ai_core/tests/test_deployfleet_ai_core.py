@@ -28,6 +28,61 @@ class TestDeployfleetAICoreBase(TransactionCase):
         )
 
 
+class TestDeployfleetAICoreAccessAsRealUser(TestDeployfleetAICoreBase):
+    """Regression tests for the headline ACL bug found during the AI &
+    Intelligence domain audit: deployfleet.ai.config/response.cache/
+    usage were base.group_system-only, so complete() raised AccessError
+    for every real DeployFleet role (owner/manager/dispatcher/driver —
+    none of which imply base.group_system). Every test above this class
+    runs as the default TransactionCase superuser env, which is why the
+    bug was never caught by the existing suite. Fixed by sudo()-ing the
+    router's own internal config/budget/cache/usage-log calls in
+    deployfleet_ai_engine.py, rather than loosening the ACLs those
+    models are deliberately locked down with (deployfleet.ai.config
+    holds provider API keys)."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        dispatcher_group = cls.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        cls.dispatcher_user = cls.env["res.users"].create({
+            "name": "AI Core Dispatcher", "login": "ai_core_dispatcher@example.com",
+            "email": "ai_core_dispatcher@example.com",
+            "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+
+    def test_dispatcher_can_complete_a_call_end_to_end(self):
+        with self._mock_provider_call(text="dispatcher-visible response"):
+            result = self.env["deployfleet.ai.core"].with_user(self.dispatcher_user).complete(
+                "test_feature", "sys", "hello",
+            )
+        self.assertEqual(result, "dispatcher-visible response")
+
+        log = self.env["deployfleet.ai.usage"].search([("feature", "=", "test_feature")], limit=1)
+        self.assertEqual(log.user_id, self.dispatcher_user)
+
+    def test_dispatcher_second_identical_call_hits_cache(self):
+        with self._mock_provider_call(text="cached for dispatcher") as mocked:
+            self.env["deployfleet.ai.core"].with_user(self.dispatcher_user).complete("test_feature", "sys", "hello")
+            self.assertEqual(mocked.call_count, 1)
+        # Not mocked - would raise for lack of a real API key/network if the
+        # dispatcher couldn't actually reach the response cache.
+        result = self.env["deployfleet.ai.core"].with_user(self.dispatcher_user).complete(
+            "test_feature", "sys", "hello",
+        )
+        self.assertEqual(result, "cached for dispatcher")
+
+    def test_manager_can_toggle_feature_enabled(self):
+        manager_group = self.env.ref("deployfleet_security.group_deployfleet_manager")
+        manager_user = self.env["res.users"].create({
+            "name": "AI Core Manager", "login": "ai_core_manager@example.com",
+            "email": "ai_core_manager@example.com",
+            "group_ids": [(6, 0, [manager_group.id])],
+        })
+        self.feature.with_user(manager_user).enabled = False
+        self.assertFalse(self.feature.enabled)
+
+
 class TestDeployfleetAICorePolicyGates(TestDeployfleetAICoreBase):
     def test_ai_disabled_globally_blocks_call(self):
         self.policy.ai_enabled = False
