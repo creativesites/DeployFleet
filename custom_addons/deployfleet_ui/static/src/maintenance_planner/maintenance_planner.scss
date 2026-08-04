@@ -1,0 +1,419 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as the
+// Fleet Command Center/Workshop Board: a fleet manager reviewing this
+// screen is doing sustained operational work, not launching/orienting.
+// All values come from the shared design-system tokens (doc 17) — no
+// isolated/invented CSS values.
+.df-maint-planner {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-maint-planner__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-maint-planner__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-maint-planner__subtitle {
+    margin: 2px 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__loading,
+.df-maint-planner__empty,
+.df-maint-planner__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-maint-planner__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-maint-planner__tab--active {
+    color: var(--df-color-primary, var(--df-color-info));
+    border-bottom-color: var(--df-color-primary, var(--df-color-info));
+}
+
+.df-maint-planner__section-title {
+    margin: 0 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+// ---- Overview: attention strip, KPIs, AI, health cards ----
+
+.df-maint-planner__attention {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin: var(--df-space-3) 0;
+}
+
+.df-maint-planner__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-maint-planner__ai {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-maint-planner__health-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-maint-planner__health-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-maint-planner__health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--df-space-2);
+}
+
+.df-maint-planner__health-card {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-left: 4px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    box-shadow: var(--df-shadow-resting);
+}
+
+.df-maint-planner__health-card--good {
+    border-left-color: var(--df-color-success);
+}
+
+.df-maint-planner__health-card--watch {
+    border-left-color: var(--df-color-warning);
+}
+
+.df-maint-planner__health-card--critical {
+    border-left-color: var(--df-color-danger);
+}
+
+.df-maint-planner__health-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.df-maint-planner__health-main {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-maint-planner__health-score {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-maint-planner__health-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 var(--df-space-2) var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__health-detail {
+    border-top: 1px solid var(--df-color-neutral-300);
+    padding: var(--df-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+}
+
+.df-maint-planner__health-detail h4 {
+    margin: 0 0 4px;
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__health-ai {
+    margin-bottom: var(--df-space-1);
+}
+
+.df-maint-planner__detail-list {
+    list-style: none;
+    margin: 0 0 var(--df-space-1);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-maint-planner__detail-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-maint-planner__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+// ---- Calendar ----
+
+.df-maint-planner__calendar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    margin: var(--df-space-3) 0 var(--df-space-2);
+}
+
+.df-maint-planner__calendar-modes,
+.df-maint-planner__calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-maint-planner__calendar-label {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    min-width: 140px;
+    text-align: center;
+}
+
+.df-maint-planner__calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--df-color-neutral-300);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-maint-planner__calendar-dow {
+    background: var(--df-color-neutral-100);
+    padding: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    text-align: center;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-maint-planner__calendar-day {
+    background: var(--df-color-neutral-0);
+    min-height: 96px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-maint-planner__calendar-day--muted {
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__calendar-day--today {
+    box-shadow: inset 0 0 0 2px var(--df-color-info);
+}
+
+.df-maint-planner__calendar-daynum {
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-maint-planner__calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.df-maint-planner__calendar-event {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: var(--df-radius-sm);
+    color: var(--df-color-neutral-0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.df-maint-planner__calendar-event--danger {
+    background: var(--df-color-danger);
+}
+
+.df-maint-planner__calendar-event--warning {
+    background: var(--df-color-warning);
+}
+
+.df-maint-planner__calendar-event--info {
+    background: var(--df-color-info);
+}
+
+.df-maint-planner__calendar-event--success {
+    background: var(--df-color-success);
+}
+
+.df-maint-planner__calendar-event--ai {
+    background: var(--df-color-ai);
+}
+
+// ---- Timeline ----
+
+.df-maint-planner__timeline-caption {
+    margin: var(--df-space-3) 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-maint-planner__timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-1);
+}
+
+.df-maint-planner__timeline-row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    min-height: 32px;
+}
+
+.df-maint-planner__timeline-label {
+    flex: 0 0 100px;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.df-maint-planner__timeline-track {
+    position: relative;
+    flex: 1 1 auto;
+    height: 20px;
+    background: var(--df-color-neutral-100);
+    border-radius: var(--df-radius-sm);
+}
+
+.df-maint-planner__timeline-bar {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    border-radius: var(--df-radius-sm);
+    min-width: 4px;
+}
+
+.df-maint-planner__timeline-bar--info {
+    background: var(--df-color-info);
+}
+
+.df-maint-planner__timeline-bar--warning {
+    background: var(--df-color-warning);
+}
+
+.df-maint-planner__timeline-bar--success {
+    background: var(--df-color-success);
+}
+
+.df-maint-planner__timeline-bar--danger {
+    background: var(--df-color-danger);
+}
+
+.df-maint-planner__timeline-marker {
+    position: absolute;
+    top: -3px;
+    width: 3px;
+    height: 26px;
+    border-radius: 2px;
+}
+
+.df-maint-planner__timeline-marker--danger {
+    background: var(--df-color-danger);
+}
+
+.df-maint-planner__timeline-marker--warning {
+    background: var(--df-color-warning);
+}
+
+@media (max-width: 640px) {
+    .df-maint-planner__calendar-day {
+        min-height: 64px;
+    }
+
+    .df-maint-planner__calendar-event {
+        font-size: 9px;
+    }
+
+    .df-maint-planner__timeline-label {
+        flex-basis: 70px;
+    }
+}

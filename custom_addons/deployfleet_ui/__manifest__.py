@@ -21,6 +21,7 @@
         "views/deployfleet_ui_fuel_intelligence_views.xml",
         "views/deployfleet_ui_tyre_manager_views.xml",
         "views/deployfleet_ui_insurance_center_views.xml",
+        "views/deployfleet_ui_maintenance_planner_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -78,6 +79,9 @@
             "deployfleet_ui/static/src/insurance_center/*.scss",
             "deployfleet_ui/static/src/insurance_center/*.js",
             "deployfleet_ui/static/src/insurance_center/*.xml",
+            "deployfleet_ui/static/src/maintenance_planner/*.scss",
+            "deployfleet_ui/static/src/maintenance_planner/*.js",
+            "deployfleet_ui/static/src/maintenance_planner/*.xml",
         ],
     },
 }

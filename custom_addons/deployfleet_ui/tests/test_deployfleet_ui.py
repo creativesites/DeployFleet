@@ -132,3 +132,11 @@ class TestDeployfleetUi(TransactionCase):
     def test_insurance_center_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_insurance_center")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_maintenance_planner_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_maintenance_planner")
+        self.assertEqual(action.tag, "deployfleet_ui.maintenance_planner")
+
+    def test_maintenance_planner_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_maintenance_planner")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

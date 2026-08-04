@@ -381,6 +381,29 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Manager, Insurance → Insurance Center in both the Fleet & Vehicles
   *and* Compliance domains) now point at these screens instead of stock
   views.
+- **Maintenance Planner** (``static/src/maintenance_planner/``) —
+  closes the last Fleet & Vehicles gap and completes the domain. One
+  workspace, three internal tabs (not separate menu items):
+  **Overview** (a silent-unless-nonzero attention strip, six real KPI
+  cards, an ``AiRecommendationCard`` list for at-risk vehicles, and a
+  worst-first, filterable grid of Vehicle Health Cards); **Calendar**
+  (a native CSS-grid week/month view plotting schedule due-dates and
+  job-card open/close events — no charting library); **Timeline** (a
+  Gantt-style view, vehicle rows against a rolling date window,
+  job-card bars positioned via percentage-based CSS, no drag-resize).
+  Grounded against what the backend actually has, not the full
+  product-vision brief that inspired it — see
+  ``docs/architecture/20-experience-implementation-strategy.md`` §6a
+  for the complete list of what was dropped rather than faked (no
+  predicted-failure-date field on ``deployfleet.maintenance.
+  prediction``, no inspection model anywhere in the backend, no
+  technician/duration/priority fields on job cards, no workshop
+  capacity model). Health Score is a `deployfleet_ui`-computed
+  heuristic over real signals, not a backend-stored field — documented
+  as such, unlike every other "score" this module has surfaced before.
+  Workshop Board stays the execution surface; this screen never
+  duplicates job-card state-advance buttons. Replaces the Fleet &
+  Vehicles Mega Menu's "Maintenance" tile.
 
 Not yet built
 =============

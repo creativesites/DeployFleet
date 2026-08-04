@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.MaintenancePlanner">
+        <div class="df-maint-planner">
+            <header class="df-maint-planner__header">
+                <h1 class="df-maint-planner__title">Maintenance Planner</h1>
+                <p class="df-maint-planner__subtitle">What needs attention, what's scheduled, and who's unavailable.</p>
+                <nav class="df-maint-planner__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-maint-planner__tab {{ state.activeTab === tab.key ? 'df-maint-planner__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-maint-planner__loading">Loading maintenance data...</p>
+
+            <!-- ============================= OVERVIEW ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'overview'">
+                <section t-if="attentionItems.length > 0" class="df-maint-planner__attention">
+                    <DeployfleetStatusPill t-foreach="attentionItems" t-as="item" t-key="item.key"
+                                           label="item.label"
+                                           count="item.count"
+                                           status="item.status"
+                                           onClick="() => this.onAttentionClick(item.key)"/>
+                </section>
+
+                <section class="df-maint-planner__kpis">
+                    <DeployfleetMetricCard label="'Fleet Availability'" value="kpiFleetAvailabilityLabel" icon="'fa fa-check-circle'" status="'success'"/>
+                    <DeployfleetMetricCard label="'Vehicles Under Maintenance'" value="unavailableVehicles.length" icon="'fa fa-wrench'" status="'warning'"/>
+                    <DeployfleetMetricCard label="'Avg Repair Downtime'" value="kpiAvgRepairDowntimeLabel" icon="'fa fa-clock-o'" status="'info'" caption="'Trailing 90 days'"/>
+                    <DeployfleetMetricCard label="'Maintenance Cost This Month'" value="kpiMaintenanceCostThisMonth" icon="'fa fa-money'" status="'info'"/>
+                    <DeployfleetMetricCard label="'Preventive : Corrective'" value="kpiPreventiveRatioLabel" icon="'fa fa-balance-scale'" status="'info'" caption="'Trailing 90 days'"/>
+                    <DeployfleetMetricCard label="'Cost per KM'" value="kpiCostPerKm" icon="'fa fa-road'" status="'info'" caption="'Approximate — derived from fuel-log distance'"/>
+                </section>
+
+                <section t-if="atRiskPredictions.length > 0" class="df-maint-planner__ai">
+                    <h3 class="df-maint-planner__section-title">AI Recommendations</h3>
+                    <DeployfleetAiRecommendationCard
+                        t-foreach="atRiskPredictions" t-as="prediction" t-key="prediction.id"
+                        title="this.predictionTitle(prediction)"
+                        body="prediction.basis"
+                        meta="this.predictionMeta(prediction)"
+                        actionLabel="'Schedule Maintenance'"
+                        onAction="() => this.onScheduleFromPrediction(prediction.vehicle_id[0])"
+                        onDismiss="() => this.onDismissPrediction(prediction.vehicle_id[0])"/>
+                </section>
+
+                <section class="df-maint-planner__health">
+                    <div class="df-maint-planner__health-header">
+                        <h3 class="df-maint-planner__section-title">Vehicle Health</h3>
+                        <div class="df-maint-planner__health-filters">
+                            <DeployfleetStatusPill label="'All'" count="healthCards.length"
+                                                   status="state.healthFilter === 'all' ? 'info' : 'success'"
+                                                   onClick="() => this.state.healthFilter = 'all'"/>
+                            <DeployfleetStatusPill t-foreach="attentionItems" t-as="item" t-key="'hf' + item.key"
+                                                   label="item.label" count="item.count"
+                                                   status="state.healthFilter === item.key ? 'info' : 'success'"
+                                                   onClick="() => this.state.healthFilter = item.key"/>
+                        </div>
+                    </div>
+
+                    <p t-if="filteredHealthCards.length === 0" class="df-maint-planner__empty">No vehicles match this filter.</p>
+
+                    <div class="df-maint-planner__health-grid">
+                        <div t-foreach="filteredHealthCards" t-as="card" t-key="card.vehicle.id"
+                             t-attf-class="df-maint-planner__health-card df-maint-planner__health-card--{{ this.scoreBand(card.score) }}">
+                            <div class="df-maint-planner__health-summary" t-on-click="() => this.onSelectVehicle(card.vehicle.id)">
+                                <div class="df-maint-planner__health-main">
+                                    <span class="df-maint-planner__health-plate" t-esc="card.vehicle.license_plate or card.vehicle.name"/>
+                                    <DeployfleetStatusBadge label="this.statusLabel(card.vehicle.status)" status="this.statusBadgeVariant(card.vehicle.status)"/>
+                                </div>
+                                <div class="df-maint-planner__health-score">
+                                    <DeployfleetStatusBadge label="'Health ' + card.score + '%'" status="this.scoreBadgeVariant(card.score)"/>
+                                    <i t-attf-class="fa {{ state.selectedVehicleId === card.vehicle.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                                </div>
+                            </div>
+                            <div class="df-maint-planner__health-meta">
+                                <span>Odometer: <t t-esc="card.vehicle.odometer"/> km</span>
+                                <span t-if="card.nextSchedule">Next: <t t-esc="card.nextSchedule.name"/> (<t t-esc="card.nextSchedule.next_due_date"/>)</span>
+                                <span t-if="!card.nextSchedule">No upcoming schedule</span>
+                            </div>
+
+                            <div t-if="state.selectedVehicleId === card.vehicle.id" class="df-maint-planner__health-detail">
+                                <div t-if="card.prediction" class="df-maint-planner__health-ai">
+                                    <DeployfleetAiRecommendationCard
+                                        title="this.predictionTitle(card.prediction)"
+                                        body="card.prediction.basis"
+                                        meta="this.predictionMeta(card.prediction)"/>
+                                </div>
+
+                                <h4>Schedules</h4>
+                                <p t-if="this.vehicleSchedules(card.vehicle.id).length === 0" class="df-maint-planner__muted">No schedules configured.</p>
+                                <ul t-if="this.vehicleSchedules(card.vehicle.id).length > 0" class="df-maint-planner__detail-list">
+                                    <li t-foreach="this.vehicleSchedules(card.vehicle.id)" t-as="schedule" t-key="schedule.id">
+                                        <span t-esc="schedule.name"/>
+                                        <DeployfleetStatusBadge t-if="schedule.is_due" label="'Overdue'" status="'danger'"/>
+                                        <DeployfleetStatusBadge t-if="!schedule.is_due and this.isDueSoon(schedule)" label="'Due Soon'" status="'warning'"/>
+                                        <DeployfleetStatusBadge t-if="!schedule.is_due and !this.isDueSoon(schedule)" label="'On Schedule'" status="'success'"/>
+                                        <div class="df-maint-planner__detail-actions">
+                                            <DeployfleetButton label="'Create Job Card'" variant="'secondary'"
+                                                               loading="state.actingId === schedule.id"
+                                                               onClick="() => this.onCreateJobCard(schedule.id)"/>
+                                            <DeployfleetButton label="'Record Service'" variant="'ghost'"
+                                                               loading="state.actingId === schedule.id"
+                                                               onClick="() => this.onRecordService(schedule.id)"/>
+                                        </div>
+                                    </li>
+                                </ul>
+
+                                <h4>Job Cards</h4>
+                                <p t-if="this.vehicleJobCards(card.vehicle.id).length === 0" class="df-maint-planner__muted">No job cards on file.</p>
+                                <ul t-if="this.vehicleJobCards(card.vehicle.id).length > 0" class="df-maint-planner__detail-list">
+                                    <li t-foreach="this.vehicleJobCards(card.vehicle.id)" t-as="jc" t-key="jc.id">
+                                        <span t-esc="jc.name"/>
+                                        <DeployfleetStatusBadge label="this.jobCardStateLabel(jc.state)" status="this.jobCardStateBadgeVariant(jc.state)"/>
+                                    </li>
+                                </ul>
+                                <div class="df-maint-planner__detail-actions">
+                                    <DeployfleetButton label="'Open Workshop Board'" variant="'ghost'" onClick="() => this.onOpenWorkshopBoard()"/>
+                                    <DeployfleetButton t-if="card.vehicle.status !== 'available'" label="'Mark Available'" variant="'primary'"
+                                                       loading="state.actingId === card.vehicle.id"
+                                                       onClick="() => this.onSetVehicleStatus(card.vehicle.id, 'action_set_available')"/>
+                                    <DeployfleetButton t-if="card.vehicle.status !== 'maintenance'" label="'Send to Maintenance'" variant="'secondary'"
+                                                       loading="state.actingId === card.vehicle.id"
+                                                       onClick="() => this.onSetVehicleStatus(card.vehicle.id, 'action_set_maintenance')"/>
+                                    <DeployfleetButton label="'Open full record'" variant="'ghost'" onClick="() => this.onOpenVehicleForm(card.vehicle.id)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+
+            <!-- ============================= CALENDAR ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'calendar'">
+                <section class="df-maint-planner__calendar-toolbar">
+                    <div class="df-maint-planner__calendar-modes">
+                        <DeployfleetButton label="'Week'" variant="state.calendarMode === 'week' ? 'primary' : 'secondary'" onClick="() => this.onCalendarModeChange('week')"/>
+                        <DeployfleetButton label="'Month'" variant="state.calendarMode === 'month' ? 'primary' : 'secondary'" onClick="() => this.onCalendarModeChange('month')"/>
+                    </div>
+                    <div class="df-maint-planner__calendar-nav">
+                        <DeployfleetButton icon="'fa fa-chevron-left'" variant="'ghost'" onClick="() => this.onCalendarShift(-1)"/>
+                        <span class="df-maint-planner__calendar-label" t-esc="calendarLabel"/>
+                        <DeployfleetButton icon="'fa fa-chevron-right'" variant="'ghost'" onClick="() => this.onCalendarShift(1)"/>
+                        <DeployfleetButton label="'Today'" variant="'ghost'" onClick="() => this.onCalendarToday()"/>
+                    </div>
+                </section>
+
+                <div class="df-maint-planner__calendar-grid">
+                    <div t-foreach="this.weekdayLabels" t-as="dow" t-key="dow" class="df-maint-planner__calendar-dow">
+                        <t t-esc="dow"/>
+                    </div>
+                    <div t-foreach="calendarGridDays" t-as="day" t-key="day.iso"
+                         t-attf-class="df-maint-planner__calendar-day {{ !day.inCurrentMonth ? 'df-maint-planner__calendar-day--muted' : '' }} {{ day.isToday ? 'df-maint-planner__calendar-day--today' : '' }}">
+                        <span class="df-maint-planner__calendar-daynum" t-esc="day.dayNumber"/>
+                        <div class="df-maint-planner__calendar-events">
+                            <span t-foreach="day.events" t-as="event" t-key="event.key"
+                                  t-attf-class="df-maint-planner__calendar-event df-maint-planner__calendar-event--{{ event.status }}"
+                                  t-att-title="event.label">
+                                <t t-esc="event.label"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= TIMELINE ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'timeline'">
+                <p class="df-maint-planner__timeline-caption">
+                    Job-card downtime and upcoming due-dates, <t t-esc="timelineDays.totalDays"/> days centered on today.
+                    <t t-if="timelineHiddenVehicleCount > 0"> <t t-esc="timelineHiddenVehicleCount"/> vehicle(s) with no activity in this window are hidden.</t>
+                </p>
+                <div t-if="timelineRows.length === 0" class="df-maint-planner__empty">No scheduled or in-progress maintenance in this window.</div>
+                <div t-if="timelineRows.length > 0" class="df-maint-planner__timeline">
+                    <div t-foreach="timelineRows" t-as="row" t-key="row.vehicle.id" class="df-maint-planner__timeline-row">
+                        <div class="df-maint-planner__timeline-label" t-esc="row.vehicle.license_plate or row.vehicle.name"/>
+                        <div class="df-maint-planner__timeline-track">
+                            <div t-foreach="row.bars" t-as="bar" t-key="bar.id"
+                                 t-attf-class="df-maint-planner__timeline-bar df-maint-planner__timeline-bar--{{ bar.status }}"
+                                 t-attf-style="left: {{ bar.left }}%; width: {{ bar.width }}%;"
+                                 t-att-title="bar.label"/>
+                            <div t-foreach="row.markers" t-as="marker" t-key="marker.id"
+                                 t-attf-class="df-maint-planner__timeline-marker df-maint-planner__timeline-marker--{{ marker.status }}"
+                                 t-attf-style="left: {{ marker.left }}%;"
+                                 t-att-title="marker.label"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

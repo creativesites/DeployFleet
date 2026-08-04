@@ -36,10 +36,10 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 actionXmlId: "deployfleet_ui.action_deployfleet_fuel_intelligence",
             },
             {
-                title: "Maintenance",
-                description: "Scheduled service intervals and what's coming due.",
+                title: "Maintenance Planner",
+                description: "Attention strip, calendar, timeline, and vehicle health in one workspace.",
                 icon: "fa fa-wrench",
-                actionXmlId: "deployfleet_maintenance.action_deployfleet_maintenance_schedule",
+                actionXmlId: "deployfleet_ui.action_deployfleet_maintenance_planner",
             },
             {
                 title: "Workshop",
