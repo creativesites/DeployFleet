@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.PayrollCenter">
+        <div class="df-payroll-center">
+            <header class="df-payroll-center__header">
+                <h1 class="df-payroll-center__title">Payroll Center</h1>
+                <p class="df-payroll-center__subtitle">Payslips, loans, and the deductions that link them.</p>
+                <nav t-if="!state.accessError" class="df-payroll-center__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-payroll-center__tab {{ state.activeTab === tab.key ? 'df-payroll-center__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-payroll-center__loading">Loading payroll data...</p>
+
+            <div t-if="!state.loading and state.accessError" class="df-payroll-center__access-denied">
+                <i class="fa fa-lock"/>
+                <h3>You don't have access to payroll data</h3>
+                <p>Payroll and loans are restricted to HR Payroll Officers. Contact one if you need to view or manage this data.</p>
+                <p class="df-payroll-center__access-denied-detail" t-esc="state.accessError"/>
+            </div>
+
+            <!-- ============================= PAYSLIPS ============================= -->
+            <t t-if="!state.loading and !state.accessError and state.activeTab === 'payslips'">
+                <section class="df-payroll-center__new-form">
+                    <h3 class="df-payroll-center__section-title">New Payslip</h3>
+                    <div class="df-payroll-center__new-fields">
+                        <select class="df-payroll-center__select"
+                                t-att-value="state.newPayslip.employee_id"
+                                t-on-change="(ev) => this.onNewPayslipInput('employee_id', ev.target.value)">
+                            <option value="">Employee...</option>
+                            <option t-foreach="state.employees" t-as="employee" t-key="employee.id" t-att-value="employee.id">
+                                <t t-esc="employee.name"/>
+                            </option>
+                        </select>
+                        <input type="date" class="df-payroll-center__input"
+                               t-att-value="state.newPayslip.period_start"
+                               t-on-input="(ev) => this.onNewPayslipInput('period_start', ev.target.value)"/>
+                        <input type="date" class="df-payroll-center__input"
+                               t-att-value="state.newPayslip.period_end"
+                               t-on-input="(ev) => this.onNewPayslipInput('period_end', ev.target.value)"/>
+                        <input type="number" min="0" step="any" class="df-payroll-center__input" placeholder="Base Salary"
+                               t-att-value="state.newPayslip.base_salary"
+                               t-on-input="(ev) => this.onNewPayslipInput('base_salary', ev.target.value)"/>
+                        <DeployfleetButton label="'Create Payslip'" variant="'primary'"
+                                           loading="state.creatingPayslip"
+                                           onClick="() => this.onCreatePayslip()"/>
+                    </div>
+                </section>
+
+                <section class="df-payroll-center__filters">
+                    <DeployfleetStatusPill t-foreach="payslipStateFilters" t-as="filter" t-key="filter.key"
+                                           label="filter.label" count="filter.count"
+                                           status="filter.key === state.payslipStateFilter ? 'info' : 'success'"
+                                           onClick="() => this.state.payslipStateFilter = filter.key"/>
+                </section>
+
+                <p t-if="filteredPayslips.length === 0" class="df-payroll-center__empty">No payslips match this filter.</p>
+
+                <div t-if="filteredPayslips.length > 0" class="df-payroll-center__list">
+                    <div t-foreach="filteredPayslips" t-as="payslip" t-key="payslip.id" class="df-payroll-center__card">
+                        <div class="df-payroll-center__card-summary" t-on-click="() => this.onSelectPayslip(payslip.id)">
+                            <div class="df-payroll-center__card-main">
+                                <span class="df-payroll-center__card-employee" t-esc="payslip.employee_id[1]"/>
+                                <span class="df-payroll-center__card-period"><t t-esc="payslip.period_start"/> → <t t-esc="payslip.period_end"/></span>
+                            </div>
+                            <div class="df-payroll-center__card-meta">
+                                <span class="df-payroll-center__card-net">Net: <t t-esc="payslip.net_pay"/></span>
+                                <DeployfleetStatusBadge label="this.payslipStateLabel(payslip.state)" status="this.payslipStateBadgeVariant(payslip.state)"/>
+                                <i t-attf-class="fa {{ state.selectedPayslipId === payslip.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                            </div>
+                        </div>
+
+                        <div t-if="state.selectedPayslipId === payslip.id" class="df-payroll-center__card-detail">
+                            <p>Gross: <t t-esc="payslip.gross_pay"/> — Deductions: <t t-esc="payslip.total_deductions"/> — Net: <t t-esc="payslip.net_pay"/></p>
+                            <p t-if="payslip.lines and payslip.lines.length === 0" class="df-payroll-center__muted">No lines computed yet.</p>
+                            <ul t-if="payslip.lines and payslip.lines.length > 0" class="df-payroll-center__detail-list">
+                                <li t-foreach="payslip.lines" t-as="line" t-key="line.id">
+                                    <span t-esc="line.rule_id[1]"/>
+                                    <span t-esc="line.amount"/>
+                                </li>
+                            </ul>
+                            <div class="df-payroll-center__detail-actions">
+                                <DeployfleetButton t-if="payslip.state === 'draft' or payslip.state === 'computed'" label="'Compute'" variant="'primary'"
+                                                   loading="state.actingId === payslip.id"
+                                                   onClick="() => this.onPayslipAction(payslip.id, 'action_compute')"/>
+                                <DeployfleetButton t-if="payslip.state === 'computed'" label="'Confirm'" variant="'primary'"
+                                                   loading="state.actingId === payslip.id"
+                                                   onClick="() => this.onPayslipAction(payslip.id, 'action_confirm')"/>
+                                <DeployfleetButton t-if="payslip.state === 'confirmed'" label="'Mark Paid'" variant="'primary'"
+                                                   loading="state.actingId === payslip.id"
+                                                   onClick="() => this.onPayslipAction(payslip.id, 'action_mark_paid')"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= LOANS ============================= -->
+            <t t-if="!state.loading and !state.accessError and state.activeTab === 'loans'">
+                <section class="df-payroll-center__new-form">
+                    <h3 class="df-payroll-center__section-title">New Loan</h3>
+                    <div class="df-payroll-center__new-fields">
+                        <select class="df-payroll-center__select"
+                                t-att-value="state.newLoan.employee_id"
+                                t-on-change="(ev) => this.onNewLoanInput('employee_id', ev.target.value)">
+                            <option value="">Employee...</option>
+                            <option t-foreach="state.employees" t-as="employee" t-key="employee.id" t-att-value="employee.id">
+                                <t t-esc="employee.name"/>
+                            </option>
+                        </select>
+                        <input type="number" min="0" step="any" class="df-payroll-center__input" placeholder="Amount"
+                               t-att-value="state.newLoan.amount"
+                               t-on-input="(ev) => this.onNewLoanInput('amount', ev.target.value)"/>
+                        <input type="number" min="0" step="any" class="df-payroll-center__input" placeholder="Monthly Deduction"
+                               t-att-value="state.newLoan.monthly_deduction"
+                               t-on-input="(ev) => this.onNewLoanInput('monthly_deduction', ev.target.value)"/>
+                        <DeployfleetButton label="'Create Loan'" variant="'primary'"
+                                           loading="state.creatingLoan"
+                                           onClick="() => this.onCreateLoan()"/>
+                    </div>
+                </section>
+
+                <section class="df-payroll-center__filters">
+                    <DeployfleetStatusPill t-foreach="loanStateFilters" t-as="filter" t-key="filter.key"
+                                           label="filter.label" count="filter.count"
+                                           status="filter.key === state.loanStateFilter ? 'info' : 'success'"
+                                           onClick="() => this.state.loanStateFilter = filter.key"/>
+                </section>
+
+                <p t-if="filteredLoans.length === 0" class="df-payroll-center__empty">No loans match this filter.</p>
+
+                <div t-if="filteredLoans.length > 0" class="df-payroll-center__table">
+                    <div class="df-payroll-center__row df-payroll-center__row--header">
+                        <span class="df-payroll-center__col df-payroll-center__col--employee">Employee</span>
+                        <span class="df-payroll-center__col df-payroll-center__col--date">Start</span>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty">Amount</span>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty">Monthly</span>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty">Outstanding</span>
+                        <span class="df-payroll-center__col df-payroll-center__col--status"/>
+                    </div>
+                    <div t-foreach="filteredLoans" t-as="loan" t-key="loan.id" class="df-payroll-center__row">
+                        <span class="df-payroll-center__col df-payroll-center__col--employee" t-esc="loan.employee_id[1]"/>
+                        <span class="df-payroll-center__col df-payroll-center__col--date" t-esc="loan.start_date"/>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty" t-esc="loan.amount"/>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty" t-esc="loan.monthly_deduction"/>
+                        <span class="df-payroll-center__col df-payroll-center__col--qty" t-esc="loan.outstanding_balance"/>
+                        <span class="df-payroll-center__col df-payroll-center__col--status">
+                            <DeployfleetStatusBadge label="this.loanStateLabel(loan.state)" status="this.loanStateBadgeVariant(loan.state)"/>
+                        </span>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

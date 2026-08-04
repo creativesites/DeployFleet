@@ -1,0 +1,278 @@
+// Workspace Layer (flat, light, high-contrast) — same reasoning as the
+// Maintenance Planner: sustained review/planning work, not launching.
+.df-leave-planner {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-leave-planner__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-leave-planner__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-leave-planner__subtitle {
+    margin: 2px 0 var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-leave-planner__loading,
+.df-leave-planner__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-leave-planner__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-leave-planner__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-leave-planner__tab--active {
+    color: var(--df-color-info);
+    border-bottom-color: var(--df-color-info);
+}
+
+.df-leave-planner__section-title {
+    margin: var(--df-space-3) 0 var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-leave-planner__new-form {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    padding: var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-leave-planner__new-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+.df-leave-planner__select,
+.df-leave-planner__input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 140px;
+    max-width: 100%;
+}
+
+.df-leave-planner__input--wide {
+    flex: 2 1 220px;
+}
+
+.df-leave-planner__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-leave-planner__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-leave-planner__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+}
+
+.df-leave-planner__row:last-child {
+    border-bottom: none;
+}
+
+.df-leave-planner__row--header {
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-leave-planner__col--employee {
+    flex: 1 1 140px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-leave-planner__col--type,
+.df-leave-planner__col--dates {
+    flex: 1 1 120px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-leave-planner__col--days {
+    flex: 0 0 80px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-leave-planner__col--status {
+    flex: 0 0 110px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-leave-planner__col--actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+// ---- Calendar (same recipe as the Maintenance Planner's) ----
+
+.df-leave-planner__calendar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin: var(--df-space-3) 0 var(--df-space-2);
+}
+
+.df-leave-planner__calendar-label {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+    min-width: 140px;
+    text-align: center;
+}
+
+.df-leave-planner__calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--df-color-neutral-300);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-leave-planner__calendar-dow {
+    background: var(--df-color-neutral-100);
+    padding: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    text-align: center;
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-leave-planner__calendar-day {
+    background: var(--df-color-neutral-0);
+    min-height: 96px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-leave-planner__calendar-day--muted {
+    background: var(--df-color-neutral-100);
+    color: var(--df-color-neutral-600);
+}
+
+.df-leave-planner__calendar-day--today {
+    box-shadow: inset 0 0 0 2px var(--df-color-info);
+}
+
+.df-leave-planner__calendar-daynum {
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-leave-planner__calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.df-leave-planner__calendar-event {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: var(--df-radius-sm);
+    color: var(--df-color-neutral-0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.df-leave-planner__calendar-event--success {
+    background: var(--df-color-success);
+}
+
+.df-leave-planner__calendar-event--warning {
+    background: var(--df-color-warning);
+}
+
+@media (max-width: 640px) {
+    .df-leave-planner__row--header {
+        display: none;
+    }
+
+    .df-leave-planner__row {
+        flex-wrap: wrap;
+    }
+
+    .df-leave-planner__col--type,
+    .df-leave-planner__col--dates,
+    .df-leave-planner__col--days {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-leave-planner__col--status,
+    .df-leave-planner__col--actions {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+
+    .df-leave-planner__calendar-day {
+        min-height: 64px;
+    }
+}

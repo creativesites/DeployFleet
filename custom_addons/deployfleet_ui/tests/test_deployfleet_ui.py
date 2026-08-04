@@ -140,3 +140,27 @@ class TestDeployfleetUi(TransactionCase):
     def test_maintenance_planner_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_maintenance_planner")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_driver_advances_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_driver_advances")
+        self.assertEqual(action.tag, "deployfleet_ui.driver_advances")
+
+    def test_driver_advances_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_driver_advances")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_leave_planner_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_leave_planner")
+        self.assertEqual(action.tag, "deployfleet_ui.leave_planner")
+
+    def test_leave_planner_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_leave_planner")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_payroll_center_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_payroll_center")
+        self.assertEqual(action.tag, "deployfleet_ui.payroll_center")
+
+    def test_payroll_center_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_payroll_center")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

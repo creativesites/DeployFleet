@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Payroll Center (doc 20 §6b, Driver & HR domain) - combines the
+        stock Payslips and Loans list/form views into one workspace.
+        Placed at sequence 21, after Leave Planner (20).
+    -->
+    <record id="action_deployfleet_payroll_center" model="ir.actions.client">
+        <field name="name">Payroll Center</field>
+        <field name="tag">deployfleet_ui.payroll_center</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_payroll_center"
+              name="Payroll Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_payroll_center"
+              sequence="21"/>
+</odoo>

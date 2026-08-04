@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DriverAdvances">
+        <div class="df-driver-advances">
+            <header class="df-driver-advances__header">
+                <h1 class="df-driver-advances__title">Driver Advances</h1>
+                <p class="df-driver-advances__subtitle">Cash advances against upcoming pay, fleet-wide.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-driver-advances__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-driver-advances__loading">Loading advances...</p>
+            <p t-if="!state.loading and filteredAdvances.length === 0" class="df-driver-advances__empty">
+                No advances match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredAdvances.length > 0" class="df-driver-advances__table">
+                <div class="df-driver-advances__row df-driver-advances__row--header">
+                    <span class="df-driver-advances__col df-driver-advances__col--driver">Driver</span>
+                    <span class="df-driver-advances__col df-driver-advances__col--purpose">Purpose</span>
+                    <span class="df-driver-advances__col df-driver-advances__col--date">Issued</span>
+                    <span class="df-driver-advances__col df-driver-advances__col--qty">Amount</span>
+                    <span class="df-driver-advances__col df-driver-advances__col--qty">Outstanding</span>
+                    <span class="df-driver-advances__col df-driver-advances__col--status"/>
+                </div>
+
+                <t t-foreach="filteredAdvances" t-as="advance" t-key="advance.id">
+                    <div class="df-driver-advances__row" t-on-click="() => this.onSelectAdvance(advance.id)">
+                        <span class="df-driver-advances__col df-driver-advances__col--driver" t-esc="advance.driver_id[1]"/>
+                        <span class="df-driver-advances__col df-driver-advances__col--purpose" t-esc="this.purposeLabel(advance.purpose)"/>
+                        <span class="df-driver-advances__col df-driver-advances__col--date" t-esc="advance.issued_date"/>
+                        <span class="df-driver-advances__col df-driver-advances__col--qty" t-esc="advance.amount"/>
+                        <span class="df-driver-advances__col df-driver-advances__col--qty" t-esc="advance.outstanding_amount"/>
+                        <span class="df-driver-advances__col df-driver-advances__col--status">
+                            <DeployfleetStatusBadge label="this.stateLabel(advance.state)" status="this.stateBadgeVariant(advance.state)"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedAdvanceId === advance.id" class="df-driver-advances__detail">
+                        <h4>Reconciled Expenses</h4>
+                        <p t-if="state.expensesByAdvanceId[advance.id] and state.expensesByAdvanceId[advance.id].length === 0" class="df-driver-advances__muted">
+                            No expenses reconciled against this advance yet.
+                        </p>
+                        <ul t-if="state.expensesByAdvanceId[advance.id] and state.expensesByAdvanceId[advance.id].length > 0" class="df-driver-advances__expense-list">
+                            <li t-foreach="state.expensesByAdvanceId[advance.id]" t-as="expense" t-key="expense.id">
+                                <span t-esc="expense.expense_type"/>
+                                <span t-esc="expense.amount"/>
+                            </li>
+                        </ul>
+                        <div class="df-driver-advances__detail-actions">
+                            <DeployfleetButton t-if="advance.state === 'issued'" label="'Mark Reconciled'" variant="'secondary'"
+                                               loading="state.actingId === advance.id"
+                                               onClick="() => this.onAdvanceAction(advance.id, 'action_mark_reconciled')"/>
+                            <DeployfleetButton t-if="advance.state === 'reconciled'" label="'Mark Deducted'" variant="'secondary'"
+                                               loading="state.actingId === advance.id"
+                                               onClick="() => this.onAdvanceAction(advance.id, 'action_mark_deducted')"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Leave Planner (doc 20 §6b, Driver & HR domain) - replaces the
+        stock deployfleet.leave.request list/form. Placed at
+        sequence 20, after Driver Advances (19).
+    -->
+    <record id="action_deployfleet_leave_planner" model="ir.actions.client">
+        <field name="name">Leave Planner</field>
+        <field name="tag">deployfleet_ui.leave_planner</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_leave_planner"
+              name="Leave Planner"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_leave_planner"
+              sequence="20"/>
+</odoo>

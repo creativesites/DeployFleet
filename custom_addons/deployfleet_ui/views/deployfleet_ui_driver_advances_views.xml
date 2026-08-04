@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Driver Advances (doc 20 §6b, Driver & HR domain) - a fleet-wide
+        advances ledger replacing the stock
+        deployfleet.driver.advance list/form. Placed at sequence 19,
+        after Maintenance Planner (18).
+    -->
+    <record id="action_deployfleet_driver_advances" model="ir.actions.client">
+        <field name="name">Driver Advances</field>
+        <field name="tag">deployfleet_ui.driver_advances</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver_advances"
+              name="Driver Advances"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver_advances"
+              sequence="19"/>
+</odoo>

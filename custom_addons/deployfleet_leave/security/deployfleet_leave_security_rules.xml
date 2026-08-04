@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Record rule for the driver self-service fix (Driver & HR
+        domain audit, docs/architecture/20-experience-implementation-strategy.md):
+        deployfleet.leave.request previously granted the driver group
+        perm_create=1 but perm_write=0 — meaning a driver could file a
+        leave request but could never call action_submit() on it
+        themselves (it writes), and the model-wide ACL alone would let
+        any driver read/create/write against *any* employee's leave
+        requests, not just their own, once write access was granted.
+
+        This is the first ir.rule in the DeployFleet codebase. Scopes
+        the driver group (now perm_read=1/perm_write=1/perm_create=1 in
+        ir.model.access.csv) to their own employee's requests only, via
+        the standard Odoo self-service pattern (hr.employee.user_id).
+        Dispatcher/manager/owner have no matching group-scoped rule
+        here, so they remain unrestricted across every driver's
+        requests, as before.
+    -->
+    <record id="deployfleet_leave_request_rule_driver_own" model="ir.rule">
+        <field name="name">Driver: own leave requests only</field>
+        <field name="model_id" ref="model_deployfleet_leave_request"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+</odoo>

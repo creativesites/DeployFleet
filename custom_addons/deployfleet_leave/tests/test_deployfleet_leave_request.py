@@ -1,6 +1,6 @@
 from datetime import date, datetime, time, timedelta
 
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -75,3 +75,38 @@ class TestDeployfleetLeaveRequest(TransactionCase):
         request.action_approve()
         request.action_cancel()
         self.assertEqual(request.state, "cancelled")
+
+    def test_driver_can_submit_own_leave_request(self):
+        # Regression test for a real ACL gap found while building the
+        # deployfleet_ui Driver & HR domain: the driver group previously
+        # had create=1 but write=0 on this model, so a driver could file
+        # a leave request but could never call action_submit() on it
+        # themselves (it writes internally). Fixed by granting write=1
+        # in ir.model.access.csv plus a new ir.rule
+        # (deployfleet_leave_request_rule_driver_own) scoping driver
+        # access to their own employee's requests only.
+        driver_group = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        driver_user = self.env["res.users"].create({
+            "name": "Test Driver User", "login": "test_driver_user@example.com",
+            "email": "test_driver_user@example.com", "group_ids": [(6, 0, [driver_group.id])],
+        })
+        self.driver.user_id = driver_user.id
+        request = self._create_request()
+        request.with_user(driver_user).action_submit()
+        self.assertEqual(request.state, "submitted")
+
+    def test_driver_cannot_write_another_drivers_leave_request(self):
+        # The write grant above must not become a company-wide
+        # free-for-all: the new ir.rule should still block a driver from
+        # submitting a *different* driver's leave request.
+        driver_group = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        other_driver_user = self.env["res.users"].create({
+            "name": "Other Driver User", "login": "other_driver_user@example.com",
+            "email": "other_driver_user@example.com", "group_ids": [(6, 0, [driver_group.id])],
+        })
+        self.env["hr.employee"].create({
+            "name": "Other Driver", "deployfleet_is_driver": True, "user_id": other_driver_user.id,
+        })
+        request = self._create_request()  # belongs to self.driver, not other_driver_user
+        with self.assertRaises(AccessError):
+            request.with_user(other_driver_user).action_submit()

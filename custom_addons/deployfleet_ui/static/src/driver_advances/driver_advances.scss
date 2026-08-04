@@ -1,0 +1,170 @@
+// Registry styling (Driver & HR domain) — same deliberate departure
+// from the card/accordion pattern as the Parts/Asset Registries in
+// Fleet & Vehicles: a dense advances ledger (header row, table rows,
+// right-aligned figures) rather than shadowed cards, since this is a
+// registry to scan, not an operational review queue. Workspace Layer
+// (flat, light, high-contrast).
+.df-driver-advances {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-driver-advances__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-advances__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-advances__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-advances__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-advances__loading,
+.df-driver-advances__empty,
+.df-driver-advances__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-advances__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-driver-advances__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-driver-advances__row:last-child {
+    border-bottom: none;
+}
+
+.df-driver-advances__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-driver-advances__col--driver {
+    flex: 1 1 140px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-advances__col--purpose,
+.df-driver-advances__col--date {
+    flex: 1 1 100px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-driver-advances__col--qty {
+    flex: 0 0 100px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-driver-advances__col--status {
+    flex: 0 0 110px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-driver-advances__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-1);
+}
+
+.df-driver-advances__detail h4 {
+    margin: 0 0 4px;
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-advances__expense-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.df-driver-advances__expense-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    padding: 6px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-advances__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-driver-advances__row--header {
+        display: none;
+    }
+
+    .df-driver-advances__row {
+        flex-wrap: wrap;
+    }
+
+    .df-driver-advances__col--purpose,
+    .df-driver-advances__col--date,
+    .df-driver-advances__col--qty {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-driver-advances__col--status {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}

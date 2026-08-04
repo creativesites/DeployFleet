@@ -44,19 +44,132 @@
                             <t t-esc="driver.deployfleet_accident_count"/> recorded accident(s) on file.
                         </p>
 
-                        <t t-set="events" t-value="state.eventsByDriverId[driver.id]"/>
-                        <p t-if="events and events.length === 0" class="df-driver-scorecards__muted">
-                            No performance events in the last 365 days.
-                        </p>
-                        <ul t-if="events and events.length > 0" class="df-driver-scorecards__event-list">
-                            <li t-foreach="events" t-as="event" t-key="event.id">
-                                <div class="df-driver-scorecards__event-main">
-                                    <span t-esc="event.date"/>
-                                    <span t-esc="this.eventTypeLabel(event.event_type)"/>
-                                </div>
-                                <span t-if="event.score_impact" class="df-driver-scorecards__event-impact" t-esc="event.score_impact"/>
-                            </li>
-                        </ul>
+                        <t t-set="edit" t-value="state.editByDriverId[driver.id]"/>
+                        <div t-if="edit" class="df-driver-scorecards__section">
+                            <h3>Identity &amp; Qualifications</h3>
+                            <div class="df-driver-scorecards__profile-form">
+                                <select class="df-driver-scorecards__profile-select"
+                                        t-att-value="edit.deployfleet_license_class"
+                                        t-on-change="(ev) => this.onEditFieldInput(driver.id, 'deployfleet_license_class', ev.target.value)">
+                                    <option value="">License class...</option>
+                                    <option t-foreach="this.licenseClassOptions" t-as="opt" t-key="opt[0]" t-att-value="opt[0]">
+                                        <t t-esc="opt[1]"/>
+                                    </option>
+                                </select>
+                                <input type="text" class="df-driver-scorecards__profile-input" placeholder="License Number"
+                                       t-att-value="edit.deployfleet_license_number"
+                                       t-on-input="(ev) => this.onEditFieldInput(driver.id, 'deployfleet_license_number', ev.target.value)"/>
+                                <input type="date" class="df-driver-scorecards__profile-input"
+                                       t-att-value="edit.deployfleet_license_expiry"
+                                       t-on-input="(ev) => this.onEditFieldInput(driver.id, 'deployfleet_license_expiry', ev.target.value)"/>
+                                <input type="text" class="df-driver-scorecards__profile-input" placeholder="Endorsements"
+                                       t-att-value="edit.deployfleet_endorsements"
+                                       t-on-input="(ev) => this.onEditFieldInput(driver.id, 'deployfleet_endorsements', ev.target.value)"/>
+                                <input type="number" step="any" class="df-driver-scorecards__profile-input" placeholder="Risk Score"
+                                       t-att-value="edit.deployfleet_risk_score"
+                                       t-on-input="(ev) => this.onEditFieldInput(driver.id, 'deployfleet_risk_score', ev.target.value)"/>
+                                <span class="df-driver-scorecards__profile-readonly">
+                                    Qualified vehicle types: <t t-esc="this.qualifiedVehicleTypeNames(driver)"/>
+                                </span>
+                                <DeployfleetButton
+                                    label="'Save Profile'"
+                                    variant="'primary'"
+                                    loading="state.savingDriverId === driver.id"
+                                    onClick="() => this.onSaveDriverProfile(driver.id)"/>
+                            </div>
+                        </div>
+
+                        <div class="df-driver-scorecards__section">
+                            <h3>Performance Events</h3>
+                            <t t-set="events" t-value="state.eventsByDriverId[driver.id]"/>
+                            <p t-if="events and events.length === 0" class="df-driver-scorecards__muted">
+                                No performance events in the last 365 days.
+                            </p>
+                            <ul t-if="events and events.length > 0" class="df-driver-scorecards__event-list">
+                                <li t-foreach="events" t-as="event" t-key="event.id">
+                                    <div class="df-driver-scorecards__event-main">
+                                        <span t-esc="event.date"/>
+                                        <span t-esc="this.eventTypeLabel(event.event_type)"/>
+                                    </div>
+                                    <span t-if="event.score_impact" class="df-driver-scorecards__event-impact" t-esc="event.score_impact"/>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="df-driver-scorecards__section">
+                            <h3>Advances</h3>
+                            <t t-set="advances" t-value="state.advancesByDriverId[driver.id]"/>
+                            <p t-if="advances and advances.length === 0" class="df-driver-scorecards__muted">No advances on file.</p>
+                            <ul t-if="advances and advances.length > 0" class="df-driver-scorecards__event-list">
+                                <li t-foreach="advances" t-as="advance" t-key="advance.id">
+                                    <div class="df-driver-scorecards__event-main">
+                                        <span t-esc="advance.issued_date"/>
+                                        <span t-esc="advance.purpose"/>
+                                        <span>Outstanding: <t t-esc="advance.outstanding_amount"/></span>
+                                    </div>
+                                    <DeployfleetStatusBadge label="this.advanceStateLabel(advance.state)" status="this.advanceStateBadgeVariant(advance.state)"/>
+                                    <div class="df-driver-scorecards__inline-actions">
+                                        <DeployfleetButton t-if="advance.state === 'issued'" label="'Mark Reconciled'" variant="'secondary'"
+                                                           loading="state.actingId === advance.id"
+                                                           onClick="() => this.onAdvanceAction(driver.id, advance.id, 'action_mark_reconciled')"/>
+                                        <DeployfleetButton t-if="advance.state === 'reconciled'" label="'Mark Deducted'" variant="'secondary'"
+                                                           loading="state.actingId === advance.id"
+                                                           onClick="() => this.onAdvanceAction(driver.id, advance.id, 'action_mark_deducted')"/>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="df-driver-scorecards__section">
+                            <h3>Leave</h3>
+                            <t t-set="leaveRequests" t-value="state.leaveRequestsByDriverId[driver.id]"/>
+                            <p t-if="leaveRequests and leaveRequests.length === 0" class="df-driver-scorecards__muted">No leave requests on file.</p>
+                            <ul t-if="leaveRequests and leaveRequests.length > 0" class="df-driver-scorecards__event-list">
+                                <li t-foreach="leaveRequests" t-as="request" t-key="request.id">
+                                    <div class="df-driver-scorecards__event-main">
+                                        <span t-esc="request.leave_type_id[1]"/>
+                                        <span><t t-esc="request.date_from"/> → <t t-esc="request.date_to"/></span>
+                                        <span><t t-esc="request.number_of_days"/> day(s)</span>
+                                    </div>
+                                    <DeployfleetStatusBadge label="this.leaveStateLabel(request.state)" status="this.leaveStateBadgeVariant(request.state)"/>
+                                    <div class="df-driver-scorecards__inline-actions">
+                                        <DeployfleetButton t-if="request.state === 'draft'" label="'Submit'" variant="'secondary'"
+                                                           loading="state.actingId === request.id"
+                                                           onClick="() => this.onLeaveAction(driver.id, request.id, 'action_submit')"/>
+                                        <DeployfleetButton t-if="request.state === 'submitted'" label="'Approve'" variant="'primary'"
+                                                           loading="state.actingId === request.id"
+                                                           onClick="() => this.onLeaveAction(driver.id, request.id, 'action_approve')"/>
+                                        <DeployfleetButton t-if="request.state === 'submitted'" label="'Reject'" variant="'destructive'"
+                                                           loading="state.actingId === request.id"
+                                                           onClick="() => this.onLeaveAction(driver.id, request.id, 'action_reject')"/>
+                                        <DeployfleetButton t-if="request.state === 'draft' or request.state === 'submitted' or request.state === 'approved'" label="'Cancel'" variant="'ghost'"
+                                                           loading="state.actingId === request.id"
+                                                           onClick="() => this.onLeaveAction(driver.id, request.id, 'action_cancel')"/>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="df-driver-scorecards__profile-form">
+                                <select class="df-driver-scorecards__profile-select"
+                                        t-att-value="(state.newLeaveByDriverId[driver.id] and state.newLeaveByDriverId[driver.id].leave_type_id) or ''"
+                                        t-on-change="(ev) => this.onNewLeaveInput(driver.id, 'leave_type_id', ev.target.value)">
+                                    <option value="">Leave type...</option>
+                                    <option t-foreach="state.leaveTypes" t-as="lt" t-key="lt.id" t-att-value="lt.id">
+                                        <t t-esc="lt.name"/>
+                                    </option>
+                                </select>
+                                <input type="date" class="df-driver-scorecards__profile-input"
+                                       t-att-value="(state.newLeaveByDriverId[driver.id] and state.newLeaveByDriverId[driver.id].date_from) or ''"
+                                       t-on-input="(ev) => this.onNewLeaveInput(driver.id, 'date_from', ev.target.value)"/>
+                                <input type="date" class="df-driver-scorecards__profile-input"
+                                       t-att-value="(state.newLeaveByDriverId[driver.id] and state.newLeaveByDriverId[driver.id].date_to) or ''"
+                                       t-on-input="(ev) => this.onNewLeaveInput(driver.id, 'date_to', ev.target.value)"/>
+                                <DeployfleetButton
+                                    label="'Request Leave'"
+                                    variant="'primary'"
+                                    loading="state.actingId === driver.id"
+                                    onClick="() => this.onRequestLeave(driver.id)"/>
+                            </div>
+                        </div>
 
                         <DeployfleetButton
                             label="'Open full record'"

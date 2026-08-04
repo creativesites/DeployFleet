@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.LeavePlanner">
+        <div class="df-leave-planner">
+            <header class="df-leave-planner__header">
+                <h1 class="df-leave-planner__title">Leave Planner</h1>
+                <p class="df-leave-planner__subtitle">Requests, who's on leave when, and balances.</p>
+                <nav class="df-leave-planner__tabs">
+                    <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
+                            t-attf-class="df-leave-planner__tab {{ state.activeTab === tab.key ? 'df-leave-planner__tab--active' : '' }}"
+                            t-on-click="() => this.onSelectTab(tab.key)">
+                        <t t-esc="tab.label"/>
+                    </button>
+                </nav>
+            </header>
+
+            <p t-if="state.loading" class="df-leave-planner__loading">Loading leave data...</p>
+
+            <!-- ============================= REQUESTS ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'requests'">
+                <section class="df-leave-planner__new-form">
+                    <h3 class="df-leave-planner__section-title">Request Leave</h3>
+                    <div class="df-leave-planner__new-fields">
+                        <select class="df-leave-planner__select"
+                                t-att-value="state.newRequest.employee_id"
+                                t-on-change="(ev) => this.onNewRequestInput('employee_id', ev.target.value)">
+                            <option value="">Employee...</option>
+                            <option t-foreach="state.employees" t-as="employee" t-key="employee.id" t-att-value="employee.id">
+                                <t t-esc="employee.name"/>
+                            </option>
+                        </select>
+                        <select class="df-leave-planner__select"
+                                t-att-value="state.newRequest.leave_type_id"
+                                t-on-change="(ev) => this.onNewRequestInput('leave_type_id', ev.target.value)">
+                            <option value="">Leave type...</option>
+                            <option t-foreach="state.leaveTypes" t-as="lt" t-key="lt.id" t-att-value="lt.id">
+                                <t t-esc="lt.name"/>
+                            </option>
+                        </select>
+                        <input type="date" class="df-leave-planner__input"
+                               t-att-value="state.newRequest.date_from"
+                               t-on-input="(ev) => this.onNewRequestInput('date_from', ev.target.value)"/>
+                        <input type="date" class="df-leave-planner__input"
+                               t-att-value="state.newRequest.date_to"
+                               t-on-input="(ev) => this.onNewRequestInput('date_to', ev.target.value)"/>
+                        <input type="text" class="df-leave-planner__input df-leave-planner__input--wide" placeholder="Reason (optional)"
+                               t-att-value="state.newRequest.reason"
+                               t-on-input="(ev) => this.onNewRequestInput('reason', ev.target.value)"/>
+                        <DeployfleetButton
+                            label="'Request Leave'"
+                            variant="'primary'"
+                            loading="state.creating"
+                            onClick="() => this.onCreateRequest()"/>
+                    </div>
+                </section>
+
+                <section class="df-leave-planner__filters">
+                    <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                           label="filter.label"
+                                           count="filter.count"
+                                           status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                           onClick="() => this.state.stateFilter = filter.key"/>
+                </section>
+
+                <p t-if="filteredRequests.length === 0" class="df-leave-planner__empty">No requests match this filter.</p>
+
+                <div t-if="filteredRequests.length > 0" class="df-leave-planner__table">
+                    <div class="df-leave-planner__row df-leave-planner__row--header">
+                        <span class="df-leave-planner__col df-leave-planner__col--employee">Employee</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--type">Type</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--dates">Dates</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--days">Days</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--status"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--actions"/>
+                    </div>
+                    <div t-foreach="filteredRequests" t-as="request" t-key="request.id" class="df-leave-planner__row">
+                        <span class="df-leave-planner__col df-leave-planner__col--employee" t-esc="request.employee_id[1]"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--type" t-esc="request.leave_type_id[1]"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--dates">
+                            <t t-esc="request.date_from"/> → <t t-esc="request.date_to"/>
+                        </span>
+                        <span class="df-leave-planner__col df-leave-planner__col--days" t-esc="request.number_of_days"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--status">
+                            <DeployfleetStatusBadge label="this.stateLabel(request.state)" status="this.stateBadgeVariant(request.state)"/>
+                        </span>
+                        <span class="df-leave-planner__col df-leave-planner__col--actions">
+                            <DeployfleetButton t-if="request.state === 'draft'" label="'Submit'" variant="'secondary'"
+                                               loading="state.actingId === request.id"
+                                               onClick="() => this.onRequestAction(request.id, 'action_submit')"/>
+                            <DeployfleetButton t-if="request.state === 'submitted'" label="'Approve'" variant="'primary'"
+                                               loading="state.actingId === request.id"
+                                               onClick="() => this.onRequestAction(request.id, 'action_approve')"/>
+                            <DeployfleetButton t-if="request.state === 'submitted'" label="'Reject'" variant="'destructive'"
+                                               loading="state.actingId === request.id"
+                                               onClick="() => this.onRequestAction(request.id, 'action_reject')"/>
+                            <DeployfleetButton t-if="request.state === 'draft' or request.state === 'submitted' or request.state === 'approved'" label="'Cancel'" variant="'ghost'"
+                                               loading="state.actingId === request.id"
+                                               onClick="() => this.onRequestAction(request.id, 'action_cancel')"/>
+                        </span>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= CALENDAR ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'calendar'">
+                <section class="df-leave-planner__calendar-toolbar">
+                    <DeployfleetButton icon="'fa fa-chevron-left'" variant="'ghost'" onClick="() => this.onCalendarShift(-1)"/>
+                    <span class="df-leave-planner__calendar-label" t-esc="calendarLabel"/>
+                    <DeployfleetButton icon="'fa fa-chevron-right'" variant="'ghost'" onClick="() => this.onCalendarShift(1)"/>
+                    <DeployfleetButton label="'Today'" variant="'ghost'" onClick="() => this.onCalendarToday()"/>
+                </section>
+
+                <div class="df-leave-planner__calendar-grid">
+                    <div t-foreach="this.weekdayLabels" t-as="dow" t-key="dow" class="df-leave-planner__calendar-dow">
+                        <t t-esc="dow"/>
+                    </div>
+                    <div t-foreach="calendarGridDays" t-as="day" t-key="day.iso"
+                         t-attf-class="df-leave-planner__calendar-day {{ !day.inCurrentMonth ? 'df-leave-planner__calendar-day--muted' : '' }} {{ day.isToday ? 'df-leave-planner__calendar-day--today' : '' }}">
+                        <span class="df-leave-planner__calendar-daynum" t-esc="day.dayNumber"/>
+                        <div class="df-leave-planner__calendar-events">
+                            <span t-foreach="day.events" t-as="event" t-key="event.key"
+                                  t-attf-class="df-leave-planner__calendar-event df-leave-planner__calendar-event--{{ event.status }}"
+                                  t-att-title="event.label">
+                                <t t-esc="event.label"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ============================= BALANCES ============================= -->
+            <t t-if="!state.loading and state.activeTab === 'balances'">
+                <p t-if="state.balances.length === 0" class="df-leave-planner__empty">
+                    No leave balances configured for this year yet.
+                </p>
+                <div t-if="state.balances.length > 0" class="df-leave-planner__table">
+                    <div class="df-leave-planner__row df-leave-planner__row--header">
+                        <span class="df-leave-planner__col df-leave-planner__col--employee">Employee</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--type">Type</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--days">Allocated</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--days">Used</span>
+                        <span class="df-leave-planner__col df-leave-planner__col--days">Remaining</span>
+                    </div>
+                    <div t-foreach="state.balances" t-as="balance" t-key="balance.id" class="df-leave-planner__row">
+                        <span class="df-leave-planner__col df-leave-planner__col--employee" t-esc="balance.employee_id[1]"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--type" t-esc="balance.leave_type_id[1]"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--days" t-esc="balance.allocated_days"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--days" t-esc="balance.used_days"/>
+                        <span class="df-leave-planner__col df-leave-planner__col--days" t-esc="balance.remaining_days"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

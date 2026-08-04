@@ -404,6 +404,35 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   Workshop Board stays the execution surface; this screen never
   duplicates job-card state-advance buttons. Replaces the Fleet &
   Vehicles Mega Menu's "Maintenance" tile.
+- **Driver Scorecards deepened into Driver 360, plus Driver Advances,
+  Leave Planner, and Payroll Center** (Driver & HR custom-views work —
+  see ``docs/architecture/20-experience-implementation-strategy.md``
+  §6b for the full writeup). **Two real backend issues found and
+  fixed**: ``deployfleet.leave.request`` granted the driver group
+  ``create`` but not ``write``, so a driver could never submit their
+  own request — fixed with a ``write`` grant plus this codebase's
+  *first* ``ir.rule`` (record rule), scoping driver access to their own
+  employee record only, with two new regression tests confirming both
+  the fix and that it doesn't over-grant across drivers. Payroll/Loans
+  are gated to a role (``group_deployfleet_hr_payroll_officer``) off
+  the normal dispatcher/manager/owner chain entirely — not a bug, but a
+  real hazard for a frontend-only screen, since most managers get an
+  ``AccessError`` on the very first read; Payroll Center handles this
+  with a clean access-denied state instead of crashing. **Driver
+  Scorecards** (``static/src/driver_scorecards/``) gained editable
+  Identity & Qualifications (license/endorsements/vehicle
+  qualifications), plus Advances and Leave sections with their real
+  state-machine actions. **Driver Advances**
+  (``static/src/driver_advances/``) is a fleet-wide registry ledger,
+  same visual dialect as Parts/Asset Registries. **Leave Planner**
+  (``static/src/leave_planner/``) has three tabs — Requests, a
+  hand-rolled month Calendar (no library), and Balances (a model with
+  no view anywhere in the backend before this). **Payroll Center**
+  (``static/src/payroll_center/``) combines Payslips and Loans into one
+  workspace, since they're both officer-gated and already linked in
+  the backend. Mega Menu tiles repointed accordingly; Driver
+  Performance's tile deliberately stays on the stock list — the one
+  remaining gap in this domain.
 
 Not yet built
 =============

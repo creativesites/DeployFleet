@@ -119,6 +119,44 @@
     color: var(--df-color-neutral-600);
 }
 
+.df-driver-scorecards__section h3 {
+    margin: 0 0 4px;
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-scorecards__profile-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-driver-scorecards__profile-input,
+.df-driver-scorecards__profile-select {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    flex: 1 1 160px;
+    max-width: 100%;
+}
+
+.df-driver-scorecards__profile-readonly {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    flex: 1 1 100%;
+}
+
+.df-driver-scorecards__inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .df-driver-scorecards__event-list {
     list-style: none;
     margin: 0;

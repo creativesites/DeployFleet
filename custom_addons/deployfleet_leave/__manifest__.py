@@ -8,6 +8,7 @@
     "depends": ["deployfleet_trip", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_leave_security_rules.xml",
         "data/deployfleet_leave_type_data.xml",
         "views/deployfleet_leave_request_views.xml",
     ],

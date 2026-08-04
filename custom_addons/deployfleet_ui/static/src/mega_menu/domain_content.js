@@ -205,9 +205,9 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
         tiles: [
             {
                 title: "Drivers",
-                description: "Every driver's profile and current status.",
+                description: "Every driver's profile, license, performance, advances, and leave — Driver 360.",
                 icon: "fa fa-id-badge",
-                actionXmlId: "deployfleet_driver.action_deployfleet_driver",
+                actionXmlId: "deployfleet_ui.action_deployfleet_driver_scorecards",
             },
             {
                 title: "Driver Performance",
@@ -217,27 +217,21 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
             },
             {
                 title: "Driver Advances",
-                description: "Cash advances against upcoming pay.",
+                description: "Cash advances against upcoming pay, fleet-wide.",
                 icon: "fa fa-money",
-                actionXmlId: "deployfleet_driver_advance.action_deployfleet_driver_advance",
+                actionXmlId: "deployfleet_ui.action_deployfleet_driver_advances",
             },
             {
-                title: "Leave",
-                description: "Leave requests and approvals.",
+                title: "Leave Planner",
+                description: "Requests, who's on leave when, and balances.",
                 icon: "fa fa-calendar",
-                actionXmlId: "deployfleet_leave.action_deployfleet_leave_request",
+                actionXmlId: "deployfleet_ui.action_deployfleet_leave_planner",
             },
             {
-                title: "Payslips",
-                description: "Computed and confirmed payroll runs.",
+                title: "Payroll Center",
+                description: "Payslips and loans, and the deductions that link them.",
                 icon: "fa fa-file-text",
-                actionXmlId: "deployfleet_payroll.action_deployfleet_payroll_payslip",
-            },
-            {
-                title: "Loans",
-                description: "Employee loans and repayment schedules.",
-                icon: "fa fa-bank",
-                actionXmlId: "deployfleet_loans.action_deployfleet_loan",
+                actionXmlId: "deployfleet_ui.action_deployfleet_payroll_center",
             },
         ],
     },

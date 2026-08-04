@@ -22,6 +22,9 @@
         "views/deployfleet_ui_tyre_manager_views.xml",
         "views/deployfleet_ui_insurance_center_views.xml",
         "views/deployfleet_ui_maintenance_planner_views.xml",
+        "views/deployfleet_ui_driver_advances_views.xml",
+        "views/deployfleet_ui_leave_planner_views.xml",
+        "views/deployfleet_ui_payroll_center_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -82,6 +85,15 @@
             "deployfleet_ui/static/src/maintenance_planner/*.scss",
             "deployfleet_ui/static/src/maintenance_planner/*.js",
             "deployfleet_ui/static/src/maintenance_planner/*.xml",
+            "deployfleet_ui/static/src/driver_advances/*.scss",
+            "deployfleet_ui/static/src/driver_advances/*.js",
+            "deployfleet_ui/static/src/driver_advances/*.xml",
+            "deployfleet_ui/static/src/leave_planner/*.scss",
+            "deployfleet_ui/static/src/leave_planner/*.js",
+            "deployfleet_ui/static/src/leave_planner/*.xml",
+            "deployfleet_ui/static/src/payroll_center/*.scss",
+            "deployfleet_ui/static/src/payroll_center/*.js",
+            "deployfleet_ui/static/src/payroll_center/*.xml",
         ],
     },
 }
