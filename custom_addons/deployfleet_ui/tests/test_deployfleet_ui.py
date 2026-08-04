@@ -84,3 +84,19 @@ class TestDeployfleetUi(TransactionCase):
     def test_workshop_board_menu_parented_to_deployfleet_root(self):
         menu = self.env.ref("deployfleet_ui.menu_deployfleet_workshop_board")
         self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_parts_registry_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_parts_registry")
+        self.assertEqual(action.tag, "deployfleet_ui.parts_registry")
+
+    def test_parts_registry_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_parts_registry")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))
+
+    def test_asset_registry_action_registered(self):
+        action = self.env.ref("deployfleet_ui.action_deployfleet_asset_registry")
+        self.assertEqual(action.tag, "deployfleet_ui.asset_registry")
+
+    def test_asset_registry_menu_parented_to_deployfleet_root(self):
+        menu = self.env.ref("deployfleet_ui.menu_deployfleet_asset_registry")
+        self.assertEqual(menu.parent_id, self.env.ref("deployfleet_core.menu_deployfleet_root"))

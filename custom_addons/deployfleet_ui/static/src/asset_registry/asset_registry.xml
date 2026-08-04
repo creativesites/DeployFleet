@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.AssetRegistry">
+        <div class="df-asset-registry">
+            <header class="df-asset-registry__header">
+                <h1 class="df-asset-registry__title">Asset Registry</h1>
+                <p class="df-asset-registry__subtitle">Trailers, containers, GPS trackers, and other non-vehicle equipment.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-asset-registry__filters">
+                <DeployfleetStatusPill t-foreach="statusFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.statusFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.statusFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-asset-registry__loading">Loading assets...</p>
+            <p t-if="!state.loading and filteredAssets.length === 0" class="df-asset-registry__empty">
+                No assets match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredAssets.length > 0" class="df-asset-registry__table">
+                <div class="df-asset-registry__row df-asset-registry__row--header">
+                    <span class="df-asset-registry__col df-asset-registry__col--name">Asset</span>
+                    <span class="df-asset-registry__col df-asset-registry__col--type">Type</span>
+                    <span class="df-asset-registry__col df-asset-registry__col--location">Location</span>
+                    <span class="df-asset-registry__col df-asset-registry__col--status"/>
+                </div>
+
+                <t t-foreach="filteredAssets" t-as="asset" t-key="asset.id">
+                    <div class="df-asset-registry__row" t-on-click="() => this.onSelectAsset(asset.id)">
+                        <span class="df-asset-registry__col df-asset-registry__col--name">
+                            <span class="df-asset-registry__asset-name" t-esc="asset.name"/>
+                            <span t-if="asset.serial_number" class="df-asset-registry__asset-serial" t-esc="asset.serial_number"/>
+                        </span>
+                        <span class="df-asset-registry__col df-asset-registry__col--type" t-esc="this.assetTypeLabel(asset.asset_type)"/>
+                        <span class="df-asset-registry__col df-asset-registry__col--location" t-esc="asset.location or '—'"/>
+                        <span class="df-asset-registry__col df-asset-registry__col--status">
+                            <DeployfleetStatusBadge label="this.statusLabel(asset.status)" status="this.statusBadgeVariant(asset.status)"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedAssetId === asset.id" class="df-asset-registry__detail">
+                        <p t-if="asset.acquisition_date" class="df-asset-registry__detail-line">
+                            Acquired <t t-esc="asset.acquisition_date"/>
+                        </p>
+                        <div class="df-asset-registry__detail-actions">
+                            <DeployfleetButton
+                                t-if="asset.status !== 'in_service'"
+                                label="'Mark In Service'"
+                                variant="'primary'"
+                                loading="state.transitioningAssetId === asset.id"
+                                onClick="() => this.onSetStatus(asset.id, 'action_set_in_service')"/>
+                            <DeployfleetButton
+                                t-if="asset.status !== 'in_storage'"
+                                label="'Mark In Storage'"
+                                variant="'secondary'"
+                                loading="state.transitioningAssetId === asset.id"
+                                onClick="() => this.onSetStatus(asset.id, 'action_set_in_storage')"/>
+                            <DeployfleetButton
+                                t-if="asset.status !== 'under_repair'"
+                                label="'Send for Repair'"
+                                variant="'secondary'"
+                                loading="state.transitioningAssetId === asset.id"
+                                onClick="() => this.onSetStatus(asset.id, 'action_set_under_repair')"/>
+                            <DeployfleetButton
+                                t-if="asset.status !== 'retired'"
+                                label="'Retire'"
+                                variant="'destructive'"
+                                loading="state.transitioningAssetId === asset.id"
+                                onClick="() => this.onSetStatus(asset.id, 'action_set_retired')"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenAssetForm(asset.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

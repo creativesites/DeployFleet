@@ -51,7 +51,7 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 title: "Parts",
                 description: "Inventory, categories, and reorder levels.",
                 icon: "fa fa-cubes",
-                actionXmlId: "deployfleet_parts.action_deployfleet_part",
+                actionXmlId: "deployfleet_ui.action_deployfleet_parts_registry",
             },
             {
                 title: "Tyres",
@@ -63,7 +63,7 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 title: "Assets",
                 description: "Trailers, GPS units, and other non-vehicle equipment.",
                 icon: "fa fa-archive",
-                actionXmlId: "deployfleet_assets.action_deployfleet_asset",
+                actionXmlId: "deployfleet_ui.action_deployfleet_asset_registry",
             },
         ],
     },

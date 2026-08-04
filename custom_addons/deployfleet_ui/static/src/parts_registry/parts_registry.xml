@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.PartsRegistry">
+        <div class="df-parts-registry">
+            <header class="df-parts-registry__header">
+                <h1 class="df-parts-registry__title">Parts Registry</h1>
+                <p class="df-parts-registry__subtitle">Stock on hand, reorder levels, and unit cost.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-parts-registry__filters">
+                <DeployfleetStatusPill t-foreach="stockFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stockFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stockFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-parts-registry__loading">Loading parts...</p>
+            <p t-if="!state.loading and filteredParts.length === 0" class="df-parts-registry__empty">
+                No parts match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredParts.length > 0" class="df-parts-registry__table">
+                <div class="df-parts-registry__row df-parts-registry__row--header">
+                    <span class="df-parts-registry__col df-parts-registry__col--name">Part</span>
+                    <span class="df-parts-registry__col df-parts-registry__col--category">Category</span>
+                    <span class="df-parts-registry__col df-parts-registry__col--qty">On Hand</span>
+                    <span class="df-parts-registry__col df-parts-registry__col--qty">Reorder At</span>
+                    <span class="df-parts-registry__col df-parts-registry__col--cost">Unit Cost</span>
+                    <span class="df-parts-registry__col df-parts-registry__col--status"/>
+                </div>
+
+                <t t-foreach="filteredParts" t-as="part" t-key="part.id">
+                    <div t-attf-class="df-parts-registry__row {{ part.is_low_stock ? 'df-parts-registry__row--low-stock' : '' }}"
+                         t-on-click="() => this.onSelectPart(part.id)">
+                        <span class="df-parts-registry__col df-parts-registry__col--name">
+                            <span class="df-parts-registry__part-name" t-esc="part.name"/>
+                            <span t-if="part.reference" class="df-parts-registry__part-reference" t-esc="part.reference"/>
+                        </span>
+                        <span class="df-parts-registry__col df-parts-registry__col--category"
+                              t-esc="part.category_id ? part.category_id[1] : '—'"/>
+                        <span class="df-parts-registry__col df-parts-registry__col--qty" t-esc="part.quantity_on_hand"/>
+                        <span class="df-parts-registry__col df-parts-registry__col--qty" t-esc="part.reorder_level"/>
+                        <span class="df-parts-registry__col df-parts-registry__col--cost" t-esc="part.unit_cost"/>
+                        <span class="df-parts-registry__col df-parts-registry__col--status">
+                            <DeployfleetStatusBadge t-if="part.is_low_stock" label="'Low Stock'" status="'danger'"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedPartId === part.id" class="df-parts-registry__detail">
+                        <label class="df-parts-registry__detail-label">Receive stock</label>
+                        <div class="df-parts-registry__detail-form">
+                            <input type="number" min="0" step="any"
+                                   class="df-parts-registry__quantity-input"
+                                   placeholder="Quantity"
+                                   t-att-value="state.receiveQuantityByPartId[part.id] || ''"
+                                   t-on-input="(ev) => this.onReceiveQuantityInput(part.id, ev.target.value)"/>
+                            <DeployfleetButton
+                                label="'Receive'"
+                                variant="'primary'"
+                                loading="state.receivingPartId === part.id"
+                                onClick="() => this.onReceiveStock(part.id)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenPartForm(part.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

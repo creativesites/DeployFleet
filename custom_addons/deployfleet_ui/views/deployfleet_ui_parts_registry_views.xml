@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Parts Registry (doc 16 §7, Fleet & Vehicles domain) - a stock
+        ledger for deployfleet.part. Placed at sequence 12, after the
+        Workshop Board (11).
+    -->
+    <record id="action_deployfleet_parts_registry" model="ir.actions.client">
+        <field name="name">Parts Registry</field>
+        <field name="tag">deployfleet_ui.parts_registry</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_parts_registry"
+              name="Parts Registry"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_parts_registry"
+              sequence="12"/>
+</odoo>

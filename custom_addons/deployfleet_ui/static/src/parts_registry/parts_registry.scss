@@ -1,0 +1,176 @@
+// Registry styling (Fleet & Vehicles custom-views initiative) —
+// deliberately distinct from the floating-card/accordion pattern used
+// by the vehicle-centric screens (Dispatch Board, Fleet Command Center,
+// Workshop Board, Driver Scorecards): a dense inventory ledger — a
+// header row, table rows with thin dividers, right-aligned
+// tabular-nums figures — rather than shadowed cards, since Parts is a
+// stock registry to scan, not an operational review queue. Workspace
+// Layer (flat, light, high-contrast), same reasoning as those screens.
+.df-parts-registry {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-parts-registry__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-parts-registry__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-parts-registry__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-parts-registry__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-parts-registry__loading,
+.df-parts-registry__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-parts-registry__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-parts-registry__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-parts-registry__row:last-child {
+    border-bottom: none;
+}
+
+.df-parts-registry__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-parts-registry__row--low-stock {
+    background: var(--df-color-danger-bg);
+    border-left: 3px solid var(--df-color-danger);
+}
+
+.df-parts-registry__col {
+    min-width: 0;
+}
+
+.df-parts-registry__col--name {
+    flex: 2 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.df-parts-registry__col--category {
+    flex: 1 1 120px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-parts-registry__col--qty,
+.df-parts-registry__col--cost {
+    flex: 0 0 90px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--df-font-size-sm);
+}
+
+.df-parts-registry__col--status {
+    flex: 0 0 90px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-parts-registry__part-name {
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-parts-registry__part-reference {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-parts-registry__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-parts-registry__detail-label {
+    display: block;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-parts-registry__detail-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+}
+
+.df-parts-registry__quantity-input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-md);
+    width: 140px;
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+    .df-parts-registry__row--header {
+        display: none;
+    }
+
+    .df-parts-registry__row {
+        flex-wrap: wrap;
+    }
+
+    .df-parts-registry__col--category,
+    .df-parts-registry__col--qty,
+    .df-parts-registry__col--cost {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-parts-registry__col--status {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}

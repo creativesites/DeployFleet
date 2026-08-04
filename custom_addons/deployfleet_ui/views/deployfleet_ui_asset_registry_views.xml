@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Asset Registry (doc 16 §7, Fleet & Vehicles domain) - a status
+        ledger for deployfleet.asset (trailers, containers, GPS
+        trackers, tools, safety equipment). Placed at sequence 13, after
+        the Parts Registry (12).
+    -->
+    <record id="action_deployfleet_asset_registry" model="ir.actions.client">
+        <field name="name">Asset Registry</field>
+        <field name="tag">deployfleet_ui.asset_registry</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_asset_registry"
+              name="Asset Registry"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_asset_registry"
+              sequence="13"/>
+</odoo>

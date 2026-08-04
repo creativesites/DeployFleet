@@ -321,6 +321,31 @@ fit a narrow phone; and the overlay's padding tightens on mobile with a
   (``Anomaly (z=2.4)``) or a plain ``Anomaly`` badge otherwise. See
   ``docs/architecture/16-experience-architecture.md`` §7.10 for the full
   writeup.
+- **Parts Registry and Asset Registry** (Fleet & Vehicles custom-views
+  work, third and fourth deliverables): ``deployfleet.part`` and
+  ``deployfleet.asset`` both have zero ``vehicle_id`` (confirmed by
+  source read), so per the agreed decision both stay dedicated screens
+  rather than folding into the Fleet Command Center — but styled as a
+  dense **registry ledger** (header row, table rows, right-aligned
+  tabular-nums figures) rather than the floating-card/accordion pattern
+  every other Fleet & Vehicles screen uses, a deliberate second visual
+  dialect within Workspace Layer for "a ledger to scan" vs. "a queue to
+  work." **Parts Registry**
+  (``static/src/parts_registry/parts_registry.js``): every part with
+  quantity on hand/reorder level/unit cost, filterable to Low Stock (a
+  live count chip); a "Low Stock" badge only when ``is_low_stock`` is
+  true. Tapping a row reveals a real "Receive Stock" quick-action wired
+  to ``action_receive_stock()`` — the one genuine manual workflow this
+  screen adds, since stock consumption already happens as a side effect
+  of Workshop/Tyres closing out their own records. **Asset Registry**
+  (``static/src/asset_registry/asset_registry.js``): every asset
+  filterable by status (All/In Service/In Storage/Under Repair/Retired,
+  live counts); tapping a row reveals its acquisition date plus one-tap
+  status-transition actions wired to the asset's real ``action_set_*``
+  methods. Both replace their Fleet & Vehicles Mega Menu tile's previous
+  target (the stock list view). See
+  ``docs/architecture/16-experience-architecture.md`` §7.12a for the
+  full writeup.
 
 Not yet built
 =============
