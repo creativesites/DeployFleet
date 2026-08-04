@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ComplianceOverrideLedger">
+        <div class="df-compliance-override-ledger">
+            <header class="df-compliance-override-ledger__header">
+                <h1 class="df-compliance-override-ledger__title">Compliance Overrides</h1>
+                <p class="df-compliance-override-ledger__subtitle">The audit trail behind every dispatch confirmed despite an expired document.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-compliance-override-ledger__filters">
+                <DeployfleetStatusPill t-foreach="flagFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.flagFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.flagFilter = filter.key"/>
+            </section>
+
+            <p t-if="state.loading" class="df-compliance-override-ledger__loading">Loading overrides...</p>
+            <p t-if="!state.loading and filteredOverrides.length === 0" class="df-compliance-override-ledger__empty">
+                No overrides match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredOverrides.length > 0" class="df-compliance-override-ledger__table">
+                <div class="df-compliance-override-ledger__row df-compliance-override-ledger__row--header">
+                    <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--date">Date</span>
+                    <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--shipment">Shipment</span>
+                    <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--who">Overridden By</span>
+                    <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--flags">Flags</span>
+                </div>
+
+                <t t-foreach="filteredOverrides" t-as="override" t-key="override.id">
+                    <t t-set="assignment" t-value="this.assignmentDetail(override.assignment_id[0])"/>
+                    <div class="df-compliance-override-ledger__row" t-on-click="() => this.onOpenAssignment(override.assignment_id[0])">
+                        <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--date"
+                              t-esc="override.create_date"/>
+                        <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--shipment">
+                            <span t-if="assignment and assignment.shipment_id" t-esc="assignment.shipment_id[1]"/>
+                            <span t-if="!assignment or !assignment.shipment_id">—</span>
+                            <span t-if="assignment and assignment.vehicle_id" class="df-compliance-override-ledger__sub">
+                                <t t-esc="assignment.vehicle_id[1]"/> · <t t-esc="assignment.driver_id ? assignment.driver_id[1] : '—'"/>
+                            </span>
+                        </span>
+                        <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--who"
+                              t-esc="override.overridden_by ? override.overridden_by[1] : '—'"/>
+                        <span class="df-compliance-override-ledger__col df-compliance-override-ledger__col--flags">
+                            <DeployfleetStatusBadge t-if="override.vehicle_had_expired_documents" label="'Vehicle'" status="'danger'"/>
+                            <DeployfleetStatusBadge t-if="override.driver_had_expired_documents" label="'Driver'" status="'danger'"/>
+                        </span>
+                    </div>
+                    <p class="df-compliance-override-ledger__reason">
+                        <span class="df-compliance-override-ledger__reason-label">Reason:</span> <t t-esc="override.reason"/>
+                    </p>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

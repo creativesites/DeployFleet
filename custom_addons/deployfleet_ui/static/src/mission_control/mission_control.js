@@ -15,7 +15,11 @@ import { DEPLOYFLEET_MEGA_MENU_DOMAINS } from "../mega_menu/domain_content";
 // deployfleet.compliance.document.state ("expiring_soon"/"expired" are
 // the model's own computed classification, not re-derived here),
 // deployfleet.vehicle.status ("breakdown"), deployfleet.ai.action.
-// request.state ("pending_approval").
+// request.state ("pending_approval"). The two document-expiry pills'
+// destination was repointed from the stock document list to the new
+// Compliance Center wall (Compliance domain build) — the same
+// stale-tile fix already applied to the Dispatch Board/AI Predictions
+// pills in earlier domains; the counts themselves are unchanged.
 const ATTENTION_ITEMS = [
     {
         stateKey: "unassignedShipments",
@@ -27,7 +31,7 @@ const ATTENTION_ITEMS = [
         stateKey: "expiredDocuments",
         label: "Expired documents",
         status: "danger",
-        actionXmlId: "deployfleet_compliance.action_deployfleet_compliance_document",
+        actionXmlId: "deployfleet_ui.action_deployfleet_compliance_center",
     },
     {
         stateKey: "breakdownVehicles",
@@ -39,7 +43,7 @@ const ATTENTION_ITEMS = [
         stateKey: "expiringDocuments",
         label: "Documents expiring soon",
         status: "warning",
-        actionXmlId: "deployfleet_compliance.action_deployfleet_compliance_document",
+        actionXmlId: "deployfleet_ui.action_deployfleet_compliance_center",
     },
     {
         // The "ai" StatusPill variant is a deliberate, correct use of

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ComplianceCenter">
+        <div class="df-compliance-center">
+            <header class="df-compliance-center__header">
+                <h1 class="df-compliance-center__title">Compliance Center</h1>
+                <p class="df-compliance-center__subtitle">Who can't legally run today — every vehicle and driver, at a glance.</p>
+            </header>
+
+            <section t-if="!state.loading and hasAttentionItems" class="df-compliance-center__attention">
+                <DeployfleetStatusPill t-if="vehiclesWithExpiredCount > 0"
+                                       label="'Vehicles with expired documents'"
+                                       count="vehiclesWithExpiredCount"
+                                       status="'danger'"
+                                       onClick="() => this.state.activeTab = 'vehicles'"/>
+                <DeployfleetStatusPill t-if="driversWithExpiredCount > 0"
+                                       label="'Drivers with expired documents'"
+                                       count="driversWithExpiredCount"
+                                       status="'danger'"
+                                       onClick="() => this.state.activeTab = 'drivers'"/>
+            </section>
+            <p t-if="!state.loading and !hasAttentionItems" class="df-compliance-center__all-clear">
+                <i class="fa fa-check-circle"/> Nothing expired right now.
+            </p>
+
+            <nav t-if="!state.loading" class="df-compliance-center__tabs">
+                <button t-foreach="tabs" t-as="tab" t-key="tab.key"
+                        t-attf-class="df-compliance-center__tab {{ state.activeTab === tab.key ? 'df-compliance-center__tab--active' : '' }}"
+                        t-on-click="() => this.state.activeTab = tab.key">
+                    <t t-esc="tab.label"/>
+                </button>
+            </nav>
+
+            <p t-if="state.loading" class="df-compliance-center__loading">Loading compliance status...</p>
+
+            <div t-if="!state.loading and state.activeTab === 'vehicles'" class="df-compliance-center__wall">
+                <div class="df-compliance-center__row df-compliance-center__row--header">
+                    <span class="df-compliance-center__col df-compliance-center__col--name">Vehicle</span>
+                    <span t-foreach="state.vehicleDocTypes" t-as="docType" t-key="docType.id"
+                          class="df-compliance-center__col df-compliance-center__col--chip">
+                        <t t-esc="docType.name"/>
+                    </span>
+                </div>
+                <div t-foreach="state.vehicles" t-as="vehicle" t-key="vehicle.id"
+                     class="df-compliance-center__row" t-on-click="() => this.onOpenVehicle(vehicle.id)">
+                    <span class="df-compliance-center__col df-compliance-center__col--name" t-esc="vehicle.license_plate"/>
+                    <span t-foreach="state.vehicleDocTypes" t-as="docType" t-key="docType.id"
+                          class="df-compliance-center__col df-compliance-center__col--chip">
+                        <t t-set="cellState" t-value="this.cellState(state.vehicleDocByKey, vehicle.id, docType.id)"/>
+                        <DeployfleetStatusBadge label="this.stateLabel(cellState)" status="this.stateBadgeVariant(cellState)"/>
+                    </span>
+                </div>
+                <p t-if="state.vehicles.length === 0" class="df-compliance-center__empty">No active vehicles.</p>
+            </div>
+
+            <div t-if="!state.loading and state.activeTab === 'drivers'" class="df-compliance-center__wall">
+                <div class="df-compliance-center__row df-compliance-center__row--header">
+                    <span class="df-compliance-center__col df-compliance-center__col--name">Driver</span>
+                    <span t-foreach="state.driverDocTypes" t-as="docType" t-key="docType.id"
+                          class="df-compliance-center__col df-compliance-center__col--chip">
+                        <t t-esc="docType.name"/>
+                    </span>
+                </div>
+                <div t-foreach="state.drivers" t-as="driver" t-key="driver.id"
+                     class="df-compliance-center__row" t-on-click="() => this.onOpenDriver(driver.id)">
+                    <span class="df-compliance-center__col df-compliance-center__col--name" t-esc="driver.name"/>
+                    <span t-foreach="state.driverDocTypes" t-as="docType" t-key="docType.id"
+                          class="df-compliance-center__col df-compliance-center__col--chip">
+                        <t t-if="docType.code === 'driver_license'" t-set="cellState" t-value="this.licenseCellState(driver)"/>
+                        <t t-if="docType.code !== 'driver_license'" t-set="cellState"
+                           t-value="this.cellState(state.driverDocByKey, driver.id, docType.id)"/>
+                        <DeployfleetStatusBadge label="this.stateLabel(cellState)" status="this.stateBadgeVariant(cellState)"/>
+                    </span>
+                </div>
+                <p t-if="state.drivers.length === 0" class="df-compliance-center__empty">No drivers on record.</p>
+            </div>
+        </div>
+    </t>
+</templates>

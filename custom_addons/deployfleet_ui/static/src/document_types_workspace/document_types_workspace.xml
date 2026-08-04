@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DocumentTypesWorkspace">
+        <div class="df-document-types-workspace">
+            <header class="df-document-types-workspace__header">
+                <h1 class="df-document-types-workspace__title">Document Types</h1>
+                <p class="df-document-types-workspace__subtitle">What compliance documents your fleet tracks, and for whom.</p>
+            </header>
+
+            <p t-if="state.loading" class="df-document-types-workspace__loading">Loading document types...</p>
+
+            <div t-if="!state.loading" class="df-document-types-workspace__table">
+                <div class="df-document-types-workspace__row df-document-types-workspace__row--header">
+                    <span class="df-document-types-workspace__col df-document-types-workspace__col--name">Name</span>
+                    <span class="df-document-types-workspace__col df-document-types-workspace__col--code">Code</span>
+                    <span class="df-document-types-workspace__col df-document-types-workspace__col--applies">Applies To</span>
+                    <span class="df-document-types-workspace__col df-document-types-workspace__col--expiry">Requires Expiry</span>
+                </div>
+
+                <t t-foreach="state.types" t-as="type" t-key="type.id">
+                    <div class="df-document-types-workspace__row" t-on-click="() => this.onSelectType(type.id)">
+                        <span class="df-document-types-workspace__col df-document-types-workspace__col--name"
+                              t-esc="type.name"/>
+                        <span class="df-document-types-workspace__col df-document-types-workspace__col--code"
+                              t-esc="type.code || '—'"/>
+                        <span class="df-document-types-workspace__col df-document-types-workspace__col--applies"
+                              t-esc="this.appliesToLabel(type.applies_to_model)"/>
+                        <span class="df-document-types-workspace__col df-document-types-workspace__col--expiry"
+                              t-esc="type.requires_expiry ? 'Yes' : 'No'"/>
+                    </div>
+
+                    <div t-if="state.selectedTypeId === type.id" class="df-document-types-workspace__detail">
+                        <div class="df-document-types-workspace__detail-form">
+                            <input type="text" class="df-document-types-workspace__text-input" placeholder="Name"
+                                   t-att-value="state.editByTypeId[type.id].name"
+                                   t-on-input="(ev) => this.onEditFieldInput(type.id, 'name', ev.target.value)"/>
+                            <input type="text" class="df-document-types-workspace__text-input" placeholder="Code"
+                                   t-att-value="state.editByTypeId[type.id].code"
+                                   t-on-input="(ev) => this.onEditFieldInput(type.id, 'code', ev.target.value)"/>
+                            <select class="df-document-types-workspace__select"
+                                    t-att-value="state.editByTypeId[type.id].applies_to_model"
+                                    t-on-change="(ev) => this.onEditFieldInput(type.id, 'applies_to_model', ev.target.value)">
+                                <option t-foreach="appliesToOptions" t-as="option" t-key="option.value" t-att-value="option.value">
+                                    <t t-esc="option.label"/>
+                                </option>
+                            </select>
+                            <label class="df-document-types-workspace__checkbox-label">
+                                <input type="checkbox"
+                                       t-att-checked="state.editByTypeId[type.id].requires_expiry"
+                                       t-on-change="() => this.onEditCheckboxToggle(type.id, 'requires_expiry')"/>
+                                Requires expiry
+                            </label>
+                            <DeployfleetButton
+                                label="'Save'"
+                                variant="'primary'"
+                                loading="state.savingTypeId === type.id"
+                                onClick="() => this.onSaveType(type.id)"/>
+                            <DeployfleetButton
+                                label="'Delete'"
+                                variant="'destructive'"
+                                loading="state.savingTypeId === type.id"
+                                onClick="() => this.onDeleteType(type.id)"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <section t-if="!state.loading" class="df-document-types-workspace__new-type">
+                <input type="text" class="df-document-types-workspace__text-input" placeholder="New document type name"
+                       t-att-value="state.newType.name"
+                       t-on-input="(ev) => this.onNewTypeFieldInput('name', ev.target.value)"/>
+                <input type="text" class="df-document-types-workspace__text-input" placeholder="Code"
+                       t-att-value="state.newType.code"
+                       t-on-input="(ev) => this.onNewTypeFieldInput('code', ev.target.value)"/>
+                <select class="df-document-types-workspace__select"
+                        t-att-value="state.newType.applies_to_model"
+                        t-on-change="(ev) => this.onNewTypeFieldInput('applies_to_model', ev.target.value)">
+                    <option t-foreach="appliesToOptions" t-as="option" t-key="option.value" t-att-value="option.value">
+                        <t t-esc="option.label"/>
+                    </option>
+                </select>
+                <label class="df-document-types-workspace__checkbox-label">
+                    <input type="checkbox"
+                           t-att-checked="state.newType.requires_expiry"
+                           t-on-change="() => this.onNewTypeCheckboxToggle()"/>
+                    Requires expiry
+                </label>
+                <DeployfleetButton
+                    label="'Add Document Type'"
+                    variant="'primary'"
+                    loading="state.creating"
+                    onClick="() => this.onCreateType()"/>
+            </section>
+        </div>
+    </t>
+</templates>

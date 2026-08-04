@@ -1,0 +1,138 @@
+// Compliance Traffic-Light Wall (doc 16 §6) — a dense scan-grid, same
+// registry-ledger dialect as the rest of the Compliance domain.
+// Workspace Layer (flat, light, high-contrast) — this is a sustained-
+// scan screen, not a launch screen.
+.df-compliance-center {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-compliance-center__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-center__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-compliance-center__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-compliance-center__attention {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-center__all-clear {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-1);
+    color: var(--df-color-success);
+    font-weight: var(--df-font-weight-medium);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-center__tabs {
+    display: flex;
+    gap: var(--df-space-1);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-center__tab {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: none;
+    background: transparent;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.df-compliance-center__tab--active {
+    color: var(--df-color-info);
+    border-bottom-color: var(--df-color-info);
+}
+
+.df-compliance-center__loading,
+.df-compliance-center__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-compliance-center__wall {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-compliance-center__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-compliance-center__row:last-child {
+    border-bottom: none;
+}
+
+.df-compliance-center__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-compliance-center__col {
+    min-width: 0;
+}
+
+.df-compliance-center__col--name {
+    flex: 1 1 160px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-compliance-center__col--chip {
+    flex: 1 1 110px;
+    display: flex;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .df-compliance-center__wall {
+        overflow-x: auto;
+    }
+
+    .df-compliance-center__row {
+        min-width: max-content;
+    }
+
+    .df-compliance-center__col--name,
+    .df-compliance-center__col--chip {
+        flex: 0 0 130px;
+    }
+}

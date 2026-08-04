@@ -71,13 +71,14 @@ This is the domain being re-audited in §6 below — it's the furthest along and
 | Dispatch Calendar | ✅ — closed by Trip Board's Calendar tab, see §6c (no `<calendar>` view existed anywhere in the product before this — doc 16 §1 flagged it at zero) |
 | Driver Availability | ✅ — resolved as a backend scoring fix, not a new screen — see §6c |
 
-### Compliance
+### Compliance — **complete** (all five workspaces ✅)
 | Workspace | State |
 |---|---|
-| Compliance Documents | 🟡 stock views |
-| Document Types | 🟡 stock views |
-| Compliance Overrides log | 🟡 stock views |
-| Compliance Center (expiry-first dashboard, doc 16 §7.11-adjacent) | ⬜ |
+| Vehicle Documents | ✅ — see §6f |
+| Driver Documents | ✅ — see §6f |
+| Document Types | ✅ — see §6f |
+| Compliance Overrides log | ✅ — see §6f |
+| Compliance Center (Traffic-Light Wall, doc 16 §6) | ✅ — see §6f; closes the domain's one previously-flagged gap |
 
 ### Billing & Finance — **complete** (all seven workspaces ✅)
 | Workspace | State |
@@ -109,7 +110,7 @@ This is the domain being re-audited in §6 below — it's the furthest along and
 | Copilot Rail (ambient approval queue) | ✅ |
 | AI Predictions (Predictive Maintenance + Fuel Anomalies, merged) | ✅ — see §6d |
 | AI Action History (full audit trail, all states) | ✅ — see §6d |
-| Financial Forecast | 🟡 stock views — deliberately deferred to Billing & Finance's own "Financial Intelligence" gap, not built twice |
+| Financial Forecast | ✅ — repointed to Billing & Finance's Financial Intelligence workspace (§6e), not built twice |
 | Copilot Rail Chat — Phase 1 (multi-session, persisted, plain-text) | ✅ — see §6d and [21-copilot-rail-architecture.md](21-copilot-rail-architecture.md) §10 |
 | Copilot Rail Chat — Phases 2–4 (tool-calling, rich components, action execution, memory) | ⬜ — designed, not built; see [21-copilot-rail-architecture.md](21-copilot-rail-architecture.md) |
 
@@ -281,6 +282,24 @@ Fifth domain tackled under the domain-completeness-first rollout, per the user's
 
 ---
 
+## 6f. Compliance — audit, design, and build
+
+Sixth and final domain in this document's original scope, tackled at the user's explicit "now let's move on to compliance" direction. Audited every model/view/ACL across `deployfleet_compliance`, `deployfleet_vehicle_compliance`, and `deployfleet_dispatch_compliance`. Unlike most prior domains, no ACL bugs were found — the dispatcher-read(-write)/manager-full-CRUD pattern was already correctly applied throughout.
+
+**Design conversation, via `AskUserQuestion`:** (1) split the polymorphic `deployfleet.compliance.document` ledger into Vehicle Documents / Driver Documents rather than one unified screen; (2) build the Compliance Center Traffic-Light Wall (doc 16 §6) now, closing this document's one previously-flagged gap; (3) give the Compliance Overrides log a light custom ledger too, rather than leaving the already-read-only stock list as-is; (4) build the whole domain in one batch.
+
+**Two real design findings, resolved by source read:**
+1. A driver's license status lives in two genuinely separate places — `hr.employee`'s own quick summary fields (`deployfleet_driver`, already used by Driver Scorecards/dispatch eligibility) and the formal, dated `deployfleet.compliance.document` record this domain manages. Reconciled only at display time on Compliance Center's License column (flag expired if either signal fires; fall back to the `hr.employee` expiry date, using the same 30-day threshold `deployfleet.compliance.document._state_for_expiry()` uses, when no formal document exists at all) — the same non-invasive union-of-signals precedent as the Fleet & Vehicles fuel-anomaly reconciliation. No backend field touched.
+2. Insurance-type vehicle documents are already owned by `deployfleet_insurance`, which auto-creates and syncs one per policy. Vehicle Documents' quick-add excludes that type from its options for exactly this reason; existing insurance-linked rows still show for transparency, flagged with a note instead of edit controls.
+
+**Five workspaces built**: Vehicle Documents, Driver Documents (both friendly-name-resolved ledgers replacing the stock list's raw `res_model`/`res_id`), Document Types (the same registry-ledger treatment as Vehicle Types Workspace), Compliance Overrides (a read-only ledger doing a second batched lookup on `deployfleet.dispatch.assignment` for shipment/vehicle/driver context, since the override log itself has no display name), and **Compliance Center** — the flagship Traffic-Light Wall, two tabs (Vehicles | Drivers), one row per entity, a chip per document type (green/amber/red/"Not on File"), plus a silent-unless-nonzero attention strip. Full build detail, including the exact reconciliation logic, is in CLAUDE.md's Compliance writeup.
+
+**Also fixed, the same stale-Mega-Menu/Mission-Control-pill class of issue already caught in the Dispatch & Trips and AI & Intelligence audits**: Mission Control's two document-expiry attention pills pointed at the stock compliance document list — repointed to the new Compliance Center.
+
+**Verified**: XML well-formed (10 new files), JS syntax via `node --check`, a full OWL-compiler pass (50/50 templates), the full `web.assets_backend` SCSS bundle compiled via libsass (48 files, individually and in manifest order), manifest confirmed parseable. No backend Python files were touched. **Not yet verified in a live browser** — same standing caveat as every domain before it.
+
+---
+
 ## 7. What "done" means for a domain
 
 A domain is done when:
@@ -301,7 +320,7 @@ All four questions originally raised here are now resolved:
 1. ~~Should **Maintenance** split out of Fleet & Vehicles into its own top-level Mega Menu domain?~~ **Resolved: no** — stays part of Fleet & Vehicles.
 2. ~~Should a **Customers** domain be carved out of Billing & Finance / Dispatch & Trips?~~ **Resolved: no** — Contracts stays under Billing & Finance, Depots stays under Dispatch & Trips.
 3. ~~Confirm the five-gap Fleet & Vehicles list and screen shapes.~~ **Resolved and built** — see §6.
-4. ~~Confirm the domain build order after Fleet & Vehicles.~~ **Resolved and progressing**: Driver & HR (§6b), Dispatch & Trips (§6c), AI & Intelligence (§6d), and Billing & Finance (§6e) are all now complete. Compliance remains — the last domain in scope; no order question left to ask, since it's the only one left, but the audit-then-design-then-build sequence still applies before writing any code for it.
+4. ~~Confirm the domain build order after Fleet & Vehicles.~~ **Resolved and complete**: Driver & HR (§6b), Dispatch & Trips (§6c), AI & Intelligence (§6d), Billing & Finance (§6e), and Compliance (§6f) are all now built — every domain in this document's original scope is complete.
 
 ---
 

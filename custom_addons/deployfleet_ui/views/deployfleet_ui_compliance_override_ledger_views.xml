@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Compliance Overrides Ledger (Compliance domain). -->
+    <record id="action_deployfleet_compliance_override_ledger" model="ir.actions.client">
+        <field name="name">Compliance Overrides</field>
+        <field name="tag">deployfleet_ui.compliance_override_ledger</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_compliance_override_ledger"
+              name="Compliance Overrides"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_compliance_override_ledger"
+              sequence="39"/>
+</odoo>

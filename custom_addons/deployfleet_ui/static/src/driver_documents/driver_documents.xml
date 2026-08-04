@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.DriverDocuments">
+        <div class="df-driver-documents">
+            <header class="df-driver-documents__header">
+                <h1 class="df-driver-documents__title">Driver Documents</h1>
+                <p class="df-driver-documents__subtitle">Licenses and medical certificates across the driver roster.</p>
+            </header>
+
+            <section t-if="!state.loading" class="df-driver-documents__filters">
+                <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
+                                       label="filter.label"
+                                       count="filter.count"
+                                       status="filter.key === state.stateFilter ? 'info' : 'success'"
+                                       onClick="() => this.state.stateFilter = filter.key"/>
+            </section>
+
+            <section t-if="!state.loading" class="df-driver-documents__new-document">
+                <select class="df-driver-documents__select"
+                        t-att-value="state.newDocument.driver_id"
+                        t-on-change="(ev) => this.onNewDocumentInput('driver_id', ev.target.value)">
+                    <option value="">Driver...</option>
+                    <option t-foreach="state.drivers" t-as="driver" t-key="driver.id" t-att-value="driver.id">
+                        <t t-esc="driver.name"/>
+                    </option>
+                </select>
+                <select class="df-driver-documents__select"
+                        t-att-value="state.newDocument.document_type_id"
+                        t-on-change="(ev) => this.onNewDocumentInput('document_type_id', ev.target.value)">
+                    <option value="">Document type...</option>
+                    <option t-foreach="state.documentTypes" t-as="docType" t-key="docType.id" t-att-value="docType.id">
+                        <t t-esc="docType.name"/>
+                    </option>
+                </select>
+                <input type="text" class="df-driver-documents__text-input" placeholder="Reference #"
+                       t-att-value="state.newDocument.reference_number"
+                       t-on-input="(ev) => this.onNewDocumentInput('reference_number', ev.target.value)"/>
+                <input type="date" class="df-driver-documents__date-input"
+                       t-att-value="state.newDocument.issue_date"
+                       t-on-input="(ev) => this.onNewDocumentInput('issue_date', ev.target.value)"/>
+                <input type="date" class="df-driver-documents__date-input"
+                       t-att-value="state.newDocument.expiry_date"
+                       t-on-input="(ev) => this.onNewDocumentInput('expiry_date', ev.target.value)"/>
+                <label class="df-driver-documents__file-label">
+                    <i class="fa fa-paperclip"/> Attachment
+                    <input type="file" class="df-driver-documents__file-input"
+                           t-on-change="(ev) => this.onAttachmentFileInput(ev)"/>
+                </label>
+                <DeployfleetButton
+                    label="'Log Document'"
+                    variant="'primary'"
+                    loading="state.creating"
+                    onClick="() => this.onCreateDocument()"/>
+            </section>
+
+            <p t-if="state.loading" class="df-driver-documents__loading">Loading documents...</p>
+            <p t-if="!state.loading and filteredDocuments.length === 0" class="df-driver-documents__empty">
+                No documents match this filter.
+            </p>
+
+            <div t-if="!state.loading and filteredDocuments.length > 0" class="df-driver-documents__table">
+                <div class="df-driver-documents__row df-driver-documents__row--header">
+                    <span class="df-driver-documents__col df-driver-documents__col--driver">Driver</span>
+                    <span class="df-driver-documents__col df-driver-documents__col--type">Type</span>
+                    <span class="df-driver-documents__col df-driver-documents__col--expiry">Expiry</span>
+                    <span class="df-driver-documents__col df-driver-documents__col--status">Status</span>
+                </div>
+
+                <t t-foreach="filteredDocuments" t-as="document" t-key="document.id">
+                    <div class="df-driver-documents__row" t-on-click="() => this.onSelectDocument(document.id)">
+                        <span class="df-driver-documents__col df-driver-documents__col--driver"
+                              t-esc="this.driverLabel(document.res_id)"/>
+                        <span class="df-driver-documents__col df-driver-documents__col--type"
+                              t-esc="document.document_type_id ? document.document_type_id[1] : '—'"/>
+                        <span class="df-driver-documents__col df-driver-documents__col--expiry"
+                              t-esc="document.expiry_date || '—'"/>
+                        <span class="df-driver-documents__col df-driver-documents__col--status">
+                            <DeployfleetStatusBadge label="this.stateLabel(document.state)" status="this.stateBadgeVariant(document.state)"/>
+                        </span>
+                    </div>
+
+                    <div t-if="state.selectedDocumentId === document.id" class="df-driver-documents__detail">
+                        <div t-if="document.reference_number" class="df-driver-documents__detail-row">
+                            <span class="df-driver-documents__detail-label">Reference</span>
+                            <span t-esc="document.reference_number"/>
+                        </div>
+                        <div t-if="document.issue_date" class="df-driver-documents__detail-row">
+                            <span class="df-driver-documents__detail-label">Issued</span>
+                            <span t-esc="document.issue_date"/>
+                        </div>
+
+                        <div class="df-driver-documents__detail-actions">
+                            <DeployfleetButton
+                                label="this.verifyButtonLabel(document)"
+                                variant="'secondary'"
+                                loading="state.verifyingDocumentId === document.id"
+                                onClick="() => this.onToggleVerified(document)"/>
+                            <DeployfleetButton
+                                label="'Open full record'"
+                                variant="'ghost'"
+                                onClick="() => this.onOpenDocumentForm(document.id)"/>
+                        </div>
+
+                        <img t-if="state.attachmentByDocumentId[document.id]"
+                             t-attf-src="data:image/png;base64,{{ state.attachmentByDocumentId[document.id] }}"
+                             class="df-driver-documents__attachment-image" alt="Document attachment"/>
+                        <p t-if="state.attachmentByDocumentId[document.id] === null" class="df-driver-documents__muted">
+                            No attachment on file.
+                        </p>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

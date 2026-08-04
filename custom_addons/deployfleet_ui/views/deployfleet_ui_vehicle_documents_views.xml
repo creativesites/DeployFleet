@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vehicle Documents (Compliance domain). -->
+    <record id="action_deployfleet_vehicle_documents" model="ir.actions.client">
+        <field name="name">Vehicle Documents</field>
+        <field name="tag">deployfleet_ui.vehicle_documents</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_vehicle_documents"
+              name="Vehicle Documents"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_vehicle_documents"
+              sequence="36"/>
+</odoo>

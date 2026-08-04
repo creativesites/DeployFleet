@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Compliance Center (Compliance domain) - the Traffic-Light Wall,
+         doc 16 §6, closing doc 20's one previously-flagged domain gap. -->
+    <record id="action_deployfleet_compliance_center" model="ir.actions.client">
+        <field name="name">Compliance Center</field>
+        <field name="tag">deployfleet_ui.compliance_center</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_compliance_center"
+              name="Compliance Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_compliance_center"
+              sequence="35"/>
+</odoo>

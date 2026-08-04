@@ -1,0 +1,194 @@
+// Registry styling (Compliance domain) — same dense-ledger dialect as
+// Parts/Asset Registry and Load Expense Ledger: a header row, table rows
+// with thin dividers, rather than the floating-card/accordion pattern
+// used by the driver-centric operational screens. Workspace Layer
+// (flat, light, high-contrast).
+.df-driver-documents {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-driver-documents__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-documents__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-documents__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-documents__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-2);
+}
+
+.df-driver-documents__new-document {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-driver-documents__select,
+.df-driver-documents__text-input,
+.df-driver-documents__date-input {
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-base);
+    font-family: var(--df-font-family);
+}
+
+.df-driver-documents__text-input {
+    width: 140px;
+    max-width: 100%;
+}
+
+.df-driver-documents__file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-sm);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    cursor: pointer;
+}
+
+.df-driver-documents__file-input {
+    display: none;
+}
+
+.df-driver-documents__loading,
+.df-driver-documents__empty,
+.df-driver-documents__muted {
+    color: var(--df-color-neutral-600);
+}
+
+.df-driver-documents__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-driver-documents__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-driver-documents__row:last-child {
+    border-bottom: none;
+}
+
+.df-driver-documents__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-driver-documents__col {
+    min-width: 0;
+}
+
+.df-driver-documents__col--driver {
+    flex: 2 1 auto;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-driver-documents__col--type,
+.df-driver-documents__col--expiry {
+    flex: 1 1 120px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-driver-documents__col--status {
+    flex: 0 0 130px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.df-driver-documents__detail {
+    padding: var(--df-space-2);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-100);
+}
+
+.df-driver-documents__detail-row {
+    display: flex;
+    gap: var(--df-space-1);
+    font-size: var(--df-font-size-sm);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-driver-documents__detail-label {
+    color: var(--df-color-neutral-600);
+    min-width: 80px;
+}
+
+.df-driver-documents__detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-top: var(--df-space-1);
+}
+
+.df-driver-documents__attachment-image {
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: var(--df-radius-sm);
+    border: 1px solid var(--df-color-neutral-300);
+    margin-top: var(--df-space-1);
+}
+
+@media (max-width: 640px) {
+    .df-driver-documents__row--header {
+        display: none;
+    }
+
+    .df-driver-documents__row {
+        flex-wrap: wrap;
+    }
+
+    .df-driver-documents__col--type,
+    .df-driver-documents__col--expiry {
+        flex: 1 1 45%;
+        text-align: left;
+    }
+
+    .df-driver-documents__col--status {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}

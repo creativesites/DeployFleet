@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Driver Documents (Compliance domain). -->
+    <record id="action_deployfleet_driver_documents" model="ir.actions.client">
+        <field name="name">Driver Documents</field>
+        <field name="tag">deployfleet_ui.driver_documents</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_driver_documents"
+              name="Driver Documents"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_driver_documents"
+              sequence="37"/>
+</odoo>

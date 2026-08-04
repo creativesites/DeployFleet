@@ -114,16 +114,28 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
         subtitle: "Documents, expiry tracking, and the audit trail behind every override.",
         tiles: [
             {
-                title: "Documents",
-                description: "Every compliance document and its expiry status.",
+                title: "Compliance Center",
+                description: "Every vehicle and driver, red/amber/green — who can't legally run today.",
+                icon: "fa fa-th",
+                actionXmlId: "deployfleet_ui.action_deployfleet_compliance_center",
+            },
+            {
+                title: "Vehicle Documents",
+                description: "Insurance, roadworthiness, permits, and registration across the fleet.",
                 icon: "fa fa-file-text-o",
-                actionXmlId: "deployfleet_compliance.action_deployfleet_compliance_document",
+                actionXmlId: "deployfleet_ui.action_deployfleet_vehicle_documents",
+            },
+            {
+                title: "Driver Documents",
+                description: "Licenses and medical certificates across the driver roster.",
+                icon: "fa fa-id-card-o",
+                actionXmlId: "deployfleet_ui.action_deployfleet_driver_documents",
             },
             {
                 title: "Document Types",
                 description: "Configure what documents your fleet must track.",
                 icon: "fa fa-list",
-                actionXmlId: "deployfleet_compliance.action_deployfleet_compliance_document_type",
+                actionXmlId: "deployfleet_ui.action_deployfleet_document_types_workspace",
             },
             {
                 title: "Insurance Center",
@@ -135,7 +147,7 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
                 title: "Compliance Overrides",
                 description: "The audit trail behind every non-compliant dispatch.",
                 icon: "fa fa-exclamation-triangle",
-                actionXmlId: "deployfleet_dispatch_compliance.action_deployfleet_dispatch_compliance_override_log",
+                actionXmlId: "deployfleet_ui.action_deployfleet_compliance_override_ledger",
             },
         ],
     },

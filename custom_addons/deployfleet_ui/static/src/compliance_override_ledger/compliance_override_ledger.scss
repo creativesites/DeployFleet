@@ -1,0 +1,141 @@
+// Registry styling (Compliance domain) — a read-only audit ledger, same
+// dense-table dialect as Vehicle/Driver Documents. Workspace Layer
+// (flat, light, high-contrast).
+.df-compliance-override-ledger {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    background: var(--df-color-neutral-100);
+    font-family: var(--df-font-family);
+}
+
+.df-compliance-override-ledger__header {
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-override-ledger__title {
+    margin: 0;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-compliance-override-ledger__subtitle {
+    margin: 2px 0 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-compliance-override-ledger__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-3);
+}
+
+.df-compliance-override-ledger__loading,
+.df-compliance-override-ledger__empty {
+    color: var(--df-color-neutral-600);
+}
+
+.df-compliance-override-ledger__table {
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: var(--df-radius-md);
+    overflow: hidden;
+}
+
+.df-compliance-override-ledger__row {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    min-height: 44px;
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    cursor: pointer;
+}
+
+.df-compliance-override-ledger__row--header {
+    cursor: default;
+    background: var(--df-color-neutral-100);
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-compliance-override-ledger__col {
+    min-width: 0;
+}
+
+.df-compliance-override-ledger__col--date {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-compliance-override-ledger__col--shipment {
+    flex: 2 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-compliance-override-ledger__sub {
+    font-weight: var(--df-font-weight-regular);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-compliance-override-ledger__col--who {
+    flex: 1 1 140px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-compliance-override-ledger__col--flags {
+    flex: 0 0 140px;
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.df-compliance-override-ledger__reason {
+    margin: 0;
+    padding: 0 var(--df-space-2) var(--df-space-2);
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-0);
+}
+
+.df-compliance-override-ledger__reason-label {
+    color: var(--df-color-neutral-900);
+    font-weight: var(--df-font-weight-bold);
+}
+
+@media (max-width: 640px) {
+    .df-compliance-override-ledger__row--header {
+        display: none;
+    }
+
+    .df-compliance-override-ledger__row {
+        flex-wrap: wrap;
+    }
+
+    .df-compliance-override-ledger__col--date,
+    .df-compliance-override-ledger__col--who {
+        flex: 1 1 45%;
+    }
+
+    .df-compliance-override-ledger__col--flags {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+}
