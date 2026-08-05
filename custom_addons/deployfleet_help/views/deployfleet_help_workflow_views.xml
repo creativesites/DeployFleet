@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_help_workflow_form" model="ir.ui.view">
+        <field name="name">deployfleet.help.workflow.form</field>
+        <field name="model">deployfleet.help.workflow</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="slug"/>
+                        <field name="domain_key"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="description" placeholder="What this workflow is..."/>
+                    <notebook>
+                        <page string="Steps">
+                            <field name="step_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="title"/>
+                                    <field name="description"/>
+                                    <field name="icon"/>
+                                    <field name="related_model"/>
+                                    <field name="related_article_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_help_workflow_list" model="ir.ui.view">
+        <field name="name">deployfleet.help.workflow.list</field>
+        <field name="model">deployfleet.help.workflow</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="domain_key"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_help_workflow" model="ir.actions.act_window">
+        <field name="name">Help Workflows</field>
+        <field name="res_model">deployfleet.help.workflow</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_help_workflow"
+              name="Help Workflows"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_help_workflow"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="62"/>
+</odoo>

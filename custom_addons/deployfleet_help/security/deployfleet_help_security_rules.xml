@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        deployfleet.help.checklist.progress is the one model in this
+        module that isn't shared, read-the-same-for-everyone content -
+        it's a per-user record of which onboarding-checklist items a
+        given user has personally completed. Scoped to the user's own
+        rows only; no `groups` restriction, so it applies to every role
+        (a driver's own onboarding progress is exactly as private as a
+        manager's). Deliberately no company_id/company scoping anywhere
+        in this module - Help Center content documents how to use the
+        product, which is identical for every company on a deployment,
+        unlike the operational data the C-01 multi-company audit fix
+        was about.
+    -->
+    <record id="deployfleet_help_checklist_progress_rule_own" model="ir.rule">
+        <field name="name">Help Checklist Progress: own rows only</field>
+        <field name="model_id" ref="model_deployfleet_help_checklist_progress"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+    </record>
+</odoo>

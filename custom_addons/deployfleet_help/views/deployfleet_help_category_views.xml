@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_help_category_form" model="ir.ui.view">
+        <field name="name">deployfleet.help.category.form</field>
+        <field name="model">deployfleet.help.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="slug"/>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="icon"/>
+                            <field name="domain_key"/>
+                            <field name="context_key"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="One-line summary shown on the Help Center landing page..."/>
+                    <notebook>
+                        <page string="Articles">
+                            <field name="article_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="content_type"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_help_category_list" model="ir.ui.view">
+        <field name="name">deployfleet.help.category.list</field>
+        <field name="model">deployfleet.help.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="slug"/>
+                <field name="domain_key"/>
+                <field name="context_key"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_help_category" model="ir.actions.act_window">
+        <field name="name">Help Categories</field>
+        <field name="res_model">deployfleet.help.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_help_category"
+              name="Help Categories"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_help_category"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="61"/>
+</odoo>

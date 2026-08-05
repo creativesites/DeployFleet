@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="article_getting_started" model="deployfleet.help.article">
+        <field name="name">Welcome to DeployFleet</field>
+        <field name="slug">getting-started-welcome</field>
+        <field name="category_id" ref="category_getting_started"/>
+        <field name="content_type">guide</field>
+        <field name="summary">Everything you need to find your way around in your first five minutes.</field>
+        <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<p>DeployFleet is where your trucking business runs day to day — every shipment, every truck, every driver, and every invoice, all in one place. This page gets you oriented in a few minutes, not a few hours.</p>
+
+<h3>Logging in</h3>
+<p>You sign in with the email and password your company set up for you. What you see after logging in depends on your role — a driver sees their own trips, a dispatcher sees the whole board, an owner sees everything.</p>
+
+<h3>The dashboard: Mission Control</h3>
+<p>The first screen you land on is Mission Control. It only shows you something when something actually needs your attention — unassigned shipments, expiring documents, a broken-down truck. If nothing is flagged, nothing needs you right now. Below that are your key numbers (active vehicles, active shipments, revenue) and quick links to every part of the system.</p>
+
+<h3>Getting around: the Mega Menu</h3>
+<p>Each area of the business — Fleet, Dispatch, Compliance, Billing, Drivers, AI — has its own menu you open from the top navigation bar. It shows every screen in that area as a card you can click, with a short description of what it does.</p>
+
+<h3>The Launcher</h3>
+<p>Press <b>Alt+L</b> anywhere to open the Launcher — a quick way to jump to any area of DeployFleet without hunting through menus. Each area also has its own shortcut key shown in the Launcher.</p>
+
+<h3>Search: the Command Palette</h3>
+<p>Press <b>Ctrl+K</b> anywhere to search directly for a shipment, a vehicle by plate number, or a driver by name — it opens that record straight away.</p>
+
+<h3>Notifications</h3>
+<p>DeployFleet lets you know about things that need action — an expiring document, a pending approval — through the standard notification bell, the same as any modern app.</p>
+
+<h3>Copilot: your AI assistant</h3>
+<p>Copilot is the small assistant tab on the right edge of the screen. It can answer questions about your fleet, summarize what's happening, and — when it wants to change something — always asks you to approve it first. Nothing gets changed automatically without your sign-off. See the <b>AI Copilot Help</b> section for example questions to try.</p>
+
+<h3>Roles</h3>
+<p>DeployFleet gives each person only what they need: a <b>driver</b> sees their own trips and documents; a <b>dispatcher</b> assigns loads and manages the board; a <b>manager</b> and <b>owner</b> see everything, including reports and settings; HR and finance roles see payroll and billing. If something looks like it's missing, it's usually because your role doesn't need it — ask your manager if you think that's wrong.</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_fleet" model="deployfleet.help.article">
+        <field name="name">Fleet &amp; Vehicles: Guide</field>
+        <field name="slug">module-guide-fleet</field>
+        <field name="category_id" ref="category_module_guide_fleet"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Every truck you own — where it is, what state it's in, and what it needs.</field>
+        <field name="related_workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>Fleet &amp; Vehicles is the home for every truck, trailer, and piece of equipment you own — its details, its current status, its tyres, its fuel use, and its maintenance history, all in one place.</p>
+
+<h3>Why it exists</h3>
+<p>A trucking business lives or dies on whether its trucks are actually available and roadworthy. This is the single place to answer "which trucks can I use right now, and which ones need attention?"</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Check the Fleet Command Center to see which vehicles are available, assigned, or in maintenance.</li>
+<li>Mark a vehicle back in service after a repair, or report a breakdown.</li>
+<li>Log a fuel fill-up, or check Fuel Intelligence for anything unusual.</li>
+<li>Check the Tyre Manager for tyres that need rotating or replacing.</li>
+<li>Review the Maintenance Planner to see what's coming due this week.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Log fuel fill-ups the same day — the anomaly detection only works with up-to-date data.</li>
+<li>Don't let a vehicle sit "in maintenance" once the work is actually done — close the job card so it becomes available for dispatch again.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Forgetting to update odometer readings, which throws off maintenance-due calculations.</li>
+<li>Recording a repair without closing the job card, which leaves the vehicle unavailable even though it's actually fixed.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Workshop (repairs happen there), Compliance (a vehicle's documents live there), Dispatch (a vehicle can only be assigned when it's available).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_dispatch" model="deployfleet.help.article">
+        <field name="name">Dispatch &amp; Trips: Guide</field>
+        <field name="slug">module-guide-dispatch</field>
+        <field name="category_id" ref="category_module_guide_dispatch"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Book a shipment, match it to a truck and driver, and track it to delivery.</field>
+        <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>Dispatch &amp; Trips is where a shipment turns into an actual truck on the road. You book what needs to move, match it to a driver and vehicle, and follow it through to delivery.</p>
+
+<h3>Why it exists</h3>
+<p>This is the daily operational heartbeat of a trucking company — matching work to trucks efficiently is most of what makes the business profitable.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Book a new shipment on the Dispatch Board.</li>
+<li>Review suggested driver/vehicle matches and confirm an assignment — or override the suggestion with a reason if you know better.</li>
+<li>Watch the Trip Board for trips that are departed, delayed, or completed.</li>
+<li>Record proof of delivery in the Delivery Center.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Let the suggested matches guide you — they already account for driver experience, vehicle type, and weight limits.</li>
+<li>Always give a real reason when overriding a suggestion — it's kept as an audit trail.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Confirming an assignment against a vehicle that's already committed elsewhere — DeployFleet blocks this, but it means you'll need to pick a different vehicle.</li>
+<li>Forgetting to record delivery, which leaves a shipment looking "in transit" long after it actually arrived.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Fleet (which vehicles are available), Drivers (who's qualified and not on leave), Finance (a completed shipment becomes an invoice).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_drivers" model="deployfleet.help.article">
+        <field name="name">Drivers: Guide</field>
+        <field name="slug">module-guide-drivers</field>
+        <field name="category_id" ref="category_module_guide_drivers"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Driver profiles, licenses, and how their performance is tracked.</field>
+        <field name="related_workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>This is where every driver's profile lives — their license details, qualified vehicle types, and a running reliability score built from their trip history.</p>
+
+<h3>Why it exists</h3>
+<p>Knowing which drivers are reliable, experienced, and legally able to drive a given vehicle is what keeps dispatch decisions safe and your insurance premiums reasonable.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Check Driver Scorecards to see who's performing well and who needs attention.</li>
+<li>Update a driver's license details before they expire.</li>
+<li>Review recent performance events — accidents, harsh braking, late deliveries.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Keep license expiry dates current — an expired license can block a driver from being dispatched.</li>
+<li>Record performance events promptly so the reliability score actually reflects reality.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Letting a driver's license lapse without noticing — check the compliance traffic-light wall regularly.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Dispatch (drivers get assigned to shipments), Compliance (license documents), HR (leave and payroll).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_hr" model="deployfleet.help.article">
+        <field name="name">HR: Guide</field>
+        <field name="slug">module-guide-hr</field>
+        <field name="category_id" ref="category_module_guide_hr"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Leave requests, cash advances, loans, and payslips.</field>
+        <field name="related_workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>HR covers everything about paying and looking after your people — leave requests, cash advances, staff loans, and payslips.</p>
+
+<h3>Why it exists</h3>
+<p>Drivers and staff need to be paid correctly and on time, and need a simple way to request leave or an advance without a paper trail getting lost.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Approve or reject leave requests in the Leave Planner.</li>
+<li>Record a cash advance for a driver going on a long trip.</li>
+<li>Review and confirm payslips in the Payroll Center at the end of the pay period.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Approve leave promptly — DeployFleet automatically checks for scheduled trips before allowing an approval, so a conflict will be caught for you.</li>
+<li>Reconcile advances against payslips regularly so deductions don't pile up.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Forgetting an active loan deduction, which can leave a driver short-paid or over-paid.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Drivers (whose leave and pay this is), Finance (payroll is a cost like any other).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_finance" model="deployfleet.help.article">
+        <field name="name">Finance: Guide</field>
+        <field name="slug">module-guide-finance</field>
+        <field name="category_id" ref="category_module_guide_finance"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Contracts, rate cards, invoices, and where your money is going.</field>
+        <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>Finance covers the money side: customer contracts and their agreed rates, invoices generated from completed deliveries, load expenses, and a top-level view of revenue versus cost.</p>
+
+<h3>Why it exists</h3>
+<p>Moving freight only matters if it's profitable. This area answers "what are we owed, what did this load actually cost us, and are we making money?"</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Confirm invoices in the Invoice Ledger once a delivery is complete.</li>
+<li>Set up a new customer contract and rate card.</li>
+<li>Record load expenses — tolls, loading fees — against a trip.</li>
+<li>Check Financial Intelligence for revenue, outstanding balances, and approximate margin.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Record load expenses close to when they happen, not weeks later — accuracy matters more than convenience here.</li>
+<li>Keep rate cards current so invoices generate correctly without manual fixes.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Leaving invoices unconfirmed after delivery, which delays getting paid.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Dispatch (a completed shipment becomes an invoice), Compliance (ZRA tax submission is tied to invoicing).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_compliance" model="deployfleet.help.article">
+        <field name="name">Compliance: Guide</field>
+        <field name="slug">module-guide-compliance</field>
+        <field name="category_id" ref="category_module_guide_compliance"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Vehicle and driver documents, insurance, and staying road-legal.</field>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>Compliance tracks every document that keeps a vehicle or driver legally on the road — registration, roadworthiness, licenses, insurance — and warns you before they expire.</p>
+
+<h3>Why it exists</h3>
+<p>An expired document can take a truck off the road, fail an inspection, or void an insurance claim. Catching this before it happens is far cheaper than dealing with it after.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Check the Compliance Center's traffic-light wall for anything expired or expiring soon.</li>
+<li>Log a new document — a renewed license, an updated roadworthiness certificate.</li>
+<li>Review insurance policies and file a claim if needed.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Log a renewal the same day it happens — an expired document that's actually been renewed but not updated still shows as expired.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Dispatching a vehicle or driver with an expired document — DeployFleet will flag this, but it can still be overridden in an emergency, which is logged for review.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Fleet (vehicle documents), Drivers (license documents), Dispatch (compliance is checked before a trip is confirmed).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_workshop" model="deployfleet.help.article">
+        <field name="name">Workshop: Guide</field>
+        <field name="slug">module-guide-workshop</field>
+        <field name="category_id" ref="category_module_guide_workshop"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Job cards, repairs, and keeping trucks on the road.</field>
+        <field name="related_workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>The Workshop is where repairs actually happen — from opening a job card for a vehicle, through diagnosis and repair, to closing it out and marking the vehicle available again.</p>
+
+<h3>Why it exists</h3>
+<p>A truck earns nothing sitting in the workshop. Tracking job cards properly means repairs get done, parts get accounted for, and vehicles come back into service as soon as they're actually ready.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Open a job card for a vehicle that needs attention.</li>
+<li>Move it through diagnosis, repair, and approval as work progresses.</li>
+<li>Record parts used — they're automatically taken from your parts stock.</li>
+<li>Close the job card once work is complete, which puts the vehicle back in service.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Don't close a job card until the vehicle is genuinely road-ready — closing it makes it available for dispatch immediately.</li>
+<li>If a vehicle has more than one open job card, DeployFleet won't mark it available until every job card is closed.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Recording a part without enough stock on hand — check the Parts Registry first.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Fleet (the vehicle being repaired), Parts (stock consumed by the job), Maintenance (schedules that trigger a job card).</p>
+]]></field>
+    </record>
+
+    <record id="article_module_guide_ai" model="deployfleet.help.article">
+        <field name="name">AI &amp; Copilot: Guide</field>
+        <field name="slug">module-guide-ai</field>
+        <field name="category_id" ref="category_module_guide_ai"/>
+        <field name="content_type">module_guide</field>
+        <field name="summary">Predictions, recommendations, and how the AI assistant fits into your day.</field>
+        <field name="sequence">10</field>
+        <field name="body"><![CDATA[
+<h3>What it does</h3>
+<p>The AI area brings together everything DeployFleet's AI does for you: predictions about maintenance risk and fuel anomalies, and Copilot — the assistant you can ask questions and give approval-gated instructions to.</p>
+
+<h3>Why it exists</h3>
+<p>A busy fleet manager can't check every number every day. AI surfaces the things worth your attention before they become expensive problems, and lets you ask plain-language questions instead of building reports by hand.</p>
+
+<h3>Typical daily tasks</h3>
+<ul>
+<li>Check AI Predictions for vehicles with rising maintenance risk or unusual fuel consumption.</li>
+<li>Ask Copilot a question from the corner tab or the Copilot Console.</li>
+<li>Review and approve or reject any pending AI-suggested action.</li>
+</ul>
+
+<h3>Best practices</h3>
+<ul>
+<li>Treat AI predictions as a prompt to look closer, not a final answer — they're based on the data DeployFleet has, which is only as good as what's been logged.</li>
+<li>Always read what an AI action proposes before approving it — approval is a real, permanent action.</li>
+</ul>
+
+<h3>Common mistakes</h3>
+<ul>
+<li>Approving an AI action without reading what it actually changes.</li>
+</ul>
+
+<h3>Related areas</h3>
+<p>Fleet (maintenance predictions), Finance (financial forecasts) — see the AI Copilot Help section for example questions to ask.</p>
+]]></field>
+    </record>
+
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_deployfleet_help_checklist_form" model="ir.ui.view">
+        <field name="name">deployfleet.help.checklist.form</field>
+        <field name="model">deployfleet.help.checklist</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="description" placeholder="What this checklist is for..."/>
+                    <notebook>
+                        <page string="Items">
+                            <field name="item_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="title"/>
+                                    <field name="description"/>
+                                    <field name="icon"/>
+                                    <field name="action_xml_id"/>
+                                    <field name="related_article_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_deployfleet_help_checklist_list" model="ir.ui.view">
+        <field name="name">deployfleet.help.checklist.list</field>
+        <field name="model">deployfleet.help.checklist</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_deployfleet_help_checklist" model="ir.actions.act_window">
+        <field name="name">Help Checklists</field>
+        <field name="res_model">deployfleet.help.checklist</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_deployfleet_help_checklist"
+              name="Help Checklists"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_help_checklist"
+              groups="deployfleet_security.group_deployfleet_manager"
+              sequence="63"/>
+</odoo>

@@ -1,0 +1,22 @@
+{
+    "name": "DeployFleet Help Center",
+    "version": "19.0.1.0.0",
+    "category": "DeployFleet",
+    "summary": "In-app Help Center content: categories, articles, workflow diagrams, and the setup checklist",
+    "author": "DeployFleet",
+    "license": "LGPL-3",
+    "depends": ["mail", "deployfleet_security"],
+    "data": [
+        "security/ir.model.access.csv",
+        "security/deployfleet_help_security_rules.xml",
+        "data/deployfleet_help_category_data.xml",
+        "data/deployfleet_help_workflow_data.xml",
+        "data/deployfleet_help_article_guides_data.xml",
+        "data/deployfleet_help_article_faq_troubleshooting_data.xml",
+        "data/deployfleet_help_checklist_data.xml",
+        "views/deployfleet_help_category_views.xml",
+        "views/deployfleet_help_article_views.xml",
+        "views/deployfleet_help_workflow_views.xml",
+        "views/deployfleet_help_checklist_views.xml",
+    ],
+}

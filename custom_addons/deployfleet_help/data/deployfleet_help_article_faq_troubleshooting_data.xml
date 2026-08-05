@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="article_faq_assign_truck" model="deployfleet.help.article">
+        <field name="name">How do I assign a truck to a shipment?</field>
+        <field name="slug">faq-assign-truck</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Open the Dispatch Board, tap the shipment, and pick a suggested driver and vehicle.</field>
+        <field name="body"><![CDATA[
+            <p>Open the <strong>Dispatch Board</strong> and find the shipment under the "Confirmed" filter — these are the loads waiting to be assigned.</p>
+            <p>Tap the shipment card to expand it. DeployFleet will suggest a ranked list of available drivers and vehicles based on who's free, qualified, and compliant. Tap a suggestion, then tap <strong>Confirm</strong>.</p>
+            <p>If DeployFleet blocks the assignment (for example, an expired document or a driver on leave), you'll see the reason and, if you have permission, an option to override with a typed reason.</p>
+        ]]></field>
+        <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="context_key">dispatch_board</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="article_faq_change_driver" model="deployfleet.help.article">
+        <field name="name">How do I change the driver on a shipment?</field>
+        <field name="slug">faq-change-driver</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Reassign from the Dispatch Board before the trip departs; afterwards, contact support.</field>
+        <field name="body"><![CDATA[
+            <p>If the shipment hasn't started its trip yet, open it on the <strong>Dispatch Board</strong> and re-run the assignment — pick a different driver and confirm.</p>
+            <p>Once a trip has already departed, the driver is locked in for that trip, since it reflects who is actually on the road. If a driver truly can't complete the trip (breakdown, emergency), mark the trip <strong>Delayed</strong> or <strong>Cancelled</strong> from the <strong>Trip Board</strong> and dispatch a fresh shipment with the new driver.</p>
+        ]]></field>
+        <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="context_key">dispatch_board</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="article_faq_payroll" model="deployfleet.help.article">
+        <field name="name">How does payroll work?</field>
+        <field name="slug">faq-payroll</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Payslips pull together a driver's pay period, advances, and loan deductions automatically.</field>
+        <field name="body"><![CDATA[
+            <p>Payroll runs through the <strong>Payroll Center</strong>. For each driver, a payslip is generated for the pay period, and any active loan automatically deducts its instalment when you confirm the payslip.</p>
+            <p>Driver advances (cash given ahead of pay, for example for fuel on a long trip) are tracked separately and settled against the driver's next payslip.</p>
+            <p>Payroll and Loans are only visible to users with the Payroll Officer role or the Owner role — this keeps salary information private, the same way it would be in a paper-based office.</p>
+        ]]></field>
+        <field name="related_workflow_id" ref="workflow_driver_management"/>
+        <field name="context_key">payroll_center</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="article_faq_maintenance_schedule" model="deployfleet.help.article">
+        <field name="name">How do maintenance schedules work?</field>
+        <field name="slug">faq-maintenance-schedule</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Each vehicle has a next-service date or distance; DeployFleet flags it automatically as it approaches.</field>
+        <field name="body"><![CDATA[
+            <p>Every vehicle has a maintenance schedule — either a date (e.g. every 6 months) or an odometer distance (e.g. every 10,000&nbsp;km), whichever comes first. You can see it on the <strong>Maintenance Planner</strong> or inside a vehicle's own detail on the <strong>Fleet Command Center</strong>.</p>
+            <p>When a vehicle is close to due, it shows up on the Maintenance Planner's attention strip and health cards, so nothing gets missed until it becomes a breakdown.</p>
+            <p>Once the workshop actually services the vehicle and records it, the "next due" date or distance recalculates automatically from that service date.</p>
+        ]]></field>
+        <field name="related_workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="context_key">maintenance_planner</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="article_faq_compliance_documents" model="deployfleet.help.article">
+        <field name="name">How are compliance documents tracked?</field>
+        <field name="slug">faq-compliance-documents</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Every license, permit, and insurance document has an expiry date DeployFleet watches for you.</field>
+        <field name="body"><![CDATA[
+            <p>Vehicle documents (licenses, permits, roadworthiness certificates, insurance) and driver documents (driving licenses, medical certificates) are logged with an expiry date on the <strong>Compliance Center</strong>.</p>
+            <p>Each document shows green (valid), amber (expiring soon), or red (expired) — a quick visual scan tells you what needs renewing this week versus what can wait.</p>
+            <p>An expired document can also block a vehicle or driver from being assigned to a new shipment, unless a manager explicitly overrides it with a reason.</p>
+        ]]></field>
+        <field name="context_key">compliance_center</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="article_faq_add_vehicle" model="deployfleet.help.article">
+        <field name="name">How do I add a new vehicle to my fleet?</field>
+        <field name="slug">faq-add-vehicle</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Add it from the Fleet Command Center — plate, model, type, and capacity.</field>
+        <field name="body"><![CDATA[
+            <p>Open the <strong>Fleet Command Center</strong> and add a new vehicle with its license plate, model, vehicle type, and capacity. It starts out <strong>Available</strong>, ready to be assigned on the Dispatch Board.</p>
+            <p>If your fleet uses a vehicle type that doesn't exist yet (for example, a new trailer class), add it first from <strong>Vehicle Types</strong> — it only takes a few fields.</p>
+        ]]></field>
+        <field name="context_key">fleet_command_center</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="article_faq_view_costs" model="deployfleet.help.article">
+        <field name="name">Where can I see how much a vehicle is costing me?</field>
+        <field name="slug">faq-view-costs</field>
+        <field name="category_id" ref="category_faq"/>
+        <field name="content_type">faq</field>
+        <field name="summary">Fuel logs, load expenses, and workshop costs are all visible per vehicle and fleet-wide.</field>
+        <field name="body"><![CDATA[
+            <p>A single vehicle's fuel, maintenance, and workshop history is on its detail card in the <strong>Fleet Command Center</strong>. Fleet-wide fuel trends live on <strong>Fuel Intelligence</strong>, and per-trip costs live on the <strong>Load Expense Ledger</strong>.</p>
+            <p>For a money view across the whole business — revenue, outstanding balances, and an approximate margin — see <strong>Financial Intelligence</strong>.</p>
+        ]]></field>
+        <field name="context_key">fleet_command_center</field>
+        <field name="sequence">70</field>
+    </record>
+
+    <record id="article_troubleshooting_vehicle_missing" model="deployfleet.help.article">
+        <field name="name">My truck isn't appearing</field>
+        <field name="slug">troubleshooting-vehicle-missing</field>
+        <field name="category_id" ref="category_troubleshooting"/>
+        <field name="content_type">troubleshooting</field>
+        <field name="summary">Usually a status filter, a Scrapped status, or a permissions issue.</field>
+        <field name="body"><![CDATA[
+            <p><strong>Most likely cause:</strong> the Fleet Command Center is filtered to a status your truck isn't in — check the status chips (All / Available / Assigned / Maintenance / Breakdown) and tap "All".</p>
+            <p><strong>Also check:</strong> the vehicle may have been marked "Scrapped," which hides it from the active fleet views by design. Ask a manager to check the vehicle's record directly if you believe this happened by mistake.</p>
+            <p><strong>Permissions:</strong> drivers see fewer fleet details than dispatchers and managers. If you're a driver and expect to see full fleet data, that's expected — ask your dispatcher.</p>
+        ]]></field>
+        <field name="context_key">fleet_command_center</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="article_troubleshooting_cant_assign_driver" model="deployfleet.help.article">
+        <field name="name">I can't assign a driver</field>
+        <field name="slug">troubleshooting-cant-assign-driver</field>
+        <field name="category_id" ref="category_troubleshooting"/>
+        <field name="content_type">troubleshooting</field>
+        <field name="summary">DeployFleet blocks unsafe or non-compliant assignments on purpose — the error tells you why.</field>
+        <field name="body"><![CDATA[
+            <p>DeployFleet deliberately stops you from assigning a driver who is unsafe or not compliant to drive right now. The message you see on the Dispatch Board tells you the specific reason, which is usually one of:</p>
+            <ul>
+                <li>The driver's license or another required document has expired.</li>
+                <li>The driver is on approved leave during the shipment's pickup date.</li>
+                <li>The driver has already driven too many consecutive days, or hasn't had enough rest between trips.</li>
+                <li>The driver isn't qualified for this vehicle's type.</li>
+            </ul>
+            <p>If the situation genuinely calls for an exception, a manager can override the block with a typed reason — this is recorded permanently in the Compliance Overrides ledger, so it's always visible who approved the exception and why.</p>
+        ]]></field>
+        <field name="context_key">dispatch_board</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="article_troubleshooting_trip_missing" model="deployfleet.help.article">
+        <field name="name">My trip is missing</field>
+        <field name="slug">troubleshooting-trip-missing</field>
+        <field name="category_id" ref="category_troubleshooting"/>
+        <field name="content_type">troubleshooting</field>
+        <field name="summary">A trip only exists once a shipment is confirmed and assigned — check the Dispatch Board first.</field>
+        <field name="body"><![CDATA[
+            <p>A trip is created automatically the moment a shipment's driver and vehicle assignment is confirmed. If you don't see it on the <strong>Trip Board</strong>, the shipment is probably still sitting unassigned on the <strong>Dispatch Board</strong> — check there first.</p>
+            <p>If the trip already completed or was cancelled, the Trip Board's filter chips default to active trips only — switch to "All" to see its full history.</p>
+            <p>If you're certain a trip was confirmed but genuinely can't find it anywhere, it may have been mistakenly cancelled — check with your dispatcher, since cancellations are visible in the trip's own change history.</p>
+        ]]></field>
+        <field name="context_key">trip_board</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="article_troubleshooting_invoice_missing" model="deployfleet.help.article">
+        <field name="name">My invoice wasn't generated</field>
+        <field name="slug">troubleshooting-invoice-missing</field>
+        <field name="category_id" ref="category_troubleshooting"/>
+        <field name="content_type">troubleshooting</field>
+        <field name="summary">Invoicing needs a completed delivery and an active contract with the customer.</field>
+        <field name="body"><![CDATA[
+            <p>An invoice is only created once a shipment has a recorded <strong>delivery</strong> (proof it actually arrived) — check the <strong>Delivery Center</strong> to confirm the delivery was logged.</p>
+            <p>You'll also need an active <strong>contract</strong> with that customer for DeployFleet to know what rate to charge — a shipment for a customer with no active contract can't price itself automatically. Check <strong>Contract &amp; Rate Cards</strong>.</p>
+            <p>If both of those are in place and the invoice still isn't showing, check the <strong>Invoice Ledger</strong> with the "Draft" filter — it may already exist but not yet be confirmed.</p>
+        ]]></field>
+        <field name="context_key">invoice_ledger</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="article_troubleshooting_maintenance_schedule_missing" model="deployfleet.help.article">
+        <field name="name">My maintenance schedule disappeared</field>
+        <field name="slug">troubleshooting-maintenance-schedule-missing</field>
+        <field name="category_id" ref="category_troubleshooting"/>
+        <field name="content_type">troubleshooting</field>
+        <field name="summary">A schedule recalculates rather than disappears — it's usually just no longer due soon.</field>
+        <field name="body"><![CDATA[
+            <p>A maintenance schedule doesn't get deleted when it's serviced — it recalculates its next-due date or distance and drops off the "due soon" attention strip, which can look like it vanished.</p>
+            <p>Check the <strong>Maintenance Planner</strong>'s Overview tab and look up the vehicle directly in its Health Card — the schedule is still there, just no longer flagged as urgent.</p>
+            <p>If a vehicle genuinely has no schedule at all, it may be a new vehicle that hasn't had one set up yet — ask a fleet manager to configure it.</p>
+        ]]></field>
+        <field name="context_key">maintenance_planner</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="article_ai_copilot_help" model="deployfleet.help.article">
+        <field name="name">What can Copilot do for me?</field>
+        <field name="slug">ai-copilot-help</field>
+        <field name="category_id" ref="category_ai_copilot_help"/>
+        <field name="content_type">guide</field>
+        <field name="summary">Ask Copilot questions in plain language — it can look things up, spot risks, and suggest actions.</field>
+        <field name="body"><![CDATA[
+            <h3>What Copilot is</h3>
+            <p>Copilot is DeployFleet's built-in AI assistant. It can answer questions about your fleet, flag problems before they become expensive, and — for a small, carefully chosen set of safe actions — take action for you once you approve it.</p>
+            <h3>Try asking it things like</h3>
+            <ul>
+                <li>"Show vehicles needing maintenance"</li>
+                <li>"Which drivers performed best this month?"</li>
+                <li>"Find overdue invoices"</li>
+                <li>"Why is truck DF-203 consuming more fuel?"</li>
+            </ul>
+            <p>Open Copilot from the tab on the right edge of the screen, or from the <strong>Copilot Console</strong> for a fuller view with each AI agent's usage and cost.</p>
+            <h3>Approvals — nothing happens without you</h3>
+            <p>When Copilot proposes a change (like reassigning a load), it shows up as a pending approval you review and either approve or reject — Copilot never silently changes your data. A very small number of clearly safe, easy-to-undo actions (like marking an available vehicle available again) may apply immediately, and are always visible afterward.</p>
+            <h3>Reports and analysis</h3>
+            <p>Beyond answering questions, Copilot's agents run in the background to catch things a busy manager might miss — vehicles at rising breakdown risk, fuel usage that doesn't match a truck's normal pattern, and which driver/vehicle pairing is likely to work best for a new shipment.</p>
+        ]]></field>
+        <field name="context_key">copilot_console</field>
+        <field name="sequence">10</field>
+    </record>
+
+</odoo>

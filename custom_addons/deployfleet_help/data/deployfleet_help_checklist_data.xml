@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="checklist_first_time_setup" model="deployfleet.help.checklist">
+        <field name="name">First-Time Setup</field>
+        <field name="description">A handful of quick steps to get your fleet moving in DeployFleet.</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="checklist_item_welcome" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">10</field>
+        <field name="title">Welcome to DeployFleet</field>
+        <field name="description">Take two minutes to see what DeployFleet does and how the pieces fit together.</field>
+        <field name="icon">fa fa-hand-paper-o</field>
+        <field name="related_article_id" ref="article_getting_started"/>
+    </record>
+
+    <record id="checklist_item_create_vehicle" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">20</field>
+        <field name="title">Add your first vehicle</field>
+        <field name="description">Log a truck's plate, model, and type so it can be assigned to a shipment.</field>
+        <field name="icon">fa fa-truck</field>
+        <field name="action_xml_id">deployfleet_ui.action_deployfleet_fleet_command_center</field>
+        <field name="related_article_id" ref="article_module_guide_fleet"/>
+    </record>
+
+    <record id="checklist_item_create_driver" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">30</field>
+        <field name="title">Add your first driver</field>
+        <field name="description">Add a driver's profile and license details so they're ready to be dispatched.</field>
+        <field name="icon">fa fa-id-badge</field>
+        <field name="action_xml_id">deployfleet_ui.action_deployfleet_driver_scorecards</field>
+        <field name="related_article_id" ref="article_module_guide_drivers"/>
+    </record>
+
+    <record id="checklist_item_create_shipment" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">40</field>
+        <field name="title">Create your first shipment</field>
+        <field name="description">Book a load — what needs to move, from where, to where.</field>
+        <field name="icon">fa fa-cube</field>
+        <field name="action_xml_id">deployfleet_ui.action_deployfleet_dispatch_board</field>
+        <field name="related_article_id" ref="article_module_guide_dispatch"/>
+    </record>
+
+    <record id="checklist_item_create_trip" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">50</field>
+        <field name="title">Assign it and start your first trip</field>
+        <field name="description">Match the shipment to your new vehicle and driver, and confirm the assignment.</field>
+        <field name="icon">fa fa-map-signs</field>
+        <field name="action_xml_id">deployfleet_ui.action_deployfleet_trip_board</field>
+        <field name="related_article_id" ref="article_module_guide_dispatch"/>
+    </record>
+
+    <record id="checklist_item_congratulations" model="deployfleet.help.checklist.item">
+        <field name="checklist_id" ref="checklist_first_time_setup"/>
+        <field name="sequence">60</field>
+        <field name="title">You're up and running</field>
+        <field name="description">That's the whole loop — customer to shipment to trip to delivery to invoice. Explore the Module Guides whenever you're ready to go deeper.</field>
+        <field name="icon">fa fa-flag-checkered</field>
+    </record>
+
+</odoo>

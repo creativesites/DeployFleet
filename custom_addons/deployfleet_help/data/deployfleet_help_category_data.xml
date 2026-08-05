@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="category_getting_started" model="deployfleet.help.category">
+        <field name="name">Getting Started</field>
+        <field name="slug">getting-started</field>
+        <field name="icon">fa fa-compass</field>
+        <field name="description">Log in, find your way around, and learn the basics in a few minutes.</field>
+        <field name="context_key">getting_started</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="category_business_workflows" model="deployfleet.help.category">
+        <field name="name">Learn the Business Workflow</field>
+        <field name="slug">business-workflows</field>
+        <field name="icon">fa fa-random</field>
+        <field name="description">See how a shipment, a vehicle, and a driver actually move through DeployFleet.</field>
+        <field name="context_key">business_workflows</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="category_module_guides" model="deployfleet.help.category">
+        <field name="name">Module Guides</field>
+        <field name="slug">module-guides</field>
+        <field name="icon">fa fa-book</field>
+        <field name="description">A plain-language guide to every part of DeployFleet.</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="category_module_guide_fleet" model="deployfleet.help.category">
+        <field name="name">Fleet &amp; Vehicles</field>
+        <field name="slug">module-guide-fleet</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-truck</field>
+        <field name="description">Vehicles, tyres, fuel, parts, and assets.</field>
+        <field name="domain_key">fleet</field>
+        <field name="context_key">fleet_command_center</field>
+        <field name="sequence">31</field>
+    </record>
+
+    <record id="category_module_guide_dispatch" model="deployfleet.help.category">
+        <field name="name">Dispatch &amp; Trips</field>
+        <field name="slug">module-guide-dispatch</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-th-large</field>
+        <field name="description">Shipments, assignments, trips, and deliveries.</field>
+        <field name="domain_key">dispatch</field>
+        <field name="context_key">dispatch_board</field>
+        <field name="sequence">32</field>
+    </record>
+
+    <record id="category_module_guide_drivers" model="deployfleet.help.category">
+        <field name="name">Drivers</field>
+        <field name="slug">module-guide-drivers</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-id-badge</field>
+        <field name="description">Driver profiles, licenses, and performance.</field>
+        <field name="domain_key">driver</field>
+        <field name="context_key">driver_scorecards</field>
+        <field name="sequence">33</field>
+    </record>
+
+    <record id="category_module_guide_hr" model="deployfleet.help.category">
+        <field name="name">HR</field>
+        <field name="slug">module-guide-hr</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-users</field>
+        <field name="description">Leave, advances, loans, and payroll.</field>
+        <field name="domain_key">driver</field>
+        <field name="context_key">payroll_center</field>
+        <field name="sequence">34</field>
+    </record>
+
+    <record id="category_module_guide_finance" model="deployfleet.help.category">
+        <field name="name">Finance</field>
+        <field name="slug">module-guide-finance</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-money</field>
+        <field name="description">Invoices, contracts, and financial intelligence.</field>
+        <field name="domain_key">billing</field>
+        <field name="context_key">invoice_ledger</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <record id="category_module_guide_compliance" model="deployfleet.help.category">
+        <field name="name">Compliance</field>
+        <field name="slug">module-guide-compliance</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-shield</field>
+        <field name="description">Vehicle and driver documents, insurance, and overrides.</field>
+        <field name="domain_key">compliance</field>
+        <field name="context_key">compliance_center</field>
+        <field name="sequence">36</field>
+    </record>
+
+    <record id="category_module_guide_workshop" model="deployfleet.help.category">
+        <field name="name">Workshop</field>
+        <field name="slug">module-guide-workshop</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-wrench</field>
+        <field name="description">Job cards, maintenance schedules, and keeping trucks on the road.</field>
+        <field name="domain_key">fleet</field>
+        <field name="context_key">workshop_board</field>
+        <field name="sequence">37</field>
+    </record>
+
+    <record id="category_module_guide_ai" model="deployfleet.help.category">
+        <field name="name">AI &amp; Copilot</field>
+        <field name="slug">module-guide-ai</field>
+        <field name="parent_id" ref="category_module_guides"/>
+        <field name="icon">fa fa-magic</field>
+        <field name="description">Predictions, recommendations, and the Copilot assistant.</field>
+        <field name="domain_key">ai</field>
+        <field name="context_key">copilot_console</field>
+        <field name="sequence">38</field>
+    </record>
+
+    <record id="category_faq" model="deployfleet.help.category">
+        <field name="name">FAQ</field>
+        <field name="slug">faq</field>
+        <field name="icon">fa fa-question-circle</field>
+        <field name="description">Quick answers to common questions.</field>
+        <field name="context_key">faq</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="category_troubleshooting" model="deployfleet.help.category">
+        <field name="name">Troubleshooting</field>
+        <field name="slug">troubleshooting</field>
+        <field name="icon">fa fa-life-ring</field>
+        <field name="description">Something not working the way you expect? Start here.</field>
+        <field name="context_key">troubleshooting</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="category_ai_copilot_help" model="deployfleet.help.category">
+        <field name="name">AI Copilot Help</field>
+        <field name="slug">ai-copilot-help</field>
+        <field name="icon">fa fa-comments</field>
+        <field name="description">What Copilot can do, and how to ask it for help.</field>
+        <field name="context_key">ai_copilot_help</field>
+        <field name="sequence">60</field>
+    </record>
+
+</odoo>

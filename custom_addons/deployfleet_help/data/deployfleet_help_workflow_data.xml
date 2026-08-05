@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="workflow_customer_to_delivery" model="deployfleet.help.workflow">
+        <field name="name">From Customer to Delivery</field>
+        <field name="slug">customer-to-delivery</field>
+        <field name="description">Every load you carry follows the same path, from the moment a customer asks for it to the moment they pay for it.</field>
+        <field name="domain_key">dispatch</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="workflow_step_customer" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">10</field>
+        <field name="title">Customer</field>
+        <field name="description">It starts with who you're carrying for. A customer is any business that ships with you regularly.</field>
+        <field name="icon">fa fa-building</field>
+        <field name="related_model">res.partner</field>
+    </record>
+    <record id="workflow_step_contract" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">20</field>
+        <field name="title">Contract</field>
+        <field name="description">A contract sets the agreed rates and terms with that customer, so every future shipment for them is priced consistently.</field>
+        <field name="icon">fa fa-file-text-o</field>
+        <field name="related_model">deployfleet.contract</field>
+    </record>
+    <record id="workflow_step_shipment" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">30</field>
+        <field name="title">Shipment</field>
+        <field name="description">Every delivery begins as a shipment — what needs to move, from where, to where, and by when.</field>
+        <field name="icon">fa fa-cube</field>
+        <field name="related_model">deployfleet.shipment</field>
+    </record>
+    <record id="workflow_step_dispatch" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">40</field>
+        <field name="title">Dispatch</field>
+        <field name="description">A dispatcher matches the shipment to a truck and driver who are free and a good fit for the load.</field>
+        <field name="icon">fa fa-random</field>
+        <field name="related_model">deployfleet.dispatch.assignment</field>
+    </record>
+    <record id="workflow_step_trip" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">50</field>
+        <field name="title">Trip</field>
+        <field name="description">Once the truck and driver are assigned, the shipment becomes an active trip — the truck is actually on the road.</field>
+        <field name="icon">fa fa-map-signs</field>
+        <field name="related_model">deployfleet.trip</field>
+    </record>
+    <record id="workflow_step_delivery" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">60</field>
+        <field name="title">Delivery</field>
+        <field name="description">When the truck arrives, the driver records proof of delivery — who received it, and any signature or photo.</field>
+        <field name="icon">fa fa-check-circle</field>
+        <field name="related_model">deployfleet.delivery</field>
+    </record>
+    <record id="workflow_step_invoice" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">70</field>
+        <field name="title">Invoice</field>
+        <field name="description">DeployFleet turns the completed delivery into an invoice for the customer, using the rates from their contract.</field>
+        <field name="icon">fa fa-file-invoice</field>
+        <field name="related_model">deployfleet.invoice</field>
+    </record>
+    <record id="workflow_step_payment" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_customer_to_delivery"/>
+        <field name="sequence">80</field>
+        <field name="title">Payment</field>
+        <field name="description">The customer pays the invoice, closing out the shipment from start to finish.</field>
+        <field name="icon">fa fa-money</field>
+        <field name="related_model">account.payment</field>
+    </record>
+
+    <record id="workflow_vehicle_maintenance" model="deployfleet.help.workflow">
+        <field name="name">Vehicle Maintenance</field>
+        <field name="slug">vehicle-maintenance</field>
+        <field name="description">How a truck gets looked after, from noticing something's wrong to being back on the road.</field>
+        <field name="domain_key">fleet</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="workflow_step_vehicle" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">10</field>
+        <field name="title">Vehicle</field>
+        <field name="description">Every truck, trailer tractor, or van in your fleet is a vehicle record — its plate, model, and current status.</field>
+        <field name="icon">fa fa-truck</field>
+        <field name="related_model">deployfleet.vehicle</field>
+    </record>
+    <record id="workflow_step_inspection" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">20</field>
+        <field name="title">Inspection</field>
+        <field name="description">A driver or workshop manager notices something needs attention — a warning light, a worn tyre, or a scheduled check.</field>
+        <field name="icon">fa fa-search</field>
+    </record>
+    <record id="workflow_step_maintenance_schedule" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">30</field>
+        <field name="title">Maintenance Schedule</field>
+        <field name="description">DeployFleet tracks when each vehicle is next due for service, by distance driven or by date, and flags it automatically.</field>
+        <field name="icon">fa fa-calendar-check-o</field>
+        <field name="related_model">deployfleet.maintenance.schedule</field>
+    </record>
+    <record id="workflow_step_workshop_job_card" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">40</field>
+        <field name="title">Workshop Job Card</field>
+        <field name="description">The workshop opens a job card for the vehicle — a record of the repair work from diagnosis through to completion.</field>
+        <field name="icon">fa fa-wrench</field>
+        <field name="related_model">deployfleet.workshop.job.card</field>
+    </record>
+    <record id="workflow_step_parts_used" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">50</field>
+        <field name="title">Parts Used</field>
+        <field name="description">Any parts used on the job — filters, brake pads, and so on — are drawn from your parts stock and recorded on the job card.</field>
+        <field name="icon">fa fa-cogs</field>
+        <field name="related_model">deployfleet.part</field>
+    </record>
+    <record id="workflow_step_vehicle_back_in_service" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_vehicle_maintenance"/>
+        <field name="sequence">60</field>
+        <field name="title">Back In Service</field>
+        <field name="description">Closing the job card marks the vehicle available again — ready to be assigned to its next trip.</field>
+        <field name="icon">fa fa-check-circle</field>
+        <field name="related_model">deployfleet.vehicle</field>
+    </record>
+
+    <record id="workflow_driver_management" model="deployfleet.help.workflow">
+        <field name="name">Driver Management</field>
+        <field name="slug">driver-management</field>
+        <field name="description">From hiring a driver to paying them, here's how DeployFleet follows a driver through their time with you.</field>
+        <field name="domain_key">driver</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="workflow_step_hire_driver" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">10</field>
+        <field name="title">Hire Driver</field>
+        <field name="description">Add the driver's profile — name, license class, and years of experience.</field>
+        <field name="icon">fa fa-user-plus</field>
+        <field name="related_model">hr.employee</field>
+    </record>
+    <record id="workflow_step_upload_documents" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">20</field>
+        <field name="title">Upload Documents</field>
+        <field name="description">Their license and any other required documents are logged with expiry dates, so DeployFleet can warn you before they lapse.</field>
+        <field name="icon">fa fa-id-card</field>
+        <field name="related_model">deployfleet.compliance.document</field>
+    </record>
+    <record id="workflow_step_assign_vehicle" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">30</field>
+        <field name="title">Assign Vehicle</field>
+        <field name="description">The driver is matched to a vehicle they're qualified to drive, ready to be dispatched on a trip.</field>
+        <field name="icon">fa fa-link</field>
+        <field name="related_model">deployfleet.vehicle</field>
+    </record>
+    <record id="workflow_step_driver_trips" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">40</field>
+        <field name="title">Trips</field>
+        <field name="description">As shipments are dispatched to them, every trip the driver runs is recorded automatically.</field>
+        <field name="icon">fa fa-map-signs</field>
+        <field name="related_model">deployfleet.trip</field>
+    </record>
+    <record id="workflow_step_driver_performance" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">50</field>
+        <field name="title">Performance</field>
+        <field name="description">Accidents, harsh braking, and on-time deliveries all feed a running reliability score for the driver.</field>
+        <field name="icon">fa fa-line-chart</field>
+        <field name="related_model">deployfleet.driver.performance.event</field>
+    </record>
+    <record id="workflow_step_driver_payroll" model="deployfleet.help.workflow.step">
+        <field name="workflow_id" ref="workflow_driver_management"/>
+        <field name="sequence">60</field>
+        <field name="title">Payroll</field>
+        <field name="description">At the end of the pay period, their trips, advances, and any loan deductions come together in a payslip.</field>
+        <field name="icon">fa fa-money</field>
+        <field name="related_model">deployfleet.payroll.payslip</field>
+    </record>
+
+</odoo>
