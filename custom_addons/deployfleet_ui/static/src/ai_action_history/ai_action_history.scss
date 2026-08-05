@@ -107,6 +107,20 @@
     color: var(--df-color-danger);
 }
 
+// Engineering-audit fix: neither field was shown anywhere on this
+// screen before — action_method is the real effect of a method-call
+// request (proposed_vals is typically {} for that shape), and
+// auto_executed is the only observable sign a write skipped human
+// review entirely.
+.df-ai-action-history__detail-line--method code {
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-ai-action-history__detail-line--auto {
+    color: var(--df-color-ai);
+    font-weight: var(--df-font-weight-medium);
+}
+
 .df-ai-action-history__payload {
     margin-top: var(--df-space-1);
     font-size: var(--df-font-size-sm);

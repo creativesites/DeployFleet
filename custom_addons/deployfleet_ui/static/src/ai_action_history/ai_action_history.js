@@ -101,9 +101,15 @@ export class DeployfleetAiActionHistory extends Component {
             "deployfleet.ai.action.request",
             [],
             [
+                // action_method/auto_executed added per the engineering-audit
+                // fix: this screen shows every state, including executed
+                // ones, so both the real effect of an action_method request
+                // (proposed_vals is typically {} for that shape) and whether
+                // a human ever actually reviewed it belong here.
                 "name", "feature_id", "action_type", "target_model", "target_id", "proposed_vals",
-                "source_context", "state", "requested_by", "approved_by", "executed_at",
-                "rejection_reason", "error_message", "result_record_id", "create_date",
+                "action_method", "auto_executed", "source_context", "state", "requested_by",
+                "approved_by", "executed_at", "rejection_reason", "error_message",
+                "result_record_id", "create_date",
             ],
             { order: "create_date desc" },
         );

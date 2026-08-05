@@ -8,6 +8,7 @@
     "depends": ["deployfleet_ai_permissions", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_ai_action_request_security_rules.xml",
         "data/deployfleet_ai_action_sequence.xml",
         "data/deployfleet_ai_auto_executable_action_data.xml",
         "views/deployfleet_ai_action_request_views.xml",

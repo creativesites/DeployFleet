@@ -111,10 +111,19 @@ export class DeployfleetCopilotRail extends Component {
 
     async loadPendingApprovals() {
         this.state.loading = true;
+        // action_method/target_id are included per the engineering-audit
+        // fix: an action_method request's proposed_vals is typically {}
+        // (the real effect is the method call, not a field write), so
+        // omitting action_method here left the approver unable to see
+        // what they were actually approving. auto_executed is included
+        // too, so the queue is honest about which requests already ran.
         this.state.pendingApprovals = await this.orm.searchRead(
             "deployfleet.ai.action.request",
             [["state", "=", "pending_approval"]],
-            ["name", "feature_id", "action_type", "target_model", "proposed_vals", "requested_by"],
+            [
+                "name", "feature_id", "action_type", "target_model", "target_id",
+                "proposed_vals", "action_method", "auto_executed", "requested_by",
+            ],
             { order: "create_date asc" },
         );
         this.state.loading = false;

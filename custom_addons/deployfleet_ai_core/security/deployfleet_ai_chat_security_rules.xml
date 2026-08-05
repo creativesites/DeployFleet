@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix: deployfleet.ai.chat.session/.chat.message
+        granted base.group_user full CRUD (including unlink) with no
+        ir.rule at all — any authenticated user, including a driver,
+        could read, rename, or delete any other user's AI conversation
+        history. Chat is exactly where free-text operational questions
+        get typed, so this was a full cross-user privacy leak reachable
+        directly from the shipped Copilot Rail UI.
+
+        Scoped to the owning user via the same self-service pattern
+        this codebase already established for deployfleet.leave.request
+        (deployfleet_leave/security/deployfleet_leave_security_rules.xml)
+        — no `groups` restriction, so it applies to every role,
+        including managers/owners: nobody has a legitimate reason to
+        browse another user's chat history via this model.
+    -->
+    <record id="deployfleet_ai_chat_session_rule_own" model="ir.rule">
+        <field name="name">AI Chat Session: own sessions only</field>
+        <field name="model_id" ref="model_deployfleet_ai_chat_session"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+    </record>
+
+    <record id="deployfleet_ai_chat_message_rule_own" model="ir.rule">
+        <field name="name">AI Chat Message: own sessions' messages only</field>
+        <field name="model_id" ref="model_deployfleet_ai_chat_message"/>
+        <field name="domain_force">[('session_id.user_id', '=', user.id)]</field>
+    </record>
+</odoo>

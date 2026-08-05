@@ -13,6 +13,7 @@
         <field name="action_type">mark_vehicle_available</field>
         <field name="target_model">deployfleet.vehicle</field>
         <field name="action_method">action_set_available</field>
+        <field name="auto_execute">True</field>
         <field name="description">Marking an available vehicle available again is idempotent and trivially reversible (any other status button undoes it); the vehicle's own state machine, not this allow-list, is what actually gates whether the call has any effect.</field>
     </record>
 </odoo>

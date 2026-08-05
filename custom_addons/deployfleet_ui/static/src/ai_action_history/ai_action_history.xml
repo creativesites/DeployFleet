@@ -41,6 +41,12 @@
                             <t t-if="request.target_id"> #<t t-esc="request.target_id"/></t>
                             <t t-else=""> (create)</t>
                         </p>
+                        <p t-if="request.action_method" class="df-ai-action-history__detail-line df-ai-action-history__detail-line--method">
+                            Method: <code t-esc="request.action_method"/>
+                        </p>
+                        <p t-if="request.auto_executed" class="df-ai-action-history__detail-line df-ai-action-history__detail-line--auto">
+                            <i class="fa fa-bolt"/> Auto-executed — no human approval, allow-listed
+                        </p>
                         <p t-if="request.source_context" class="df-ai-action-history__detail-line">
                             Source: <t t-esc="request.source_context"/>
                         </p>

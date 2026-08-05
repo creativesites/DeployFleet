@@ -86,7 +86,7 @@ class DeployfleetAICore(models.AbstractModel):
         if budget:
             budget._check_budget()
 
-        cache_key = self._make_cache_key(feature_key, system_prompt, user_message)
+        cache_key = self._make_cache_key(feature_key, system_prompt, user_message, company)
         if config.enable_response_cache:
             cached = self.env["deployfleet.ai.response.cache"].sudo().search([("cache_key", "=", cache_key)], limit=1)
             if cached:
@@ -221,8 +221,18 @@ class DeployfleetAICore(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _make_cache_key(self, feature_key, system_prompt, user_message):
-        raw = f"{feature_key}|{system_prompt}|{user_message}".encode("utf-8")
+    def _make_cache_key(self, feature_key, system_prompt, user_message, company):
+        # Engineering-audit fix: this key previously had no company
+        # dimension at all, so two different companies asking the same
+        # feature the same question (very real for a freeform "Ask this
+        # agent" box, or any canned/FAQ-style prompt) would collide on
+        # the same cache row and each see the other tenant's cached
+        # answer — a real cross-tenant leak in this product's own
+        # stated multi-tenant deployment model. Folding company.id into
+        # the hashed key (rather than adding a new column + domain
+        # filter) keeps the existing UNIQUE(cache_key) constraint and
+        # plain key-only lookup correctly scoped with no schema change.
+        raw = f"{company.id}|{feature_key}|{system_prompt}|{user_message}".encode("utf-8")
         return hashlib.sha256(raw).hexdigest()
 
     @api.model

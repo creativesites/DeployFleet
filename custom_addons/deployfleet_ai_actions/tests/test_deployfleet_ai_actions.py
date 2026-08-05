@@ -145,6 +145,9 @@ class TestDeployfleetAIActionMethodExecution(TestDeployfleetAIActionRequestBase)
     tests above reuse deployfleet.vehicle.type."""
 
     def test_action_method_call_executes_and_records_result(self):
+        # mark_vehicle_available/action_set_available is seeded as an
+        # allow-list entry by deployfleet_ai_actions' own demo data, so
+        # this exercises the normal (non-test-registered) path.
         vehicle = self.env["deployfleet.vehicle"].create({
             "license_plate": "AI-EXEC-1", "vehicle_type_id": self._vehicle_type().id,
         })
@@ -157,6 +160,52 @@ class TestDeployfleetAIActionMethodExecution(TestDeployfleetAIActionRequestBase)
         request.with_user(self.manager_user).action_approve()
         self.assertEqual(request.state, "executed")
         self.assertEqual(request.result_record_id, vehicle.id)
+        self.assertEqual(vehicle.status, "available")
+
+    def test_action_method_not_on_the_allow_list_cannot_be_approved(self):
+        """Regression test for an engineering-audit finding: an
+        action_method request previously had no gate beyond the small,
+        business-model-free forbidden-model deny-list - any producer
+        could set action_method to an arbitrary action_*-prefixed method
+        on any non-forbidden model, and a manager clicking Approve would
+        execute it exactly as approved, with no allow-list check at all."""
+        vehicle = self.env["deployfleet.vehicle"].create({
+            "license_plate": "AI-EXEC-4", "vehicle_type_id": self._vehicle_type().id,
+        })
+        request = self._create_request(
+            action_type="some_other_action", target_model="deployfleet.vehicle",
+            target_id=vehicle.id, proposed_vals=json.dumps({}), action_method="action_set_maintenance",
+        )
+        request.action_submit_for_approval()
+        with self.assertRaises(UserError):
+            request.with_user(self.manager_user).action_approve()
+        self.assertEqual(request.state, "pending_approval")
+
+    def test_action_method_allow_listed_but_not_auto_execute_still_requires_manual_approval(self):
+        """auto_execute is a narrower flag *within* the broader allow-
+        list, not a synonym for it - an entry with auto_execute=False
+        may still be manually approved (it's on the allow-list) but must
+        never bypass the approval queue on its own."""
+        vehicle = self.env["deployfleet.vehicle"].create({
+            "license_plate": "AI-EXEC-5", "vehicle_type_id": self._vehicle_type().id,
+        })
+        vehicle.status = "maintenance"
+        self.env["deployfleet.ai.auto.executable.action"].create({
+            "action_type": "mark_vehicle_available_manual_only", "target_model": "deployfleet.vehicle",
+            "action_method": "action_set_available", "auto_execute": False,
+            "description": "Test allow-list entry, manual-approval-only.",
+        })
+        request = self.env["deployfleet.ai.action.request"].propose(
+            feature_key=self.feature.key, action_type="mark_vehicle_available_manual_only",
+            target_model="deployfleet.vehicle", target_id=vehicle.id, proposed_vals={},
+            action_method="action_set_available",
+        )
+        self.assertEqual(request.state, "pending_approval")
+        self.assertFalse(request.auto_executed)
+        self.assertEqual(vehicle.status, "maintenance", "no write should have happened yet")
+
+        request.with_user(self.manager_user).action_approve()
+        self.assertEqual(request.state, "executed")
         self.assertEqual(vehicle.status, "available")
 
     def test_action_method_must_start_with_action_prefix(self):

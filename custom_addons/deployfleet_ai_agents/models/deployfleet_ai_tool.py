@@ -34,11 +34,18 @@ def _tool_get_vehicle_summary(env, arguments, _feature_key):
     upserts it otherwise. The cache never replaces the live field read
     below (id/license_plate/status/... always come straight from the
     ORM record, never from the cache) - only the human-readable
-    `summary` string is what gets cached."""
+    `summary` string is what gets cached.
+
+    The vehicle read itself is deliberately NOT sudo()'d — see the
+    engineering-audit fix note on _tool_get_expiring_documents below,
+    the same reasoning applies here. Only the entity-summary cache
+    (pure internal bookkeeping, not business data beyond what the
+    caller can already read on the vehicle) stays sudo()'d, since it's
+    locked to base.group_system the same way the AI response cache is."""
     vehicle_id = arguments.get("vehicle_id")
     if not vehicle_id:
         return {"error": "vehicle_id is required."}
-    vehicle = env["deployfleet.vehicle"].sudo().browse(int(vehicle_id))
+    vehicle = env["deployfleet.vehicle"].browse(int(vehicle_id))
     if not vehicle.exists():
         return {"error": f"No vehicle found with id {vehicle_id}."}
 
@@ -63,7 +70,9 @@ def _tool_get_vehicle_summary(env, arguments, _feature_key):
 
 
 def _tool_get_due_maintenance(env, _arguments, _feature_key):
-    schedules = env["deployfleet.maintenance.schedule"].sudo().search(
+    # Not sudo()'d — see the engineering-audit fix note on
+    # _tool_get_expiring_documents below.
+    schedules = env["deployfleet.maintenance.schedule"].search(
         [("is_due", "=", True)], order="next_due_date asc", limit=20,
     )
     return {
@@ -86,13 +95,18 @@ def _tool_get_available_drivers(env, arguments, _feature_key):
     there is no single boolean "driver status" field anywhere in the
     domain). Mirrors that same query shape rather than inventing a new
     availability definition."""
+    # Not sudo()'d — see the engineering-audit fix note on
+    # _tool_get_expiring_documents below. A driver-scoped caller will
+    # only see their own leave record via deployfleet.leave.request's
+    # own ir.rule, which understates who else is on leave rather than
+    # over-exposing it — the correct direction for a degrade.
     target_date = arguments.get("date")
-    drivers = env["hr.employee"].sudo().search([
+    drivers = env["hr.employee"].search([
         ("deployfleet_is_driver", "=", True),
         ("deployfleet_license_is_expired", "=", False),
     ])
     if target_date:
-        on_leave_employee_ids = env["deployfleet.leave.request"].sudo().search([
+        on_leave_employee_ids = env["deployfleet.leave.request"].search([
             ("employee_id", "in", drivers.ids),
             ("state", "=", "approved"),
             ("date_from", "<=", target_date),
@@ -114,7 +128,17 @@ def _tool_get_available_drivers(env, arguments, _feature_key):
 
 
 def _tool_get_unassigned_shipments(env, _arguments, _feature_key):
-    shipments = env["deployfleet.shipment"].sudo().search(
+    # Not sudo()'d — engineering-audit fix: every read tool in this file
+    # previously bypassed its target model's own ACL via sudo() with no
+    # company or role filter of its own, letting a low-trust caller (a
+    # driver has no direct ACL row on several of these models) extract
+    # company-wide operational data through chat that the model's own
+    # access rules would otherwise deny. Running as the calling user
+    # lets the model's real ACL/record rules govern the result, exactly
+    # as if that user browsed the underlying list themselves; a denied
+    # read surfaces as a normal tool-call failure fed back to the model
+    # (execute()'s broad except below), not a crash.
+    shipments = env["deployfleet.shipment"].search(
         [("state", "=", "confirmed")], order="requested_pickup_date asc", limit=20,
     )
     return {
@@ -134,7 +158,15 @@ def _tool_get_unassigned_shipments(env, _arguments, _feature_key):
 
 
 def _tool_get_expiring_documents(env, _arguments, _feature_key):
-    documents = env["deployfleet.compliance.document"].sudo().search(
+    # Not sudo()'d — see the engineering-audit fix note on
+    # _tool_get_unassigned_shipments above. This is the tool the audit
+    # specifically flagged: deployfleet.compliance.document has no ACL
+    # row for the driver group at all, so a driver previously extracted
+    # the full fleet-wide expiring/expired document list — other
+    # drivers' license status, other vehicles' insurance state — purely
+    # by asking a question that triggered this tool, entirely bypassing
+    # a model they have zero direct access to.
+    documents = env["deployfleet.compliance.document"].search(
         [("state", "in", ("expiring_soon", "expired"))], order="expiry_date asc", limit=20,
     )
     return {

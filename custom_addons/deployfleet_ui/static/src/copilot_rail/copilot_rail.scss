@@ -400,6 +400,24 @@
     color: var(--df-color-neutral-600);
 }
 
+// Engineering-audit fix: an action_method request's real effect (the
+// method call) previously wasn't shown at all — only proposed_vals,
+// typically {} for this request shape. Styled to stand out slightly
+// from the plain action-type line, since it's the actual thing being
+// approved.
+.df-copilot-rail__item-method {
+    margin: 0 0 var(--df-space-2);
+    padding: 4px var(--df-space-1);
+    border-radius: var(--df-radius-sm);
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-neutral-900);
+    font-size: var(--df-font-size-sm);
+
+    code {
+        font-weight: var(--df-font-weight-bold);
+    }
+}
+
 // Deliberately kept as a dark code block even on this light panel — a
 // dark, monospace payload viewer is the familiar convention for raw
 // JSON/code (editors, diffs, terminals), and reads clearly regardless of

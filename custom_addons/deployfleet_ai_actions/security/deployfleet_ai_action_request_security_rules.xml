@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix: deployfleet.ai.action.request had no
+        company_id field and no ir.rule at all. Every company's
+        AI-proposed actions pooled in one unscoped table - a manager
+        opening the Copilot Rail's Approvals tab or AI Action History in
+        a multi-company deployment could see, and approve/reject,
+        another company's pending requests, including writes to that
+        other company's records via the approved action. This is a
+        cross-tenant *write*-authorization bypass, not just a read leak.
+
+        Standard multi-company domain (record with no company, or a
+        company the user has access to) - no `groups` restriction, so
+        it applies to every role that can already read this model.
+    -->
+    <record id="deployfleet_ai_action_request_rule_company" model="ir.rule">
+        <field name="name">AI Action Request: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_action_request"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

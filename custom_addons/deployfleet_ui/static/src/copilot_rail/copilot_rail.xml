@@ -49,7 +49,10 @@
                                 <p class="df-copilot-rail__item-action">
                                     <t t-esc="request.action_type"/> on <t t-esc="request.target_model"/>
                                 </p>
-                                <pre class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                                <p t-if="request.action_method" class="df-copilot-rail__item-method">
+                                    Will call <code t-esc="request.action_method"/> on record #<t t-esc="request.target_id"/>
+                                </p>
+                                <pre t-if="!request.action_method" class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
                                 <div class="df-copilot-rail__item-actions">
                                     <DeployfleetButton
                                         label="'Approve'"

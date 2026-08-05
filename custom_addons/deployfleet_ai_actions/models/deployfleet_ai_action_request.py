@@ -65,6 +65,14 @@ class DeployfleetAIActionRequest(models.Model):
         default="draft",
         required=True,
     )
+    company_id = fields.Many2one(
+        "res.company", required=True, default=lambda self: self.env.company,
+        help="Engineering-audit fix: this model had no company field or ir.rule at all - "
+             "in a multi-company deployment, a manager in one company could see and approve, "
+             "including writes to another company's records, another company's pending AI "
+             "action requests. Scoped by the standard company ir.rule (security/"
+             "deployfleet_ai_action_request_security_rules.xml).",
+    )
     requested_by = fields.Many2one("res.users", required=True, default=lambda self: self.env.user)
     approved_by = fields.Many2one("res.users", readonly=True, copy=False)
     executed_at = fields.Datetime(readonly=True, copy=False)
@@ -154,8 +162,41 @@ class DeployfleetAIActionRequest(models.Model):
         for request in self:
             if request.state != "pending_approval":
                 raise UserError(self.env._("Only a pending request can be approved."))
+            request._check_action_method_allowed()
             request.write({"state": "approved", "approved_by": self.env.user.id})
             request._execute()
+
+    def _check_action_method_allowed(self):
+        """Engineering-audit fix: an action_method request previously had
+        no gate beyond the small, business-model-free _FORBIDDEN_TARGET_
+        MODELS deny-list - any producer calling propose() could set
+        action_method to any action_*-prefixed method on any non-forbidden
+        model, and a manager clicking Approve (often without even being
+        shown the method - see deployfleet_ui's own fix for that half of
+        this finding) would execute it exactly as approved. Every
+        action_method call, manual or auto, must now match a curated
+        deployfleet.ai.auto.executable.action allow-list entry before it
+        can run at all - auto_execute on that entry is a separate,
+        narrower question of whether it may additionally skip this human
+        check, not whether it's permitted through this pipeline in the
+        first place. Plain field write/create requests are unaffected -
+        the existing forbidden-model deny-list is deliberately still the
+        only gate for those."""
+        self.ensure_one()
+        if not self.action_method:
+            return
+        allow_list_entry = self.env["deployfleet.ai.auto.executable.action"].search([
+            ("action_type", "=", self.action_type),
+            ("target_model", "=", self.target_model),
+            ("action_method", "=", self.action_method),
+        ], limit=1)
+        if not allow_list_entry:
+            raise UserError(self.env._(
+                "'%(method)s' on %(model)s is not on the AI executable-action allow-list. "
+                "An admin must add it (Executable Actions) before this request can be "
+                "approved or executed.",
+                method=self.action_method, model=self.target_model,
+            ))
 
     def _execute(self):
         """Writes via the normal ORM, as the *approver* (or, for an
@@ -241,7 +282,11 @@ class DeployfleetAIActionRequest(models.Model):
         financial data) is re-verified per-call, zero exception, the same
         defense-in-depth reasoning action_approve()/action_reject()
         already apply to their own role checks - an allow-list row alone
-        is never sufficient on its own."""
+        is never sufficient on its own. `auto_execute` on the matched
+        entry is the narrower of the two questions an allow-list row now
+        answers (see the engineering-audit fix note on
+        _check_action_method_allowed()) - "may this skip human review,"
+        not just "may this pipeline ever call it." """
         self.ensure_one()
         if feature.data_category in ("payroll", "financial"):
             return False
@@ -250,7 +295,7 @@ class DeployfleetAIActionRequest(models.Model):
             ("target_model", "=", self.target_model),
             ("action_method", "=", self.action_method or False),
         ], limit=1)
-        return bool(allow_list_entry)
+        return bool(allow_list_entry) and allow_list_entry.auto_execute
 
     def _auto_execute(self):
         """Runs the same state transition + _execute() a human manager's
