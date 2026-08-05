@@ -20,11 +20,17 @@ Per [16-experience-architecture.md](16-experience-architecture.md) §2.1: **Tesl
 
 Deliberately distinct from DeployGuard's Goldman-Sachs-adjacent deep navy (`#1B3A6B` family) — DeployFleet earns its own identity rather than reading as a reskin, per [CLAUDE.md](../../CLAUDE.md)'s explicit instruction.
 
-| Role | Direction | Rationale |
-|---|---|---|
-| **Primary** | Deep teal-blue (a cooler, more saturated blue-green than DeployGuard's navy — think horizon-at-dusk, not pinstripe-suit) | Professional and enterprise-credible without borrowing DeployGuard's specific hue; evokes movement, sky, and distance rather than finance |
-| **Accent** | Warm amber-orange, drawn from road-safety/high-visibility signage | The one color that earns attention — reserved for primary CTAs, the AI-adjacent accent in the Copilot Rail's chrome (not its content, which is violet — see §2.3), and the Launcher's priority-workspace strip. Never used decoratively; if it's on screen, it's asking for a click. |
-| **Neutral scale** | Slate/graphite grays, cooler than DeployGuard's warmer slate | Workspace Layer surfaces, body text, borders — the majority of any screen's actual pixels |
+**Changelog note (Aug 2026 rebrand):** this section originally specified an independently-designed teal-blue/amber pairing (`#0f4c5c`/`#f5940a`), invented before a real logo existed. It's been retargeted to the actual DeployFleet logo's cyan/teal identity, delivered as a full styling guide (colors, gradient, component recipes) alongside the finished mark. The roles below are unchanged — `--df-color-primary` is still brand chrome (links, icons, active-state borders), `--df-color-accent` is still the primary-CTA/interactive color — only the hues moved. Exact hex values now live in `tokens.scss`; this table is kept as the rationale record, not re-derived here.
+
+| Role | Token(s) | Hex | Direction | Rationale |
+|---|---|---|---|---|
+| **Primary** | `--df-color-primary` / `-dark` / `-light` | `#0b93d3` / `#086e9c` / `#00d2ff` | Logo teal, with the logo's bright cyan as the light variant | Brand chrome — links, active-state borders, icon fills, avatar backgrounds. The cooler of the logo's two hues, used where a UI element needs to read as "branded" without demanding a click. |
+| **Accent** | `--df-color-accent` / `-dark` | `#00d2ff` / `#0b93d3` | Logo cyan → teal | The one color family that earns attention — primary CTAs, the Launcher's priority-workspace strip, and (per `--df-gradient-brand` below) the signature two-stop sweep. The AI-adjacent accent in the Copilot Rail's chrome stays violet, not this — see §2.3; this pairing is never used decoratively, if it's on screen it's asking for a click. |
+| **Brand gradient** | `--df-gradient-brand` | `linear-gradient(135deg, #00d2ff 0%, #0b93d3 100%)` | Cyan → teal, the logo's own sweep | Preferred over a solid accent fill wherever a component can render a gradient background — primary buttons, icon-chip fills, hero-style highlight text. |
+| **Neutral scale (dark end)** | `--df-color-neutral-900` | `#0a1128` (Deep Midnight Navy) | Near-black navy, not graphite | Headline/body text and other high-priority UI elements, per the styling guide's own "Primary Navy" role — doubles as this system's darkest neutral rather than a separate token, since neutral-900 already carried that duty. |
+| **Neutral scale (light end)** | `--df-color-neutral-100` / `-300` / `-0` | `#f8fafc` / `#e2e8f0` / `#ffffff` | Off-white canvas, cool-gray border, pure-white card | Workspace Layer page background, dividers/card borders, and elevated card surfaces respectively — the "light background strategy" the styling guide leads with, reducing eye strain vs. pure white while keeping cards visually elevated above the canvas. |
+
+`--df-color-neutral-500` (`#64748b`, muted/secondary text) was already an exact match to the new guide's value and is unchanged.
 
 ### 2.2 Status semantics — the platform-wide rule
 

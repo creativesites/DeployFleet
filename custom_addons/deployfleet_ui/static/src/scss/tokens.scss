@@ -5,31 +5,48 @@
 // a component file; extend this file instead (doc 17 §12/§13).
 
 :root {
-    // ---- Brand palette (§2.1) — deliberately distinct from DeployGuard's
-    // navy, per CLAUDE.md's "not a re-skin" instruction. ----
-    --df-color-primary: #0f4c5c;
-    --df-color-primary-dark: #0a3540;
-    --df-color-primary-light: #3d7a8a;
-    --df-color-accent: #f5940a;
-    --df-color-accent-dark: #c9750a;
+    // ---- Brand palette (§2.1) — retargeted to the DeployFleet logo's
+    // cyan/teal identity (Aug 2026 rebrand; see doc 17 §2.1 changelog
+    // note). `--df-color-primary` keeps its existing role (brand
+    // chrome — links, icons, active-state borders, avatar fill) rather
+    // than being repointed to the navy, since neutral-900 below already
+    // covers "headline/body text" duty; `--df-color-accent` keeps its
+    // existing role (primary CTA / interactive-surface color). Both
+    // roles are unchanged, only the hues moved onto the logo's actual
+    // cyan/teal rather than the previous teal-blue/amber pairing. ----
+    --df-color-primary: #0b93d3;
+    --df-color-primary-dark: #086e9c;
+    --df-color-primary-light: #00d2ff;
+    --df-color-accent: #00d2ff;
+    --df-color-accent-dark: #0b93d3;
+    // Two-stop brand gradient (primary CTAs, icon-chip fills, highlight
+    // text) — the logo's own cyan-to-teal sweep. Prefer this over a
+    // solid `--df-color-accent` fill wherever a component can support a
+    // gradient background.
+    --df-gradient-brand: linear-gradient(135deg, #00d2ff 0%, #0b93d3 100%);
 
     // ---- Neutral scale (Workspace Layer surfaces, body text, borders) ----
-    --df-color-neutral-900: #10161c;
+    // neutral-900/300/100 retargeted to the new styling guide's exact
+    // navy/border/canvas hexes (Aug 2026 rebrand); neutral-500 already
+    // matched the guide's muted-text value and is unchanged.
+    --df-color-neutral-900: #0a1128;
     --df-color-neutral-700: #33404a;
     --df-color-neutral-600: #475569;
     --df-color-neutral-500: #64748b;
-    --df-color-neutral-300: #cbd5e1;
-    --df-color-neutral-100: #f1f5f9;
+    --df-color-neutral-300: #e2e8f0;
+    --df-color-neutral-100: #f8fafc;
     --df-color-neutral-0: #ffffff;
 
     // ---- Status semantics (§2.2) — platform-wide, not per-dashboard.
     // Color follows business meaning, not metric direction: decide the
     // "good"/"bad" direction explicitly per metric at the call site,
-    // never assume "up = green". ----
-    --df-color-success: #16a34a;
-    --df-color-success-bg: #eafaf0;
-    --df-color-warning: #d97706;
-    --df-color-warning-bg: #fef6e7;
+    // never assume "up = green". success/warning hues retargeted to the
+    // new styling guide's exact Emerald/Amber values (Aug 2026 rebrand);
+    // danger/info are outside the guide's scope and are unchanged. ----
+    --df-color-success: #10b981;
+    --df-color-success-bg: #ecfdf5;
+    --df-color-warning: #f59e0b;
+    --df-color-warning-bg: #fffbeb;
     --df-color-danger: #dc2626;
     --df-color-danger-dark: #b91c1c;
     --df-color-danger-bg: #fdecec;
@@ -66,9 +83,13 @@
     --df-radius-sm: 6px;
     --df-radius-md: 10px;
     --df-radius-lg: 20px;
-    --df-shadow-resting: 0 1px 2px rgba(15, 76, 92, 0.06);
-    --df-shadow-hover: 0 6px 16px rgba(15, 76, 92, 0.12);
-    --df-shadow-modal: 0 32px 80px -20px rgba(15, 76, 92, 0.35);
+    // Shadow tint is a subtle wash of --df-color-primary (#0b93d3 ==
+    // rgb(11, 147, 211)) per doc 17 §5 — retargeted alongside the brand
+    // palette above (Aug 2026 rebrand); previously tinted with the old
+    // teal-blue primary (#0f4c5c).
+    --df-shadow-resting: 0 1px 2px rgba(11, 147, 211, 0.06);
+    --df-shadow-hover: 0 6px 16px rgba(11, 147, 211, 0.12);
+    --df-shadow-modal: 0 32px 80px -20px rgba(11, 147, 211, 0.35);
 
     // ---- Command Layer glass recipe (§6) — Command Layer surfaces only;
     // Workspace Layer surfaces never use blur. Light frosted-glass panel
@@ -80,7 +101,7 @@
     // (now light) surface color. ----
     --df-glass-blur: 26px;
     --df-glass-saturate: 135%;
-    --df-glass-border: rgba(15, 76, 92, 0.12);
+    --df-glass-border: rgba(11, 147, 211, 0.12);
     // 0.82, not near-opaque — low enough that a genuinely blurred
     // backdrop (applied via `backdrop-filter` on the panel itself, not
     // just the surrounding scrim) still visibly reads through the
@@ -101,7 +122,7 @@
         --df-color-neutral-0: #10161c;
         --df-color-neutral-100: #1a2229;
         --df-color-neutral-300: #33404a;
-        --df-color-neutral-900: #f1f5f9;
+        --df-color-neutral-900: #f8fafc;
         --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
         --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
         --df-glass-border: rgba(255, 255, 255, 0.14);
@@ -113,7 +134,7 @@
     --df-color-neutral-0: #10161c;
     --df-color-neutral-100: #1a2229;
     --df-color-neutral-300: #33404a;
-    --df-color-neutral-900: #f1f5f9;
+    --df-color-neutral-900: #f8fafc;
     --df-shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.4);
     --df-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.5);
     --df-glass-border: rgba(255, 255, 255, 0.14);
