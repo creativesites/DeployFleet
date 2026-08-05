@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.loan had no company_id
+        field, or any ir.rule, at all. employee_id (required) already
+        carries hr.employee's own native company_id, so it's scoped via
+        a relational domain instead of a redundant column.
+    -->
+    <record id="deployfleet_loan_rule_company" model="ir.rule">
+        <field name="name">Loan: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_loan"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

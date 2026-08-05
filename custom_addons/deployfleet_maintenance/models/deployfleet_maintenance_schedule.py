@@ -17,6 +17,9 @@ class DeployfleetMaintenanceSchedule(models.Model):
     _name = "deployfleet.maintenance.schedule"
     _description = "DeployFleet Maintenance Schedule"
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     vehicle_id = fields.Many2one("deployfleet.vehicle", required=True)
     name = fields.Char(required=True, help="e.g. 'Oil Change', 'Full Service'.")
     interval_km = fields.Float(help="0 = not odometer-based.")

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): neither model had a company_id
+        field, or any ir.rule, at all. deployfleet.workshop.job.line is
+        a required, ondelete-cascade child of job_card_id, scoped via a
+        relational domain instead of a redundant column of its own.
+    -->
+    <record id="deployfleet_workshop_job_card_rule_company" model="ir.rule">
+        <field name="name">Workshop Job Card: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_workshop_job_card"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_workshop_job_line_rule_company" model="ir.rule">
+        <field name="name">Workshop Job Line: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_workshop_job_line"/>
+        <field name="domain_force">[('job_card_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

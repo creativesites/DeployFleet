@@ -15,6 +15,9 @@ class DeployfleetAsset(models.Model):
     _description = "DeployFleet Asset"
     _order = "name"
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     name = fields.Char(required=True)
     asset_type = fields.Selection(
         [

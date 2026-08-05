@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.part had no company_id
+        field, or any ir.rule, at all - every company's shared parts pool
+        was visible/writable to every other company's dispatcher/manager
+        the moment a second company existed on the same database.
+    -->
+    <record id="deployfleet_part_rule_company" model="ir.rule">
+        <field name="name">Part: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_part"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

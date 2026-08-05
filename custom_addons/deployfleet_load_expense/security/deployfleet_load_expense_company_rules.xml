@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.load.expense had no
+        company_id field, or any ir.rule, at all. It's a required,
+        ondelete-cascade child of shipment_id (deployfleet.shipment
+        already has its own company_id + rule, added in the first C-01
+        batch), scoped via a relational domain instead of a redundant
+        column of its own.
+    -->
+    <record id="deployfleet_load_expense_rule_company" model="ir.rule">
+        <field name="name">Load Expense: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_load_expense"/>
+        <field name="domain_force">[('shipment_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!--
+        Engineering-audit fix (H-03): the driver group's own ACL grants
+        create (and read), but with no check tying the expense to the
+        driver's own trip - any driver could log an expense against ANY
+        shipment/trip, polluting actual-cost tracking. Requiring trip_id
+        to be the driver's own trip applies to create too (ir.rule
+        domains are checked post-write on create by default), so a
+        driver must set trip_id to their own trip to log an expense -
+        trip_id is optional on the model generally, but a driver-created
+        row with it left blank now fails this rule (trip_id.driver_id.
+        user_id on a False trip_id resolves to no match), which is the
+        intended tightening; dispatchers/managers keep the unrestricted
+        rule below for the cases that genuinely predate trip assignment.
+    -->
+    <record id="deployfleet_load_expense_rule_driver_own_trip" model="ir.rule">
+        <field name="name">Driver: expenses on their own trip only</field>
+        <field name="model_id" ref="model_deployfleet_load_expense"/>
+        <field name="domain_force">[('trip_id.driver_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="deployfleet_load_expense_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all load expenses</field>
+        <field name="model_id" ref="model_deployfleet_load_expense"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
+    </record>
+</odoo>

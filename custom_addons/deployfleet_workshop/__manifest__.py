@@ -8,6 +8,7 @@
     "depends": ["deployfleet_vehicle", "deployfleet_parts", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_workshop_company_rules.xml",
         "data/deployfleet_workshop_sequence.xml",
         "views/deployfleet_workshop_job_card_views.xml",
     ],

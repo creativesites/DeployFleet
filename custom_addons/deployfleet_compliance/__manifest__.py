@@ -8,6 +8,7 @@
     "depends": ["deployfleet_core", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_compliance_company_rules.xml",
         "data/deployfleet_compliance_cron.xml",
         "views/deployfleet_compliance_document_views.xml",
     ],

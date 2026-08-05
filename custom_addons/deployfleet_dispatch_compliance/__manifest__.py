@@ -11,6 +11,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_dispatch_compliance_company_rules.xml",
         "data/deployfleet_driver_compliance_document_types.xml",
         "views/deployfleet_dispatch_assignment_views.xml",
     ],

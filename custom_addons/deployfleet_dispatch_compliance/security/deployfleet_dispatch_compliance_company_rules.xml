@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.dispatch.compliance.
+        override.log had no company_id field, or any ir.rule, at all.
+        A required, ondelete-cascade child of assignment_id
+        (deployfleet.dispatch.assignment, which has no company_id of its
+        own either, but its own required shipment_id does), scoped via a
+        two-hop relational domain instead of a redundant column.
+    -->
+    <record id="deployfleet_dispatch_compliance_override_log_rule_company" model="ir.rule">
+        <field name="name">Compliance Override Log: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_dispatch_compliance_override_log"/>
+        <field name="domain_force">[('assignment_id.shipment_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -23,6 +23,12 @@ class DeployfleetComplianceDocument(models.Model):
     _description = "DeployFleet Compliance Document"
     _order = "expiry_date"
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all. Polymorphic (res_model/res_id can point at either a
+    # vehicle or a driver), so unlike most other C-01 instances this
+    # can't be scoped via a relational domain against a single parent -
+    # it needs its own column.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     document_type_id = fields.Many2one("deployfleet.compliance.document.type", required=True)
     res_model = fields.Char(required=True, index=True)
     res_id = fields.Integer(required=True, index=True)

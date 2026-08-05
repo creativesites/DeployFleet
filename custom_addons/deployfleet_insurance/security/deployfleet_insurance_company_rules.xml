@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): neither model had a company_id
+        field, or any ir.rule, at all. deployfleet.insurance.claim is a
+        required, ondelete-cascade child of policy_id, scoped via a
+        relational domain instead of a redundant column.
+    -->
+    <record id="deployfleet_insurance_policy_rule_company" model="ir.rule">
+        <field name="name">Insurance Policy: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_insurance_policy"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_insurance_claim_rule_company" model="ir.rule">
+        <field name="name">Insurance Claim: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_insurance_claim"/>
+        <field name="domain_force">[('policy_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -21,6 +21,9 @@ class DeployfleetDriverAdvance(models.Model):
     _description = "DeployFleet Driver Cash Advance"
     _order = "issued_date desc"
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     driver_id = fields.Many2one("hr.employee", required=True, domain=[("deployfleet_is_driver", "=", True)])
     trip_id = fields.Many2one("deployfleet.trip")
     amount = fields.Monetary(required=True)

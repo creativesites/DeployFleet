@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.maintenance.schedule had
+        no company_id field, or any ir.rule, at all.
+    -->
+    <record id="deployfleet_maintenance_schedule_rule_company" model="ir.rule">
+        <field name="name">Maintenance Schedule: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_maintenance_schedule"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.driver.advance had no
+        company_id field, or any ir.rule, at all.
+    -->
+    <record id="deployfleet_driver_advance_rule_company" model="ir.rule">
+        <field name="name">Driver Advance: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_driver_advance"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!--
+        Engineering-audit fix (H-02): the driver group's own ACL grants
+        read-only, but with no ir.rule that meant any driver could read
+        every OTHER driver's cash advance amounts and status - a peer
+        financial-privacy leak. Same driver-own / dispatcher-all shape
+        already established for deployfleet.trip/.leave.request.
+    -->
+    <record id="deployfleet_driver_advance_rule_driver_own" model="ir.rule">
+        <field name="name">Driver: own advances only</field>
+        <field name="model_id" ref="model_deployfleet_driver_advance"/>
+        <field name="domain_force">[('driver_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="deployfleet_driver_advance_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all advances</field>
+        <field name="model_id" ref="model_deployfleet_driver_advance"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
+    </record>
+</odoo>

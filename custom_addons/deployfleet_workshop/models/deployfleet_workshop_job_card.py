@@ -12,6 +12,9 @@ class DeployfleetWorkshopJobCard(models.Model):
     _order = "create_date desc"
     _inherit = ["deployfleet.sequence.mixin"]
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     name = fields.Char(required=True, copy=False, default="New")
     vehicle_id = fields.Many2one("deployfleet.vehicle", required=True)
     description = fields.Char()

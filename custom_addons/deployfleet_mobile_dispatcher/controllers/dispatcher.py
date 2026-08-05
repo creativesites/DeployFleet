@@ -16,6 +16,17 @@ class DeployfleetMobileDispatcherController(http.Controller):
     docs/architecture/04-module-structure.md's mobile app table). Reuses
     deployfleet_core's shared auth/envelope helpers rather than
     reimplementing them - see that module's controllers/mobile_api.py.
+
+    Engineering-audit note (H-12): these queries run under `request.env`,
+    the standard Odoo request env bound to the authenticated user, so
+    they're now covered by the same multi-company ir.rule protection
+    added to deployfleet.trip/.shipment/.vehicle elsewhere in this audit
+    pass - a dispatcher can no longer see another company's data through
+    this API. What's deliberately unchanged: Odoo's own `company_ids`
+    rule semantics scope to every company the user is a *member* of, not
+    just whichever one happens to be "active" in a given session - the
+    same behavior every other screen/controller in this product already
+    has, not a narrower guarantee invented just for this one API.
     """
 
     @http.route("/api/mobile/dispatcher/dashboard", type="http", auth="user", methods=["GET"], csrf=False)

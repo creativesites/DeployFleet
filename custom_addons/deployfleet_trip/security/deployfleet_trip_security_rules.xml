@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (H-01): deployfleet.trip and
+        deployfleet.trip.shipment.line had no ir.rule at all - the
+        driver group's own ACL grants read+write on trip (a driver could
+        depart/complete/cancel any driver's trip, not just their own)
+        and read on the shipment line. Same three-rule shape already
+        established for deployfleet.leave.request: a driver-own rule, a
+        dispatcher-all rule (dispatcher/manager/owner all imply driver,
+        so without this every dispatcher would also be wrongly
+        restricted to "their own" trips - almost always none, since
+        dispatchers aren't drivers), and a global (no `groups`) company
+        rule that ANDs against whichever of the first two applies -
+        closing C-01 for these two models in the same change, since
+        neither has a company_id of its own to scope against directly.
+    -->
+    <record id="deployfleet_trip_rule_driver_own" model="ir.rule">
+        <field name="name">Driver: own trips only</field>
+        <field name="model_id" ref="model_deployfleet_trip"/>
+        <field name="domain_force">[('driver_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="deployfleet_trip_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all trips</field>
+        <field name="model_id" ref="model_deployfleet_trip"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
+    </record>
+
+    <record id="deployfleet_trip_rule_company" model="ir.rule">
+        <field name="name">Trip: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_trip"/>
+        <field name="domain_force">[('vehicle_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_trip_shipment_line_rule_driver_own" model="ir.rule">
+        <field name="name">Driver: own trips' shipment lines only</field>
+        <field name="model_id" ref="model_deployfleet_trip_shipment_line"/>
+        <field name="domain_force">[('trip_id.driver_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="deployfleet_trip_shipment_line_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all shipment lines</field>
+        <field name="model_id" ref="model_deployfleet_trip_shipment_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
+    </record>
+
+    <record id="deployfleet_trip_shipment_line_rule_company" model="ir.rule">
+        <field name="name">Trip Shipment Line: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_trip_shipment_line"/>
+        <field name="domain_force">[('shipment_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

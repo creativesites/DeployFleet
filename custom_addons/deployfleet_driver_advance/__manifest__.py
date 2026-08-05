@@ -8,6 +8,7 @@
     "depends": ["deployfleet_driver", "deployfleet_trip", "deployfleet_load_expense", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_driver_advance_company_rules.xml",
         "views/deployfleet_driver_advance_views.xml",
     ],
 }

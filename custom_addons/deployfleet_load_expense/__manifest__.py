@@ -8,6 +8,7 @@
     "depends": ["deployfleet_dispatch", "deployfleet_trip", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_load_expense_company_rules.xml",
         "views/deployfleet_load_expense_views.xml",
     ],
 }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (H-01): deployfleet.delivery had no
+        ir.rule at all - the driver group's own ACL grants create (proof
+        of delivery has no update/unlink path by design, per the
+        model's own comment), so a driver could file a proof-of-delivery
+        for a shipment/trip they were never assigned to. Same
+        driver-own / dispatcher-all / global-company three-rule shape
+        already established for deployfleet.trip.
+    -->
+    <record id="deployfleet_delivery_rule_driver_own" model="ir.rule">
+        <field name="name">Driver: own trips' deliveries only</field>
+        <field name="model_id" ref="model_deployfleet_delivery"/>
+        <field name="domain_force">[('trip_id.driver_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <record id="deployfleet_delivery_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all deliveries</field>
+        <field name="model_id" ref="model_deployfleet_delivery"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
+    </record>
+
+    <record id="deployfleet_delivery_rule_company" model="ir.rule">
+        <field name="name">Delivery: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_delivery"/>
+        <field name="domain_force">[('shipment_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

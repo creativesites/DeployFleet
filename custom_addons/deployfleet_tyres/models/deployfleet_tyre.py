@@ -22,6 +22,9 @@ class DeployfleetTyre(models.Model):
     _description = "DeployFleet Tyre"
     _order = "vehicle_id, position"
 
+    # Engineering-audit fix (C-01): no company_id field existed on this
+    # model at all.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     vehicle_id = fields.Many2one("deployfleet.vehicle", required=True)
     part_id = fields.Many2one(
         "deployfleet.part", help="The tyre product consumed from stock when this record was fitted.",

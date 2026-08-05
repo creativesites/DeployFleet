@@ -49,4 +49,28 @@
         <field name="domain_force">[(1, '=', 1)]</field>
         <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
     </record>
+
+    <!--
+        Engineering-audit fix (C-01): neither deployfleet.leave.request
+        nor deployfleet.leave.balance had a company_id field, or any
+        multi-company protection, at all - employee_id (required on
+        both) already carries hr.employee's own native company_id, so
+        both are scoped via a relational domain instead of a redundant
+        column. This rule has no `groups` restriction, so it applies
+        globally and ANDs with whichever of the two group-scoped rules
+        above matches the user - correctly narrowing both the driver-own
+        and the dispatcher-all rule to the user's own accessible
+        companies too.
+    -->
+    <record id="deployfleet_leave_request_rule_company" model="ir.rule">
+        <field name="name">Leave Request: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_leave_request"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_leave_balance_rule_company" model="ir.rule">
+        <field name="name">Leave Balance: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_leave_balance"/>
+        <field name="domain_force">[('employee_id.company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

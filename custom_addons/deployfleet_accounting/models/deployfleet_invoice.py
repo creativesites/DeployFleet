@@ -70,8 +70,22 @@ class DeployfleetInvoice(models.Model):
         )
 
     def _get_or_create_account(self, code, name, account_type, reconcile=False):
+        # Engineering-audit fix (H-12): the search here previously had no
+        # company filter at all - a matching code created for Company A
+        # would be silently reused for Company B's invoice too (posting
+        # Company B's revenue into Company A's chart of accounts), and
+        # the reverse (a matching account existing but invisible to a
+        # standard multi-company account.account rule) could instead
+        # cause a spurious duplicate account to be created. Scoping the
+        # lookup to the requesting company mirrors the same
+        # company_ids-vs-company_id branch already used below for create().
         account_model = self.env["account.account"]
-        account = account_model.search([("code", "=", code)], limit=1)
+        domain = [("code", "=", code)]
+        if "company_ids" in account_model._fields:
+            domain.append(("company_ids", "in", self.env.company.id))
+        elif "company_id" in account_model._fields:
+            domain.append(("company_id", "=", self.env.company.id))
+        account = account_model.search(domain, limit=1)
         if account:
             return account
         vals = {"name": name, "code": code, "account_type": account_type, "reconcile": reconcile}

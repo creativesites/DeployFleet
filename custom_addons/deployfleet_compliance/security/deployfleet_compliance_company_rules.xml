@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.compliance.document had
+        no company_id field, or any ir.rule, at all - the model's own
+        Compliance Center wall/Vehicle Documents/Driver Documents
+        workspaces all `search([])` it with no company filter.
+    -->
+    <record id="deployfleet_compliance_document_rule_company" model="ir.rule">
+        <field name="name">Compliance Document: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_compliance_document"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

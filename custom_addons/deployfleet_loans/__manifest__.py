@@ -8,6 +8,7 @@
     "depends": ["deployfleet_payroll", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_loans_company_rules.xml",
         "data/deployfleet_loan_payroll_rule.xml",
         "views/deployfleet_loan_views.xml",
     ],

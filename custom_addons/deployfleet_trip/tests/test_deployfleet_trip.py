@@ -203,3 +203,47 @@ class TestDeployfleetTripWorkflow(DeployfleetTripTestBase):
         self.assertEqual(self.vehicle.status, "assigned")
         self.assertEqual(self.vehicle.current_driver_id, self.driver)
         self.assertEqual(self.vehicle.current_trip_id, new_trip)
+
+
+class TestDeployfleetTripDriverScoping(DeployfleetTripTestBase):
+    """Regression tests for an engineering-audit finding (H-01):
+    deployfleet.trip had no ir.rule at all - the driver group's own ACL
+    grants read+write, so any driver could see and act on any other
+    driver's trip."""
+
+    def test_driver_can_see_their_own_trip(self):
+        assignment = self._confirm_an_assignment()
+        trip = self.env["deployfleet.trip"].search([("dispatch_assignment_id", "=", assignment.id)])
+        driver_user = self.env["res.users"].create({
+            "name": "Trip Driver User",
+            "login": "trip_driver_user@example.com",
+            "group_ids": [(6, 0, [self.env.ref("deployfleet_security.group_deployfleet_driver").id])],
+        })
+        self.driver.user_id = driver_user.id
+        visible = self.env["deployfleet.trip"].with_user(driver_user).search([("id", "=", trip.id)])
+        self.assertEqual(visible, trip)
+
+    def test_a_different_driver_cannot_see_it(self):
+        assignment = self._confirm_an_assignment()
+        trip = self.env["deployfleet.trip"].search([("dispatch_assignment_id", "=", assignment.id)])
+        other_driver_user = self.env["res.users"].create({
+            "name": "Other Driver User",
+            "login": "other_driver_user@example.com",
+            "group_ids": [(6, 0, [self.env.ref("deployfleet_security.group_deployfleet_driver").id])],
+        })
+        self.env["hr.employee"].create({
+            "name": "Other Driver", "deployfleet_is_driver": True, "user_id": other_driver_user.id,
+        })
+        visible = self.env["deployfleet.trip"].with_user(other_driver_user).search([("id", "=", trip.id)])
+        self.assertFalse(visible)
+
+    def test_dispatcher_can_see_every_driver_s_trip(self):
+        assignment = self._confirm_an_assignment()
+        trip = self.env["deployfleet.trip"].search([("dispatch_assignment_id", "=", assignment.id)])
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Trip Dispatcher",
+            "login": "trip_dispatcher@example.com",
+            "group_ids": [(6, 0, [self.env.ref("deployfleet_security.group_deployfleet_dispatcher").id])],
+        })
+        visible = self.env["deployfleet.trip"].with_user(dispatcher_user).search([("id", "=", trip.id)])
+        self.assertEqual(visible, trip)

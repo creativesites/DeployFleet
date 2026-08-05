@@ -11,4 +11,24 @@
         <field name="model_id" ref="model_deployfleet_financial_forecast"/>
         <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
     </record>
+
+    <!--
+        deployfleet.fuel.anomaly and deployfleet.maintenance.prediction
+        each require a parent record (fuel_log_id/vehicle_id, both
+        ondelete cascade) and have no company_id of their own - scoped
+        via a relational domain against that parent instead of a
+        redundant column, the same pattern used for the Tyre child
+        models in deployfleet_tyres.
+    -->
+    <record id="deployfleet_fuel_anomaly_rule_company" model="ir.rule">
+        <field name="name">Fuel Anomaly: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_fuel_anomaly"/>
+        <field name="domain_force">[('fuel_log_id.company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_maintenance_prediction_rule_company" model="ir.rule">
+        <field name="name">Maintenance Prediction: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_maintenance_prediction"/>
+        <field name="domain_force">[('vehicle_id.company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

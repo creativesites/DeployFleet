@@ -8,6 +8,7 @@
     "depends": ["deployfleet_vehicle", "deployfleet_workshop", "deployfleet_event_bus", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_maintenance_company_rules.xml",
         "data/deployfleet_maintenance_cron.xml",
         "views/deployfleet_maintenance_schedule_views.xml",
     ],

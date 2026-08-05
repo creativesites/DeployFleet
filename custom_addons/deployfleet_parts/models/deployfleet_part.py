@@ -17,6 +17,12 @@ class DeployfleetPart(models.Model):
     _description = "DeployFleet Part"
     _order = "name"
 
+    # Engineering-audit fix (C-01): this model had no company_id field at
+    # all - not even a column to write a multi-company ir.rule against -
+    # so every company's shared parts pool was visible/writable to every
+    # other company's dispatcher/manager the moment a second company
+    # existed on the same database.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     name = fields.Char(required=True)
     reference = fields.Char(string="Part Number")
     category_id = fields.Many2one("deployfleet.part.category")
