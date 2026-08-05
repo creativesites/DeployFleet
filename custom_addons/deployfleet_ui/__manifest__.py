@@ -44,6 +44,7 @@
         "views/deployfleet_ui_document_types_workspace_views.xml",
         "views/deployfleet_ui_compliance_override_ledger_views.xml",
         "views/deployfleet_ui_help_center_views.xml",
+        "views/deployfleet_ui_login_templates.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -174,6 +175,18 @@
             "deployfleet_ui/static/src/help_trigger/*.scss",
             "deployfleet_ui/static/src/help_trigger/*.js",
             "deployfleet_ui/static/src/help_trigger/*.xml",
+        ],
+        # /web/login renders through Odoo's frontend layout, not the
+        # backend web client - it never loads web.assets_backend above, so
+        # the login page needs its own bundle entry. tokens.scss/
+        # animations.scss are repeated here deliberately (not moved out of
+        # web.assets_backend) so every existing component keeps working
+        # unchanged; a small amount of duplicate CSS custom-property
+        # declarations across two bundles is normal in Odoo and harmless.
+        "web.assets_frontend": [
+            "deployfleet_ui/static/src/scss/tokens.scss",
+            "deployfleet_ui/static/src/scss/animations.scss",
+            "deployfleet_ui/static/src/login/login.scss",
         ],
     },
 }

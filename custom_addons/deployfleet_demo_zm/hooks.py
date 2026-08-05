@@ -28,6 +28,7 @@ fast, offline-safe outcome, not a bug in this generator.
 """
 
 import logging
+import secrets
 from datetime import date, timedelta
 
 from odoo import fields
@@ -59,6 +60,7 @@ def post_init_hook(env):
     _create_payslips(env, drivers)
     _create_ai_action_requests(env, admin)
     _create_whatsapp_demo_config(env, company)
+    _create_demo_login_users(env, drivers, customers)
     _run_ai_agents_crons(env)
     _logger.info("deployfleet_demo_zm: demo dataset generated for %s", company.display_name)
 
@@ -587,6 +589,78 @@ def _create_whatsapp_demo_config(env, company):
         "webhook_verify_token": "demo-verify-token-not-real",
         "enabled": False,
     })
+
+
+# ---------------------------------------------------------------------
+# Demo login accounts - one real, login-capable res.users per
+# DeployFleet role, so the login page's one-click "explore a live demo"
+# buttons (built in deployfleet_ui) have somewhere real to sign in to.
+#
+# Passwords are generated here with `secrets` and stored only in
+# `ir.config_parameter` (sudo-only, database-only) - never written to
+# any file in this repo, never logged, never returned by any public
+# method. `deployfleet_demo_zm.demo_login_enabled` is the master gate
+# every consumer (the login page template, the login controller) checks
+# before doing anything - it is only ever set True here, so it is
+# structurally absent on any database that never installed this
+# demo/tooling-only module, per this module's own standing "never
+# intended for real customer installs" scope.
+# ---------------------------------------------------------------------
+
+def _create_demo_login_users(env, drivers, customers):
+    icp = env["ir.config_parameter"].sudo()
+    user_model = env["res.users"].sudo().with_context(no_reset_password=True, mail_create_nosubscribe=True)
+
+    role_specs = [
+        ("owner", "DeployFleet Demo Owner", "demo.owner@deployfleet.demo",
+         "deployfleet_security.group_deployfleet_owner"),
+        ("dispatcher", "DeployFleet Demo Dispatcher", "demo.dispatcher@deployfleet.demo",
+         "deployfleet_security.group_deployfleet_dispatcher"),
+        ("driver", "Mulenga Chanda (Demo Driver)", "demo.driver@deployfleet.demo",
+         "deployfleet_security.group_deployfleet_driver"),
+    ]
+
+    users = {}
+    for role, name, login, group_xmlid in role_specs:
+        password = secrets.token_urlsafe(32)
+        users[role] = user_model.create({
+            "name": name,
+            "login": login,
+            "email": login,
+            "password": password,
+            "group_ids": [(6, 0, [env.ref(group_xmlid).id])],
+        })
+        icp.set_param(f"deployfleet_demo_zm.demo_login_password_{role}", password)
+
+    # The driver demo account is linked to a real demo driver employee
+    # record, so a "log in as driver" session sees itself reflected in
+    # the Driver & HR domain's own screens (Driver 360, etc.), not a
+    # user with no employee record at all.
+    drivers["driver_1"].write({"user_id": users["driver"].id})
+
+    # Customer portal demo account - a child contact of an existing demo
+    # customer company (not the company partner itself), so
+    # deployfleet_customer_portal's own commercial_partner_id-scoped
+    # domains resolve to that company's real demo shipments/invoices.
+    demo_company_partner = customers["Kwacha Traders Ltd"]["partner"]
+    customer_partner = env["res.partner"].create({
+        "name": "Demo Portal Contact",
+        "parent_id": demo_company_partner.id,
+        "email": "demo.customer@deployfleet.demo",
+    })
+    customer_password = secrets.token_urlsafe(32)
+    users["customer"] = user_model.create({
+        "name": "DeployFleet Demo Customer",
+        "login": "demo.customer@deployfleet.demo",
+        "email": "demo.customer@deployfleet.demo",
+        "password": customer_password,
+        "partner_id": customer_partner.id,
+        "group_ids": [(6, 0, [env.ref("base.group_portal").id])],
+    })
+    icp.set_param("deployfleet_demo_zm.demo_login_password_customer", customer_password)
+
+    icp.set_param("deployfleet_demo_zm.demo_login_enabled", "True")
+    return users
 
 
 # ---------------------------------------------------------------------

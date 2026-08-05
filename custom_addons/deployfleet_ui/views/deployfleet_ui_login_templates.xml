@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Additive-only redesign of Odoo's stock /web/login page. Deliberately
+        touches nothing inside the actual credential-handling form (the
+        login/password inputs, csrf token, hidden fields) - a mistake there
+        would break login for every user, not just one dashboard, so every
+        xpath below anchors on a container div and only adds/replaces
+        presentational content around the untouched form. Verified against
+        Odoo 19's real addons/web/views/webclient_templates.xml source
+        before writing this (not guessed against an assumed DOM shape).
+    -->
+
+    <template id="web_login_layout_deployfleet_branding" inherit_id="web.login_layout">
+        <!-- Odoo's own inline `style="max-width: 300px;"` can only be
+             overridden via attribute inheritance, not CSS specificity,
+             without a !important war - roomier for the demo-login grid
+             below while staying a single centered card on any viewport.
+             This div's class is a `t-attf-class` template expression, not
+             a plain `class` attribute, so hasclass() (which only reads
+             the literal `class` attribute - verified against Odoo's own
+             `_hasclass()` in ir_ui_view.py) can't match it; contains()
+             against the raw t-attf-class expression text can, and was
+             checked against the real 19.0 web.login_layout source before
+             being used here. -->
+        <xpath expr="//div[contains(@t-attf-class, 'o_database_list')]" position="attributes">
+            <attribute name="style">max-width: 420px;</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('text-center') and hasclass('pb-3') and hasclass('border-bottom')]" position="replace">
+            <div class="df-login-brand text-center pb-3 border-bottom mb-4">
+                <img src="/deployfleet_ui/static/img/brand/logo-full-light-bg-web.png" alt="DeployFleet"
+                     class="df-login-brand__logo"/>
+                <p class="df-login-brand__tagline">Mission Control for African Trucking</p>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="web_login_deployfleet_demo_buttons" inherit_id="web.login">
+        <!-- oe_login_buttons is the same container Odoo's own "Log in as
+             superuser" (debug mode) and OAuth provider links already
+             append into - the established, intended extension point for
+             alternate ways to authenticate from this page. -->
+        <xpath expr="//div[hasclass('oe_login_buttons')]" position="inside">
+            <t t-if="request.env['ir.config_parameter'].sudo().get_param('deployfleet_demo_zm.demo_login_enabled') == 'True'">
+                <div class="df-demo-login">
+                    <em class="d-block my-3 small text-center text-muted">— or explore a live demo —</em>
+                    <div class="df-demo-login__grid">
+                        <form method="post" action="/web/login/demo/owner" class="df-demo-login__form">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--owner">
+                                <i class="fa fa-user" role="presentation"/>
+                                <span>Owner / Manager</span>
+                            </button>
+                        </form>
+                        <form method="post" action="/web/login/demo/dispatcher" class="df-demo-login__form">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--dispatcher">
+                                <i class="fa fa-random" role="presentation"/>
+                                <span>Dispatcher</span>
+                            </button>
+                        </form>
+                        <form method="post" action="/web/login/demo/driver" class="df-demo-login__form">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--driver">
+                                <i class="fa fa-truck" role="presentation"/>
+                                <span>Driver</span>
+                            </button>
+                        </form>
+                        <form method="post" action="/web/login/demo/customer" class="df-demo-login__form">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--customer">
+                                <i class="fa fa-briefcase" role="presentation"/>
+                                <span>Customer</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

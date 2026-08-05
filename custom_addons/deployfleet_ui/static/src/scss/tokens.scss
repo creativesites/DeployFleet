@@ -24,6 +24,11 @@
     // solid `--df-color-accent` fill wherever a component can support a
     // gradient background.
     --df-gradient-brand: linear-gradient(135deg, #00d2ff 0%, #0b93d3 100%);
+    // Hover glow for primary-CTA surfaces (Button's primary variant, the
+    // login page's restyled submit button) — a wash of --df-color-accent's
+    // own rgb (#00d2ff == rgb(0, 210, 255)), not a resting-elevation
+    // shadow, so it's its own token rather than reusing --df-shadow-hover.
+    --df-glow-accent: 0 6px 20px rgba(0, 210, 255, 0.35);
 
     // ---- Neutral scale (Workspace Layer surfaces, body text, borders) ----
     // neutral-900/300/100 retargeted to the new styling guide's exact

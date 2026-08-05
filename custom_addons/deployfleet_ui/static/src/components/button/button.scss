@@ -30,12 +30,9 @@
     color: var(--df-color-neutral-0);
 }
 
-// Glow + lift on hover, per the brand styling guide's primary-CTA spec —
-// the shadow color intentionally matches --df-color-accent's own rgb
-// (#00d2ff == rgb(0, 210, 255)) rather than the generic shadow tokens
-// above, since this is a brand-accent glow, not a resting elevation cue.
+// Glow + lift on hover, per the brand styling guide's primary-CTA spec.
 .df-button--primary:hover {
-    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.35);
+    box-shadow: var(--df-glow-accent);
     transform: translateY(-2px);
 }
 

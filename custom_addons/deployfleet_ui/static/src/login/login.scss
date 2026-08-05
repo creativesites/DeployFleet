@@ -1,0 +1,107 @@
+// Restyles Odoo's stock /web/login page (web.login_layout / web.login,
+// both additively t-inherited in deployfleet_ui_login_templates.xml,
+// never their own credential-handling form fields) with DeployFleet's
+// own brand. The login page renders through Odoo's web.assets_frontend
+// bundle, not web.assets_backend like every other deployfleet_ui screen
+// - tokens.scss and animations.scss are loaded into assets_frontend too
+// by this module's manifest, specifically so the --df-* custom
+// properties referenced below actually exist on this unauthenticated
+// page.
+
+.df-login-brand {
+    &__logo {
+        max-height: 96px;
+        max-width: 100%;
+        width: auto;
+    }
+
+    &__tagline {
+        margin: var(--df-space-1) 0 0;
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-sm);
+        font-weight: var(--df-font-weight-medium);
+        color: var(--df-color-neutral-500);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+}
+
+// Restyles Odoo's own stock .btn-primary submit button, scoped to this
+// page's button container only - deliberately not a blanket .btn-primary
+// override, since that Bootstrap class is also used elsewhere on this
+// same page (e.g. the OAuth provider list) whose styling isn't in scope
+// here.
+.oe_login_buttons .btn.btn-primary {
+    background: var(--df-gradient-brand);
+    border: none;
+
+    &:hover {
+        box-shadow: var(--df-glow-accent);
+        transform: translateY(-2px);
+    }
+}
+
+.df-demo-login {
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--df-space-1);
+    }
+
+    &__form {
+        margin: 0;
+    }
+
+    // 64px, comfortably past this module's established 44px touch-target
+    // minimum - these read as quick-access tiles, not compact buttons.
+    &__btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+        min-height: 64px;
+        padding: var(--df-space-1);
+        border: 1px solid var(--df-color-neutral-300);
+        border-radius: var(--df-radius-md);
+        background: var(--df-color-neutral-0);
+        color: var(--df-color-neutral-900);
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-sm);
+        font-weight: var(--df-font-weight-medium);
+        cursor: pointer;
+        transition:
+            border-color var(--df-duration-micro) var(--df-ease-micro),
+            transform var(--df-duration-micro) var(--df-ease-micro);
+
+        i {
+            font-size: var(--df-font-size-md);
+            color: var(--df-color-primary);
+        }
+
+        &:hover {
+            border-color: var(--df-color-primary);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+}
+
+// Mobile-first: two columns down to 400px (matches the Launcher's own
+// destination-grid breakpoint), one column below it.
+@media (max-width: 400px) {
+    .df-demo-login__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .oe_login_buttons .btn.btn-primary,
+    .df-demo-login__btn {
+        transition: none;
+    }
+}
