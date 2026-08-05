@@ -10,6 +10,7 @@ import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DeployfleetAiRecommendationCard } from "../components/ai_recommendation_card/ai_recommendation_card";
 import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
 import { useCopilotContext } from "../copilot_rail/copilot_context";
+import { useHelpContext } from "../help_trigger/help_context";
 
 const STATUS_FILTERS = [
     { key: "all", label: "All" },
@@ -154,6 +155,7 @@ export class DeployfleetFleetCommandCenter extends Component {
         this.actionService = useService("action");
         this.notification = useService("notification");
         this.copilotContext = useCopilotContext();
+        useHelpContext().setContext("fleet_command_center", "Fleet & Vehicles");
         this.state = useState({
             loading: true,
             vehicles: [],
@@ -483,6 +485,10 @@ export class DeployfleetFleetCommandCenter extends Component {
             views: [[false, "form"]],
             target: "current",
         });
+    }
+
+    onOpenHelp() {
+        this.actionService.doAction("deployfleet_ui.action_deployfleet_help_center_fleet", { clearBreadcrumbs: true });
     }
 }
 

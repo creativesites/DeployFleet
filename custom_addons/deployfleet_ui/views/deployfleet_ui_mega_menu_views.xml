@@ -46,6 +46,11 @@
         <field name="tag">deployfleet_ui.domain_mega_menu</field>
         <field name="params" eval="{'domain': 'ai'}"/>
     </record>
+    <record id="action_deployfleet_mega_menu_help" model="ir.actions.client">
+        <field name="name">Help Center</field>
+        <field name="tag">deployfleet_ui.domain_mega_menu</field>
+        <field name="params" eval="{'domain': 'help'}"/>
+    </record>
 
     <menuitem id="menu_deployfleet_mega_menu_fleet"
               name="Fleet &amp; Vehicles"
@@ -77,4 +82,9 @@
               parent="deployfleet_core.menu_deployfleet_root"
               action="action_deployfleet_mega_menu_ai"
               sequence="7"/>
+    <menuitem id="menu_deployfleet_mega_menu_help"
+              name="Help Center"
+              parent="deployfleet_core.menu_deployfleet_root"
+              action="action_deployfleet_mega_menu_help"
+              sequence="8"/>
 </odoo>

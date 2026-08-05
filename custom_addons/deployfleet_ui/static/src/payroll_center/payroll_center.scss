@@ -15,6 +15,13 @@
     margin-bottom: var(--df-space-3);
 }
 
+.df-payroll-center__header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+}
+
 .df-payroll-center__title {
     margin: 0;
     font-size: var(--df-font-size-lg);

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.HelpTrigger">
+        <div>
+            <button type="button" class="df-help-trigger__trigger" t-on-click="() => this.toggleOpen()">
+                <i class="fa fa-question"/>
+            </button>
+
+            <div t-if="state.open" class="df-help-trigger__scrim" t-on-click="() => this.close()">
+                <div class="df-help-trigger__panel" t-on-click="(ev) => ev.stopPropagation()">
+                    <header class="df-help-trigger__header">
+                        <h2><i class="fa fa-life-ring"/> Help</h2>
+                        <button type="button" class="df-help-trigger__close" t-on-click="() => this.close()">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </header>
+
+                    <button t-if="helpContext.contextKey" type="button" class="df-help-trigger__contextual"
+                            t-on-click="() => this.onOpenContextual()">
+                        <i class="fa fa-map-marker"/>
+                        <span>Help for <t t-esc="helpContext.label"/></span>
+                    </button>
+
+                    <ul class="df-help-trigger__links">
+                        <li t-foreach="quickLinks" t-as="link" t-key="link.key">
+                            <button type="button" class="df-help-trigger__link" t-on-click="() => this.onQuickLinkClick(link)">
+                                <i t-att-class="link.icon"/>
+                                <span t-esc="link.label"/>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <button type="button" class="df-help-trigger__home" t-on-click="() => this.onOpenHome()">
+                        Open the full Help Center <i class="fa fa-arrow-right"/>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

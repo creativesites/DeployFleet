@@ -71,7 +71,12 @@ const ARTICLE_FIELDS = [
  * strings, the same soft-coupling decision made throughout
  * deployfleet_ui - deployfleet_help is not a manifest dependency.
  *
- * Contextual deep-linking: `props.action.params.context_key` (set by a
+ * Contextual deep-linking: `props.action.params.article_id`, when set
+ * (the Command Palette's Help results - see
+ * command_palette/deployfleet_command_provider.js - know the exact
+ * article a search matched, so they skip context-key resolution
+ * entirely and open it directly) wins outright. Otherwise
+ * `props.action.params.context_key` (set by a Mega Menu Help tile or a
  * workspace's "Help" button, see fleet_command_center.js/
  * workshop_board.js/payroll_center.js) is resolved in this order -
  * (1) an article whose own `context_key` matches wins, (2) else a
@@ -140,6 +145,11 @@ export class DeployfleetHelpCenter extends Component {
     }
 
     async resolveContext() {
+        const articleId = this.props.action?.params?.article_id;
+        if (articleId) {
+            await this.openArticle(articleId);
+            return;
+        }
         const contextKey = this.props.action?.params?.context_key;
         if (!contextKey) {
             return;

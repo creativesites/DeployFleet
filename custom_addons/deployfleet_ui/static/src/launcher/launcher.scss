@@ -367,6 +367,13 @@
     background: linear-gradient(135deg, var(--df-color-ai), #5b21b6);
 }
 
+// Reuses the existing doc 17 §2.2 "info" status-semantic color rather
+// than inventing a new hue - Help is a cross-cutting informational
+// surface, not a new operations domain.
+.df-launcher__icon--help {
+    background: linear-gradient(135deg, var(--df-color-info), #1d4ed8);
+}
+
 .df-launcher__icon--slate {
     background: linear-gradient(135deg, #64748b, #334155);
 }

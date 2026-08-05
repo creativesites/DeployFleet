@@ -6,6 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
+import { useHelpContext } from "../help_trigger/help_context";
 
 const TABS = [
     { key: "payslips", label: "Payslips" },
@@ -84,6 +85,8 @@ export class DeployfleetPayrollCenter extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
+        this.actionService = useService("action");
+        useHelpContext().setContext("payroll_center", "HR");
         this.tabs = TABS;
         this.state = useState({
             loading: true,
@@ -271,6 +274,10 @@ export class DeployfleetPayrollCenter extends Component {
         } finally {
             this.state.creatingLoan = false;
         }
+    }
+
+    onOpenHelp() {
+        this.actionService.doAction("deployfleet_ui.action_deployfleet_help_center_payroll", { clearBreadcrumbs: true });
     }
 }
 

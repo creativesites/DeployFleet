@@ -64,6 +64,13 @@ const MEGA_MENU_DESTINATIONS = [
         colorFamily: "ai",
         shortcut: "i",
     },
+    {
+        key: "help",
+        actionXmlId: "deployfleet_ui.action_deployfleet_mega_menu_help",
+        icon: "fa fa-life-ring",
+        colorFamily: "help",
+        shortcut: "k",
+    },
 ].map((entry) => ({
     ...entry,
     label: DEPLOYFLEET_MEGA_MENU_DOMAINS[entry.key].label,

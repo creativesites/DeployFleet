@@ -3,8 +3,12 @@
     <t t-name="deployfleet_ui.FleetCommandCenter">
         <div class="df-fleet-cc">
             <header class="df-fleet-cc__header">
-                <h1 class="df-fleet-cc__title">Fleet Command Center</h1>
-                <p class="df-fleet-cc__subtitle">Which trucks are making money?</p>
+                <div class="df-fleet-cc__header-text">
+                    <h1 class="df-fleet-cc__title">Fleet Command Center</h1>
+                    <p class="df-fleet-cc__subtitle">Which trucks are making money?</p>
+                </div>
+                <DeployfleetButton label="'Help'" icon="'fa fa-question-circle'" variant="'secondary'"
+                                   onClick="() => this.onOpenHelp()"/>
             </header>
 
             <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>

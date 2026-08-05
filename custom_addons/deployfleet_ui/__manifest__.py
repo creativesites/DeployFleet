@@ -171,6 +171,9 @@
             "deployfleet_ui/static/src/help_center/*.scss",
             "deployfleet_ui/static/src/help_center/*.js",
             "deployfleet_ui/static/src/help_center/*.xml",
+            "deployfleet_ui/static/src/help_trigger/*.scss",
+            "deployfleet_ui/static/src/help_trigger/*.js",
+            "deployfleet_ui/static/src/help_trigger/*.xml",
         ],
     },
 }

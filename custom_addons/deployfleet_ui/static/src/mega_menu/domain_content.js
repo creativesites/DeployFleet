@@ -295,4 +295,46 @@ export const DEPLOYFLEET_MEGA_MENU_DOMAINS = {
             },
         ],
     },
+    help: {
+        label: "Help Center",
+        subtitle: "Learn how DeployFleet works, in plain language, one topic at a time.",
+        tiles: [
+            {
+                title: "Getting Started",
+                description: "Log in, find your way around, and learn the basics in a few minutes.",
+                icon: "fa fa-compass",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_getting_started",
+            },
+            {
+                title: "Learn the Business Workflow",
+                description: "See how a shipment, a vehicle, and a driver actually move through DeployFleet.",
+                icon: "fa fa-random",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_workflows",
+            },
+            {
+                title: "Module Guides",
+                description: "A plain-language guide to every part of DeployFleet.",
+                icon: "fa fa-book",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_guides",
+            },
+            {
+                title: "FAQ",
+                description: "Quick answers to common questions.",
+                icon: "fa fa-question-circle",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_faq",
+            },
+            {
+                title: "Troubleshooting",
+                description: "Something not working the way you expect? Start here.",
+                icon: "fa fa-life-ring",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_troubleshooting",
+            },
+            {
+                title: "AI Copilot Help",
+                description: "What Copilot can do, and how to ask it for help.",
+                icon: "fa fa-magic",
+                actionXmlId: "deployfleet_ui.action_deployfleet_help_center_ai",
+            },
+        ],
+    },
 };

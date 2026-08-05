@@ -3,8 +3,14 @@
     <t t-name="deployfleet_ui.PayrollCenter">
         <div class="df-payroll-center">
             <header class="df-payroll-center__header">
-                <h1 class="df-payroll-center__title">Payroll Center</h1>
-                <p class="df-payroll-center__subtitle">Payslips, loans, and the deductions that link them.</p>
+                <div class="df-payroll-center__header-top">
+                    <div class="df-payroll-center__header-text">
+                        <h1 class="df-payroll-center__title">Payroll Center</h1>
+                        <p class="df-payroll-center__subtitle">Payslips, loans, and the deductions that link them.</p>
+                    </div>
+                    <DeployfleetButton label="'Help'" icon="'fa fa-question-circle'" variant="'secondary'"
+                                       onClick="() => this.onOpenHelp()"/>
+                </div>
                 <nav t-if="!state.accessError" class="df-payroll-center__tabs">
                     <button t-foreach="tabs" t-as="tab" t-key="tab.key" type="button"
                             t-attf-class="df-payroll-center__tab {{ state.activeTab === tab.key ? 'df-payroll-center__tab--active' : '' }}"

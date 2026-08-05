@@ -1,0 +1,152 @@
+// The persistent Help Trigger corner button (doc 22 §4) - bottom-left,
+// the one uncontested corner: the Launcher trigger owns bottom-right
+// (launcher.scss), the Copilot Rail's docked tab owns the vertically-
+// centered right edge (copilot_rail.scss).
+.df-help-trigger__trigger {
+    position: fixed;
+    left: var(--df-space-3);
+    bottom: var(--df-space-3);
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: var(--df-color-info);
+    color: var(--df-color-neutral-0);
+    font-size: var(--df-font-size-md);
+    cursor: pointer;
+    box-shadow: var(--df-shadow-hover);
+    transition: transform var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-help-trigger__trigger:hover {
+    transform: scale(1.05);
+}
+
+.df-help-trigger__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: var(--df-glass-scrim);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: var(--df-space-3);
+}
+
+// Same light frosted-glass recipe as the Launcher/Copilot Rail panels
+// (doc 17 §6), but a small anchored flyout above the trigger rather
+// than a full-screen modal - this panel is a handful of quick links,
+// not a destination in itself.
+.df-help-trigger__panel {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 60px;
+    box-sizing: border-box;
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-lg);
+    background: var(--df-glass-panel-bg);
+    -webkit-backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    backdrop-filter: blur(var(--df-glass-blur)) saturate(var(--df-glass-saturate));
+    border: 1px solid var(--df-glass-border);
+    box-shadow: var(--df-shadow-modal), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    color: var(--df-color-neutral-900);
+    font-family: var(--df-font-family);
+}
+
+.df-help-trigger__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--df-space-1);
+}
+
+.df-help-trigger__header h2 {
+    margin: 0;
+    font-size: var(--df-font-size-md);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.df-help-trigger__close {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--df-color-neutral-600);
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.df-help-trigger__contextual {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px var(--df-space-1);
+    margin-bottom: var(--df-space-1);
+    border: none;
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-info-bg);
+    color: var(--df-color-info);
+    font-weight: var(--df-font-weight-medium);
+    text-align: left;
+    cursor: pointer;
+}
+
+.df-help-trigger__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.df-help-trigger__link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px var(--df-space-1);
+    border: none;
+    background: none;
+    color: var(--df-color-neutral-900);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--df-radius-sm);
+}
+
+.df-help-trigger__link:hover {
+    background: var(--df-color-neutral-100);
+}
+
+.df-help-trigger__home {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 44px;
+    margin-top: var(--df-space-1);
+    padding: 8px;
+    border: none;
+    border-top: 1px solid var(--df-color-neutral-300);
+    background: none;
+    color: var(--df-color-primary);
+    font-weight: var(--df-font-weight-medium);
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-help-trigger__trigger {
+        transition: none;
+    }
+
+    .df-help-trigger__trigger:hover {
+        transform: none;
+    }
+}

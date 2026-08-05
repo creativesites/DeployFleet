@@ -8,6 +8,7 @@ import { DeployfleetStatusBadge } from "../components/status_badge/status_badge"
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
 import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+import { useHelpContext } from "../help_trigger/help_context";
 
 const STATE_FILTERS = [
     { key: "all", label: "Active" },
@@ -104,6 +105,7 @@ export class DeployfleetWorkshopBoard extends Component {
         this.orm = useService("orm");
         this.actionService = useService("action");
         this.notification = useService("notification");
+        useHelpContext().setContext("workshop_board", "Workshop");
         this.state = useState({
             loading: true,
             jobCards: [],
@@ -207,6 +209,10 @@ export class DeployfleetWorkshopBoard extends Component {
             views: [[false, "form"]],
             target: "current",
         });
+    }
+
+    onOpenHelp() {
+        this.actionService.doAction("deployfleet_ui.action_deployfleet_help_center_workshop", { clearBreadcrumbs: true });
     }
 }
 

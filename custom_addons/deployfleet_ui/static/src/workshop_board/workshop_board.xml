@@ -3,8 +3,12 @@
     <t t-name="deployfleet_ui.WorkshopBoard">
         <div class="df-workshop-board">
             <header class="df-workshop-board__header">
-                <h1 class="df-workshop-board__title">Workshop Board</h1>
-                <p class="df-workshop-board__subtitle">Every job card, oldest active first.</p>
+                <div class="df-workshop-board__header-text">
+                    <h1 class="df-workshop-board__title">Workshop Board</h1>
+                    <p class="df-workshop-board__subtitle">Every job card, oldest active first.</p>
+                </div>
+                <DeployfleetButton label="'Help'" icon="'fa fa-question-circle'" variant="'secondary'"
+                                   onClick="() => this.onOpenHelp()"/>
             </header>
 
             <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>

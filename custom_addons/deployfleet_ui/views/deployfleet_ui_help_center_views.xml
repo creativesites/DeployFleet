@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Help Center (doc 22) - own top-level menu item for now. Mega
-        Menu/Launcher/Command Palette/contextual-button wiring is a
-        separate batch (doc 22 §4) so this screen is reachable and
-        click-testable on its own first. Placed at sequence 40, the
-        next free slot after Compliance Override Ledger (39).
+        Help Center (doc 22). One ir.actions.client tag
+        (deployfleet_ui.help_center), several records - the same "one
+        tag, many action records distinguished only by params" pattern
+        already used for the six Domain Mega Menus - each record baking
+        in a different params.context_key so a Mega Menu tile or a
+        workspace's "Help" button can open the Help Center pre-scoped
+        to a section, without any new inline-action-descriptor plumbing
+        (deliberately not attempted - see help_center.js's own docstring
+        on this project's standing risk-aversion around unverified
+        action-manager patterns).
+
+        action_deployfleet_help_center (no params, opens on the home
+        landing page) keeps its own top-level menu item at sequence 40,
+        the next free slot after Compliance Override Ledger (39) -
+        matching every other workspace's "both a Mega Menu tile and its
+        own top-level menu item" precedent. The context-scoped records
+        below have no menu item of their own; they're reached only via
+        the Help Center Mega Menu domain (see domain_content.js's `help`
+        entry) or a workspace's contextual Help button.
     -->
     <record id="action_deployfleet_help_center" model="ir.actions.client">
         <field name="name">Help Center</field>
@@ -17,4 +31,59 @@
               parent="deployfleet_core.menu_deployfleet_root"
               action="action_deployfleet_help_center"
               sequence="40"/>
+
+    <!-- Mega Menu "Help Center" domain tiles - one per home card. -->
+    <record id="action_deployfleet_help_center_getting_started" model="ir.actions.client">
+        <field name="name">Help Center: Getting Started</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'getting_started'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_workflows" model="ir.actions.client">
+        <field name="name">Help Center: Learn the Business Workflow</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'business_workflows'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_guides" model="ir.actions.client">
+        <field name="name">Help Center: Module Guides</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'module_guides'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_faq" model="ir.actions.client">
+        <field name="name">Help Center: FAQ</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'faq'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_troubleshooting" model="ir.actions.client">
+        <field name="name">Help Center: Troubleshooting</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'troubleshooting'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_ai" model="ir.actions.client">
+        <field name="name">Help Center: AI Copilot Help</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'ai_copilot_help'}"/>
+    </record>
+
+    <!--
+        Contextual "Help" buttons - one per pilot workspace (Fleet
+        Command Center, Workshop Board, Payroll Center; doc 22 §4's
+        chosen 3-screen pilot). Each context_key matches the relevant
+        Module Guide category's own context_key in
+        deployfleet_help_category_data.xml.
+    -->
+    <record id="action_deployfleet_help_center_fleet" model="ir.actions.client">
+        <field name="name">Help Center: Fleet &amp; Vehicles</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'fleet_command_center'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_workshop" model="ir.actions.client">
+        <field name="name">Help Center: Workshop</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'workshop_board'}"/>
+    </record>
+    <record id="action_deployfleet_help_center_payroll" model="ir.actions.client">
+        <field name="name">Help Center: HR</field>
+        <field name="tag">deployfleet_ui.help_center</field>
+        <field name="params" eval="{'context_key': 'payroll_center'}"/>
+    </record>
 </odoo>

@@ -75,3 +75,55 @@ registry.category("command_provider").add("deployfleet_ui_record_search", {
         return commands;
     },
 });
+
+/**
+ * Help Center article search (doc 22 §4). A separate provider block,
+ * not a `RECORD_SEARCH_TARGETS` row, since it needs the backend's own
+ * ranked `search_help_ids()` (title-match-first across title/summary/
+ * body/tags) rather than a plain single-field `ilike` domain filter.
+ *
+ * Selecting a result opens the Help Center directly on that article via
+ * `params.article_id` - this is this module's first use of an inline
+ * `ir.actions.client` descriptor (every prior `doAction()` call in
+ * deployfleet_ui either targets a stored action by xmlId or uses an
+ * inline `ir.actions.act_window` descriptor, the latter already proven
+ * throughout this module). It's necessary here, not just convenient:
+ * articles are dynamic user content, so there is no way to pre-register
+ * one stored action per article the way the six Mega Menu domains'
+ * context-scoped Help Center actions do for their fixed, known set of
+ * sections. The action manager resolves `{type: "ir.actions.client",
+ * tag, params}` through the same standard, well-documented dispatch
+ * path as any stored client action - a materially lower-risk pattern
+ * than, say, patching Odoo's own NavBar DOM, which this project has
+ * deliberately avoided elsewhere.
+ */
+registry.category("command_provider").add("deployfleet_ui_help_search", {
+    provide: async (env, options) => {
+        const query = (options.searchValue || "").trim();
+        if (query.length < MIN_QUERY_LENGTH) {
+            return [];
+        }
+        const ids = await env.services.orm.call(
+            "deployfleet.help.article", "search_help_ids", [query], { limit: MAX_RESULTS_PER_MODEL },
+        );
+        if (!ids.length) {
+            return [];
+        }
+        const records = await env.services.orm.read("deployfleet.help.article", ids, ["name"]);
+        const byId = Object.fromEntries(records.map((r) => [r.id, r]));
+        return ids
+            .map((id) => byId[id])
+            .filter(Boolean)
+            .map((record) => ({
+                name: `Help: ${record.name}`,
+                category: "deployfleet",
+                action: () => {
+                    env.services.action.doAction({
+                        type: "ir.actions.client",
+                        tag: "deployfleet_ui.help_center",
+                        params: { article_id: record.id },
+                    });
+                },
+            }));
+    },
+});
