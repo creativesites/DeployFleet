@@ -93,3 +93,13 @@ class DeployfleetHelpArticle(models.Model):
             limit=limit - len(title_matches),
         )
         return title_matches | other_matches
+
+    @api.model
+    def search_help_ids(self, query, limit=20):
+        """RPC-facing wrapper around `search_help()`: a bare recordset
+        return value is not JSON-serializable, so any JS caller (the
+        Help Center's search box) must call this instead - `search_help()`
+        itself stays recordset-returning for internal Python callers
+        (and its own existing tests), which is the more natural
+        Python-side contract."""
+        return self.search_help(query, limit=limit).ids

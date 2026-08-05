@@ -1,0 +1,242 @@
+// Help Center (doc 22). `home` uses Command Layer light glass (an
+// orientation/launch surface, per doc 16 Principle 1); every other
+// section switches to flat Workspace Layer once the user drills in to
+// actually read something - the same deliberate in-screen exception
+// already granted to the Dispatch Board.
+.df-help-center {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    padding: var(--df-space-3);
+    font-family: var(--df-font-family);
+    color: var(--df-color-neutral-900);
+}
+
+.df-help-center--command {
+    background: var(--df-glass-panel-bg);
+}
+
+.df-help-center--workspace {
+    background: var(--df-color-neutral-100);
+}
+
+.df-help-center__header-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--df-space-2);
+}
+
+.df-help-center__title {
+    margin: 0;
+    font-size: var(--df-font-size-xl);
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-help-center__back, .df-help-center__section-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px var(--df-space-2);
+    border: none;
+    background: none;
+    color: var(--df-color-primary);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    font-weight: var(--df-font-weight-medium);
+    cursor: pointer;
+}
+
+.df-help-center__section-back {
+    padding-left: 0;
+    margin-bottom: var(--df-space-2);
+}
+
+.df-help-center__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 var(--df-space-2);
+    min-height: 44px;
+    border-radius: var(--df-radius-md);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-0);
+    margin-bottom: var(--df-space-3);
+    color: var(--df-color-neutral-600);
+}
+
+.df-help-center__search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: none;
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-base);
+    color: var(--df-color-neutral-900);
+    min-height: 44px;
+}
+
+.df-help-center__loading {
+    color: var(--df-color-neutral-600);
+}
+
+.df-help-center__intro {
+    color: var(--df-color-neutral-600);
+    margin-bottom: var(--df-space-3);
+}
+
+// Mobile-first: one column by default, more on wider viewports.
+.df-help-center__cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--df-space-2);
+}
+
+@media (min-width: 641px) {
+    .df-help-center__cards {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+.df-help-center__home-card {
+    cursor: pointer;
+    padding: var(--df-space-1);
+}
+
+.df-help-center__home-card-icon {
+    font-size: var(--df-font-size-display);
+    color: var(--df-color-primary);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-help-center__home-card-title {
+    font-weight: var(--df-font-weight-bold);
+    font-size: var(--df-font-size-md);
+    margin-bottom: 4px;
+}
+
+.df-help-center__home-card-description {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-help-center__workflow-list, .df-help-center__article-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--df-space-2);
+    margin-top: var(--df-space-2);
+}
+
+.df-help-center__workflow-item, .df-help-center__article-list-item {
+    cursor: pointer;
+    padding: var(--df-space-1);
+}
+
+.df-help-center__workflow-item-title, .df-help-center__article-list-title {
+    font-weight: var(--df-font-weight-bold);
+}
+
+.df-help-center__workflow-item-description, .df-help-center__article-list-summary {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    margin-top: 2px;
+}
+
+.df-help-center__workflow-detail {
+    max-width: 900px;
+}
+
+.df-help-center__accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    min-height: 44px;
+    padding: var(--df-space-1);
+}
+
+.df-help-center__accordion-body {
+    padding: 0 var(--df-space-1) var(--df-space-2);
+}
+
+.df-help-center__article {
+    max-width: 760px;
+}
+
+.df-help-center__article-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--df-space-1);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-help-center__article-category {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-help-center__article-summary {
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-md);
+    margin-bottom: var(--df-space-3);
+}
+
+// Article body is authored HTML (fields.Html) - give it real reading
+// typography rather than leaving every tag unstyled.
+.df-help-center__article-body {
+    font-size: var(--df-font-size-base);
+    line-height: 1.6;
+
+    h3 {
+        font-size: var(--df-font-size-lg);
+        font-weight: var(--df-font-weight-bold);
+        margin: var(--df-space-3) 0 var(--df-space-1);
+    }
+
+    p {
+        margin: 0 0 var(--df-space-2);
+    }
+
+    ul, ol {
+        margin: 0 0 var(--df-space-2);
+        padding-left: var(--df-space-3);
+    }
+
+    li {
+        margin-bottom: 4px;
+    }
+
+    strong {
+        font-weight: var(--df-font-weight-bold);
+    }
+}
+
+.df-help-center__article-related-workflow {
+    margin: var(--df-space-3) 0;
+}
+
+.df-help-center__article-related {
+    margin-top: var(--df-space-3);
+    padding-top: var(--df-space-2);
+    border-top: 1px solid var(--df-color-neutral-300);
+}
+
+.df-help-center__article-related h3 {
+    font-size: var(--df-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--df-color-neutral-600);
+    margin-bottom: var(--df-space-1);
+}
+
+.df-help-center__article-related ul {
+    margin: 0;
+    padding-left: var(--df-space-2);
+}
+
+.df-help-center__article-related a {
+    color: var(--df-color-primary);
+    cursor: pointer;
+}

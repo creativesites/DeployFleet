@@ -1,0 +1,124 @@
+// Signature widget (doc 18 §5): a numbered step timeline for the Help
+// Center's "Learn the Business Workflow" diagrams. Horizontal on wide
+// viewports, a stacked vertical list on phones — mobile-first per
+// CLAUDE.md §5, not a horizontal-scroll strip that hides steps offscreen.
+.df-workflow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.df-workflow-diagram__step {
+    display: flex;
+    flex-direction: column;
+}
+
+.df-workflow-diagram__node {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--df-space-2);
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-0);
+    cursor: pointer;
+    transition: transform var(--df-duration-micro) var(--df-ease-micro),
+        box-shadow var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-workflow-diagram__node:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--df-shadow-hover);
+}
+
+.df-workflow-diagram__step--active .df-workflow-diagram__node {
+    border-color: var(--df-color-primary);
+    box-shadow: var(--df-shadow-hover);
+}
+
+.df-workflow-diagram__index {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--df-color-primary);
+    color: var(--df-color-neutral-0);
+    font-weight: var(--df-font-weight-bold);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-workflow-diagram__icon {
+    flex: 0 0 auto;
+    color: var(--df-color-primary);
+    font-size: var(--df-font-size-lg);
+    margin-top: 4px;
+}
+
+.df-workflow-diagram__body {
+    min-width: 0;
+}
+
+.df-workflow-diagram__title {
+    font-weight: var(--df-font-weight-bold);
+    font-size: var(--df-font-size-base);
+    color: var(--df-color-neutral-900);
+}
+
+.df-workflow-diagram__description {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    margin-top: 2px;
+}
+
+.df-workflow-diagram__connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--df-color-neutral-300);
+    padding: 4px 0;
+    transform: rotate(90deg);
+}
+
+@media (min-width: 900px) {
+    .df-workflow-diagram {
+        flex-direction: row;
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .df-workflow-diagram__step {
+        flex-direction: row;
+        align-items: center;
+        flex: 1 1 200px;
+    }
+
+    .df-workflow-diagram__node {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        flex: 1 1 auto;
+    }
+
+    .df-workflow-diagram__icon {
+        margin-top: 0;
+    }
+
+    .df-workflow-diagram__connector {
+        transform: none;
+        flex: 0 0 auto;
+        padding: 0 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .df-workflow-diagram__node {
+        transition: none;
+    }
+
+    .df-workflow-diagram__node:hover {
+        transform: none;
+    }
+}

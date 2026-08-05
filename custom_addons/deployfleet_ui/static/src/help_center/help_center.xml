@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.HelpCenter">
+        <div t-attf-class="df-help-center df-help-center--{{ state.activeSection === 'home' ? 'command' : 'workspace' }}">
+            <header class="df-help-center__header">
+                <div class="df-help-center__header-top">
+                    <button t-if="state.activeSection !== 'home'" type="button" class="df-help-center__back"
+                            t-on-click="() => this.goHome()">
+                        <i class="fa fa-arrow-left"/> Help Center
+                    </button>
+                    <h1 t-else="" class="df-help-center__title">Help Center</h1>
+                </div>
+                <div class="df-help-center__search">
+                    <i class="fa fa-search"/>
+                    <input type="text" placeholder="Search articles, workflows, and FAQs..."
+                           t-att-value="state.searchQuery"
+                           t-on-input="(ev) => this.onSearchInput(ev.target.value)"/>
+                </div>
+            </header>
+
+            <DeployfleetErrorBanner t-if="state.loadError" message="state.loadError"/>
+            <p t-if="state.loading" class="df-help-center__loading">Loading...</p>
+
+            <div t-if="!state.loading and !state.loadError" class="df-help-center__body">
+
+                <!-- HOME -->
+                <div t-if="state.activeSection === 'home'" class="df-help-center__home">
+                    <p class="df-help-center__intro">
+                        Everything you need to know about running your fleet with DeployFleet, in plain language.
+                    </p>
+                    <div class="df-help-center__cards">
+                        <DeployfleetCard t-foreach="homeCards" t-as="card" t-key="card.key" layer="'command'" interactive="true">
+                            <div class="df-help-center__home-card" t-on-click="() => this.onHomeCardClick(card.key)">
+                                <i t-att-class="card.icon" class="df-help-center__home-card-icon"/>
+                                <div class="df-help-center__home-card-title" t-esc="card.title"/>
+                                <div class="df-help-center__home-card-description" t-esc="card.description"/>
+                            </div>
+                        </DeployfleetCard>
+                    </div>
+                </div>
+
+                <!-- SEARCH RESULTS -->
+                <div t-if="state.activeSection === 'search'" class="df-help-center__search-results">
+                    <h2>Search results for "<t t-esc="state.searchQuery"/>"</h2>
+                    <p t-if="state.searching">Searching...</p>
+                    <p t-if="!state.searching and state.searchResults.length === 0">
+                        No articles matched your search. Try a different word, or browse the categories from the Help Center home.
+                    </p>
+                    <div t-if="!state.searching" class="df-help-center__article-list">
+                        <DeployfleetCard t-foreach="state.searchResults" t-as="result" t-key="result.id" layer="'workspace'" interactive="true">
+                            <div class="df-help-center__article-list-item" t-on-click="() => this.openArticle(result.id)">
+                                <DeployfleetStatusBadge label="this.contentTypeLabel(result.content_type)" status="'info'"/>
+                                <div class="df-help-center__article-list-title" t-esc="result.name"/>
+                                <div t-if="result.summary" class="df-help-center__article-list-summary" t-esc="result.summary"/>
+                            </div>
+                        </DeployfleetCard>
+                    </div>
+                </div>
+
+                <!-- WORKFLOWS LIST -->
+                <div t-if="state.activeSection === 'workflows'" class="df-help-center__workflows">
+                    <h2>Learn the Business Workflow</h2>
+                    <p>See how a shipment, a vehicle, and a driver actually move through DeployFleet, step by step.</p>
+                    <div class="df-help-center__workflow-list">
+                        <DeployfleetCard t-foreach="state.workflows" t-as="workflow" t-key="workflow.id" layer="'workspace'" interactive="true">
+                            <div class="df-help-center__workflow-item" t-on-click="() => this.openWorkflow(workflow.id)">
+                                <div class="df-help-center__workflow-item-title" t-esc="workflow.name"/>
+                                <div class="df-help-center__workflow-item-description" t-esc="workflow.description"/>
+                            </div>
+                        </DeployfleetCard>
+                    </div>
+                </div>
+
+                <!-- WORKFLOW DETAIL -->
+                <div t-if="state.activeSection === 'workflow_detail' and state.workflowDetail" class="df-help-center__workflow-detail">
+                    <button type="button" class="df-help-center__section-back" t-on-click="() => this.state.activeSection = 'workflows'">
+                        <i class="fa fa-arrow-left"/> All workflows
+                    </button>
+                    <h2 t-esc="state.workflowDetail.name"/>
+                    <p t-esc="state.workflowDetail.description"/>
+                    <DeployfleetWorkflowDiagram steps="state.workflowDetail.steps" onStepClick="(step) => this.onStepClick(step)"/>
+                </div>
+
+                <!-- MODULE GUIDES -->
+                <div t-if="state.activeSection === 'guides'" class="df-help-center__guides">
+                    <h2>Module Guides</h2>
+                    <p>A plain-language guide to every part of DeployFleet.</p>
+                    <div class="df-help-center__cards">
+                        <DeployfleetCard t-foreach="state.sectionArticles" t-as="guide" t-key="guide.id" layer="'workspace'" interactive="true">
+                            <div class="df-help-center__home-card" t-on-click="() => this.openArticle(guide.id)">
+                                <div class="df-help-center__home-card-title" t-esc="guide.name"/>
+                                <div t-if="guide.summary" class="df-help-center__home-card-description" t-esc="guide.summary"/>
+                            </div>
+                        </DeployfleetCard>
+                    </div>
+                </div>
+
+                <!-- GENERIC CATEGORY (FAQ / Troubleshooting / any other multi-article category) -->
+                <div t-if="state.activeSection === 'category' and state.sectionCategory" class="df-help-center__category">
+                    <h2 t-esc="state.sectionCategory.name"/>
+                    <p t-if="state.sectionCategory.description" t-esc="state.sectionCategory.description"/>
+                    <div class="df-help-center__article-list">
+                        <DeployfleetCard t-foreach="state.sectionArticles" t-as="article" t-key="article.id" layer="'workspace'">
+                            <div class="df-help-center__accordion-header" t-on-click="() => this.onToggleArticleInList(article.id)">
+                                <div class="df-help-center__article-list-title" t-esc="article.name"/>
+                                <i t-attf-class="fa {{ state.expandedArticleId === article.id ? 'fa-chevron-up' : 'fa-chevron-down' }}"/>
+                            </div>
+                            <div t-if="state.expandedArticleId === article.id" class="df-help-center__accordion-body">
+                                <p t-if="article.summary" t-esc="article.summary"/>
+                                <DeployfleetButton label="'Read full answer'" variant="'secondary'" onClick="() => this.openArticle(article.id)"/>
+                            </div>
+                        </DeployfleetCard>
+                    </div>
+                </div>
+
+                <!-- SINGLE ARTICLE -->
+                <div t-if="state.activeSection === 'article' and state.article" class="df-help-center__article">
+                    <div class="df-help-center__article-meta">
+                        <DeployfleetStatusBadge label="this.contentTypeLabel(state.article.content_type)" status="'info'"/>
+                        <span t-if="state.article.category_id" class="df-help-center__article-category" t-esc="state.article.category_id[1]"/>
+                    </div>
+                    <h2 t-esc="state.article.name"/>
+                    <p t-if="state.article.summary" class="df-help-center__article-summary" t-esc="state.article.summary"/>
+                    <div class="df-help-center__article-body" t-out="articleBodyMarkup"/>
+
+                    <div t-if="state.article.related_workflow_id" class="df-help-center__article-related-workflow">
+                        <DeployfleetButton label="'See the full workflow: ' + state.article.related_workflow_id[1]"
+                                           variant="'secondary'" icon="'fa fa-random'"
+                                           onClick="() => this.openWorkflow(state.article.related_workflow_id[0])"/>
+                    </div>
+
+                    <div t-if="state.article.relatedArticles.length" class="df-help-center__article-related">
+                        <h3>Related articles</h3>
+                        <ul>
+                            <li t-foreach="state.article.relatedArticles" t-as="related" t-key="related.id">
+                                <a href="#" t-on-click.prevent="() => this.openArticle(related.id)" t-esc="related.name"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

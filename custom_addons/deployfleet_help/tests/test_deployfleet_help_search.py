@@ -51,3 +51,13 @@ class TestDeployfleetHelpSearch(TransactionCase):
     def test_limit_respected(self):
         results = self.env["deployfleet.help.article"].search_help("invoice", limit=1)
         self.assertEqual(len(results), 1)
+
+    def test_search_help_ids_returns_json_safe_ids(self):
+        # Regression test: search_help() returns a recordset, which is
+        # not JSON-serializable and would break the Help Center's search
+        # box if called directly via RPC. search_help_ids() is the
+        # RPC-facing wrapper the frontend actually calls.
+        ids = self.env["deployfleet.help.article"].search_help_ids("invoice")
+        self.assertIsInstance(ids, list)
+        self.assertTrue(all(isinstance(i, int) for i in ids))
+        self.assertEqual(ids[0], self.title_match.id)

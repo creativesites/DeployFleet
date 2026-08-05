@@ -86,7 +86,7 @@
         <field name="content_type">module_guide</field>
         <field name="summary">Book a shipment, match it to a truck and driver, and track it to delivery.</field>
         <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
-        <field name="sequence">10</field>
+        <field name="sequence">20</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>Dispatch &amp; Trips is where a shipment turns into an actual truck on the road. You book what needs to move, match it to a driver and vehicle, and follow it through to delivery.</p>
@@ -126,7 +126,7 @@
         <field name="content_type">module_guide</field>
         <field name="summary">Driver profiles, licenses, and how their performance is tracked.</field>
         <field name="related_workflow_id" ref="workflow_driver_management"/>
-        <field name="sequence">10</field>
+        <field name="sequence">30</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>This is where every driver's profile lives — their license details, qualified vehicle types, and a running reliability score built from their trip history.</p>
@@ -164,7 +164,7 @@
         <field name="content_type">module_guide</field>
         <field name="summary">Leave requests, cash advances, loans, and payslips.</field>
         <field name="related_workflow_id" ref="workflow_driver_management"/>
-        <field name="sequence">10</field>
+        <field name="sequence">40</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>HR covers everything about paying and looking after your people — leave requests, cash advances, staff loans, and payslips.</p>
@@ -202,7 +202,7 @@
         <field name="content_type">module_guide</field>
         <field name="summary">Contracts, rate cards, invoices, and where your money is going.</field>
         <field name="related_workflow_id" ref="workflow_customer_to_delivery"/>
-        <field name="sequence">10</field>
+        <field name="sequence">50</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>Finance covers the money side: customer contracts and their agreed rates, invoices generated from completed deliveries, load expenses, and a top-level view of revenue versus cost.</p>
@@ -240,7 +240,7 @@
         <field name="category_id" ref="category_module_guide_compliance"/>
         <field name="content_type">module_guide</field>
         <field name="summary">Vehicle and driver documents, insurance, and staying road-legal.</field>
-        <field name="sequence">10</field>
+        <field name="sequence">60</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>Compliance tracks every document that keeps a vehicle or driver legally on the road — registration, roadworthiness, licenses, insurance — and warns you before they expire.</p>
@@ -277,7 +277,7 @@
         <field name="content_type">module_guide</field>
         <field name="summary">Job cards, repairs, and keeping trucks on the road.</field>
         <field name="related_workflow_id" ref="workflow_vehicle_maintenance"/>
-        <field name="sequence">10</field>
+        <field name="sequence">70</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>The Workshop is where repairs actually happen — from opening a job card for a vehicle, through diagnosis and repair, to closing it out and marking the vehicle available again.</p>
@@ -315,7 +315,7 @@
         <field name="category_id" ref="category_module_guide_ai"/>
         <field name="content_type">module_guide</field>
         <field name="summary">Predictions, recommendations, and how the AI assistant fits into your day.</field>
-        <field name="sequence">10</field>
+        <field name="sequence">80</field>
         <field name="body"><![CDATA[
 <h3>What it does</h3>
 <p>The AI area brings together everything DeployFleet's AI does for you: predictions about maintenance risk and fuel anomalies, and Copilot — the assistant you can ask questions and give approval-gated instructions to.</p>

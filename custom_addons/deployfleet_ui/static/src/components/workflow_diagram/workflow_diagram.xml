@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.WorkflowDiagram">
+        <div class="df-workflow-diagram">
+            <div t-foreach="props.steps" t-as="step" t-key="step.id"
+                 t-att-class="'df-workflow-diagram__step' + (isActive(step) ? ' df-workflow-diagram__step--active' : '')">
+                <div class="df-workflow-diagram__node" t-on-click="() => this.onClickStep(step)">
+                    <div class="df-workflow-diagram__index" t-esc="step_index + 1"/>
+                    <i t-if="step.icon" t-att-class="step.icon" class="df-workflow-diagram__icon"/>
+                    <div class="df-workflow-diagram__body">
+                        <div class="df-workflow-diagram__title" t-esc="step.title"/>
+                        <div class="df-workflow-diagram__description" t-esc="step.description"/>
+                    </div>
+                </div>
+                <div t-if="!step_last" class="df-workflow-diagram__connector">
+                    <i class="fa fa-long-arrow-right"/>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

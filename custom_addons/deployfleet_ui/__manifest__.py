@@ -43,6 +43,7 @@
         "views/deployfleet_ui_driver_documents_views.xml",
         "views/deployfleet_ui_document_types_workspace_views.xml",
         "views/deployfleet_ui_compliance_override_ledger_views.xml",
+        "views/deployfleet_ui_help_center_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
@@ -167,6 +168,9 @@
             "deployfleet_ui/static/src/compliance_override_ledger/*.scss",
             "deployfleet_ui/static/src/compliance_override_ledger/*.js",
             "deployfleet_ui/static/src/compliance_override_ledger/*.xml",
+            "deployfleet_ui/static/src/help_center/*.scss",
+            "deployfleet_ui/static/src/help_center/*.js",
+            "deployfleet_ui/static/src/help_center/*.xml",
         ],
     },
 }
