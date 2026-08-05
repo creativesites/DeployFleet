@@ -122,6 +122,7 @@ class DeployfleetAICore(models.AbstractModel):
         if config.enable_response_cache:
             self.env["deployfleet.ai.response.cache"].sudo().create({
                 "cache_key": cache_key, "feature": feature_key, "response": response_text,
+                "company_id": company.id,
             })
 
         self._log_usage(

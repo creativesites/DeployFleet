@@ -8,6 +8,7 @@
     "depends": ["deployfleet_trip", "deployfleet_customer", "deployfleet_security"],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_billing_company_rules.xml",
         "data/deployfleet_invoice_sequence.xml",
         "data/deployfleet_billing_event_subscriptions.xml",
         "views/deployfleet_rate_card_views.xml",

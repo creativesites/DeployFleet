@@ -11,6 +11,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_dispatch_company_rules.xml",
         "data/deployfleet_shipment_sequence.xml",
         "views/deployfleet_shipment_views.xml",
         "views/deployfleet_dispatch_assignment_views.xml",

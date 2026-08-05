@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): "Zero multi-company row isolation
+        exists anywhere in the product" - every model below has a real
+        company_id field (deployfleet.ai.response.cache/.context.cache/
+        .entity.summary each gained one alongside this file, see their
+        own model files) but no ir.rule ever protected any of them.
+        Standard multi-company domain (record with no company, or a
+        company the user has access to) - no `groups` restriction, so
+        each rule applies to every role that can already read its model
+        (several of these are base.group_system-only today, but that
+        group is not itself company-scoped, so a system admin who only
+        belongs to one company could otherwise browse every other
+        company's AI config/policy/budget/usage/cache rows table-wide).
+    -->
+    <record id="deployfleet_ai_config_rule_company" model="ir.rule">
+        <field name="name">AI Config: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_config"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_policy_rule_company" model="ir.rule">
+        <field name="name">AI Policy: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_policy"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_usage_rule_company" model="ir.rule">
+        <field name="name">AI Usage: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_usage"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_budget_rule_company" model="ir.rule">
+        <field name="name">AI Budget: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_budget"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_response_cache_rule_company" model="ir.rule">
+        <field name="name">AI Response Cache: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_response_cache"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_context_cache_rule_company" model="ir.rule">
+        <field name="name">AI Context Cache: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_context_cache"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_entity_summary_rule_company" model="ir.rule">
+        <field name="name">AI Entity Summary: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_entity_summary"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_ai_company_profile_rule_company" model="ir.rule">
+        <field name="name">AI Company Profile: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_company_profile"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

@@ -10,6 +10,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/deployfleet_ai_chat_security_rules.xml",
+        "security/deployfleet_ai_company_rules.xml",
         "data/deployfleet_ai_policy_data.xml",
         "data/deployfleet_ai_config_data.xml",
         "data/deployfleet_ai_entity_summary_event_subscriptions.xml",

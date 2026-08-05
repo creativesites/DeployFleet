@@ -13,6 +13,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_ai_agents_company_rules.xml",
         "data/deployfleet_ai_agent_data.xml",
         "data/deployfleet_ai_tool_data.xml",
         "data/deployfleet_ai_agents_cron.xml",

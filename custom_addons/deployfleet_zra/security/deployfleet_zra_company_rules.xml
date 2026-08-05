@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.zra.config and
+        deployfleet.zra.submission each have a real company_id field but
+        no ir.rule ever protected either - zra.config in particular holds
+        Smart Invoice device credentials, so this was a live cross-tenant
+        tax-integration credential leak, not just a submission-history
+        leak.
+    -->
+    <record id="deployfleet_zra_config_rule_company" model="ir.rule">
+        <field name="name">ZRA Config: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_zra_config"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_zra_submission_rule_company" model="ir.rule">
+        <field name="name">ZRA Submission: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_zra_submission"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

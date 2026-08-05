@@ -34,6 +34,13 @@ class DeployfleetAIEntitySummary(models.Model):
     _description = "DeployFleet AI Entity Summary Cache"
     _order = "computed_date desc"
 
+    # Engineering-audit fix (C-01): no company_id/ir.rule existed on this
+    # base.group_system-only model - a system admin belonging to one
+    # company could still browse another company's cached vehicle
+    # summaries table-wide. upsert() runs under sudo() (see
+    # deployfleet_ai_agents' get_vehicle_summary tool), so this default
+    # still resolves to the real calling user's own active company.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company, index=True)
     res_model = fields.Char(required=True, index=True)
     res_id = fields.Integer(required=True, index=True)
     summary_text = fields.Text(required=True)

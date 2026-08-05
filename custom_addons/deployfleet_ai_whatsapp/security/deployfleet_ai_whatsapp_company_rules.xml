@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.ai.whatsapp.config has a
+        real company_id field but no ir.rule ever protected it.
+    -->
+    <record id="deployfleet_ai_whatsapp_config_rule_company" model="ir.rule">
+        <field name="name">AI WhatsApp Config: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_ai_whatsapp_config"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

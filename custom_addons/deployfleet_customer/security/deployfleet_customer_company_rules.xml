@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.contract and
+        deployfleet.depot each have a real company_id field but no
+        ir.rule ever protected either.
+    -->
+    <record id="deployfleet_contract_rule_company" model="ir.rule">
+        <field name="name">Contract: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_contract"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_depot_rule_company" model="ir.rule">
+        <field name="name">Depot: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_depot"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

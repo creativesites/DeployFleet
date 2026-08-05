@@ -13,6 +13,14 @@ class DeployfleetAIResponseCache(models.Model):
     _order = "create_date desc"
     _rec_name = "feature"
 
+    # Engineering-audit fix (C-01/C-03): cache_key already hashes in
+    # company.id (see deployfleet_ai_engine.py's _make_cache_key()), so a
+    # cache HIT can never cross a company boundary - but this model was
+    # still readable table-wide by any base.group_system user regardless
+    # of company, since there was no column to scope an ir.rule against.
+    # This field plus the company rule below close that residual,
+    # admin-scoped read path.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company, index=True)
     cache_key = fields.Char(required=True, index=True, help="SHA-256 of feature + system_prompt + user_message.")
     feature = fields.Char(required=True)
     response = fields.Text(required=True)
@@ -57,6 +65,9 @@ class DeployfleetAIContextCache(models.Model):
     _order = "create_date desc"
     _rec_name = "context_key"
 
+    # Engineering-audit fix (C-01): same reasoning as
+    # DeployfleetAIResponseCache.company_id above.
+    company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company, index=True)
     context_key = fields.Char(required=True, index=True)
     feature = fields.Char(required=True)
     content = fields.Text(required=True)

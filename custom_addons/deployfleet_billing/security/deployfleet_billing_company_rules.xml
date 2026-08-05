@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.invoice and
+        deployfleet.rate.card each have a real company_id field but no
+        ir.rule ever protected either.
+    -->
+    <record id="deployfleet_invoice_rule_company" model="ir.rule">
+        <field name="name">Invoice: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_invoice"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="deployfleet_rate_card_rule_company" model="ir.rule">
+        <field name="name">Rate Card: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_rate_card"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

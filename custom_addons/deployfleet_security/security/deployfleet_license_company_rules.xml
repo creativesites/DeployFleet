@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Engineering-audit fix (C-01): deployfleet.license has a real
+        company_id field but no ir.rule ever protected it - and unlike
+        several other C-01 instances, base.group_user (every
+        authenticated user, including drivers) has read access here, so
+        this was a genuine cross-company license-key leak, not just an
+        admin-scoped one.
+    -->
+    <record id="deployfleet_license_rule_company" model="ir.rule">
+        <field name="name">License: multi-company</field>
+        <field name="model_id" ref="model_deployfleet_license"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

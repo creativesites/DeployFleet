@@ -9,6 +9,7 @@
     "data": [
         "security/deployfleet_security_groups.xml",
         "security/ir.model.access.csv",
+        "security/deployfleet_license_company_rules.xml",
         "views/deployfleet_license_views.xml",
         "views/res_config_settings_views.xml",
         "data/deployfleet_license_cron.xml",

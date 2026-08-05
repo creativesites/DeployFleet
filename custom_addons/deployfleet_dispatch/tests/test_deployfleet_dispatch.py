@@ -35,6 +35,31 @@ class DeployfleetDispatchTestBase(TransactionCase):
         return self.env["deployfleet.shipment"].create(vals)
 
 
+class TestDeployfleetShipmentMultiCompany(DeployfleetDispatchTestBase):
+    def test_dispatcher_cannot_see_another_companys_shipment(self):
+        """Regression test for an engineering-audit finding (C-01):
+        deployfleet.shipment had a real company_id field but no ir.rule
+        ever protected it - any dispatcher could search([]) and see
+        every other company's shipments the moment a second company
+        existed on the same database."""
+        other_company = self.env["res.company"].create({"name": "Other Trucking Co"})
+        other_shipment = self._create_shipment(company_id=other_company.id)
+
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher = self.env["res.users"].create({
+            "name": "Company A Dispatcher",
+            "login": "company_a_dispatcher@example.com",
+            "group_ids": [(6, 0, [dispatcher_group.id])],
+            "company_ids": [(6, 0, [self.env.company.id])],
+            "company_id": self.env.company.id,
+        })
+
+        visible = self.env["deployfleet.shipment"].with_user(dispatcher).search(
+            [("id", "=", other_shipment.id)]
+        )
+        self.assertFalse(visible)
+
+
 class TestDeployfleetShipment(DeployfleetDispatchTestBase):
     def test_shipment_gets_auto_reference(self):
         shipment = self._create_shipment()

@@ -9,6 +9,7 @@
     "external_dependencies": {"python": ["requests"]},
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_ai_whatsapp_company_rules.xml",
         "data/deployfleet_ai_whatsapp_feature_data.xml",
         "views/deployfleet_ai_whatsapp_config_views.xml",
     ],

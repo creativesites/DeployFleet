@@ -9,6 +9,7 @@
     "external_dependencies": {"python": ["requests"]},
     "data": [
         "security/ir.model.access.csv",
+        "security/deployfleet_zra_company_rules.xml",
         "data/deployfleet_zra_config_data.xml",
         "data/deployfleet_zra_event_subscriptions.xml",
         "views/deployfleet_zra_views.xml",
