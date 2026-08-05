@@ -119,6 +119,29 @@ Full detail: [DEPLOYMENT.md](DEPLOYMENT.md). The short version, because getting 
 - **Before any deployment action against that server**, inventory what's already running: containers, active ports, databases, volumes, reverse-proxy config. This inventory has not been done yet as of this writing — it's a required first step of actual deployment work, not something to skip because "it's probably fine."
 - **Never commit credentials, ever, to any file in this repository** — not in CLAUDE.md, not in a `.env.example` with a real value slipped in, not in a script "just for now." If a credential is ever pasted into a chat or a doc by mistake, treat it as compromised and get it rotated — don't just delete the file and move on.
 
+### 6a. Server command generation — demo server operational patterns
+
+Tested, working patterns for generating commands against the live demo server (`199.192.23.46`, working directory `/opt/deployfleet`). Follow these exactly; don't improvise a different invocation shape.
+
+- **Always `docker compose exec`, never bare `docker exec`.** Every command includes `-f deploy/docker-compose.prod.yml --env-file .env.production`, and uses `exec -T odoo` (not `-it`, not the container name directly).
+- **Every `odoo -i`/`-u` command includes**: `-c /etc/odoo/odoo.conf`, `--no-http` (the running instance already holds the HTTP port — a second bind conflicts with it), `--stop-after-init`, `--db_host=db --db_user=deployfleet_prod --db_password=<DB_PASSWORD>` (read the real value from `.env.production` on the server — **never write it into this file or any other file in this repo**, per this section's own rule above), and the hardcoded database name `deployfleet_prod`.
+- **No `$VARIABLE` shell-expansion syntax in the commands themselves** — hardcode the literal values (db name, module list) directly in the invocation.
+- **Always restart after an upgrade**: `docker compose -f deploy/docker-compose.prod.yml --env-file .env.production restart odoo`.
+- **Git branch per repo**: DeployFleet → `git pull origin claude/deployfleet-architecture-planning-ed2gel`; DeployGuard → `git pull origin main`.
+
+Template for a standard module install/update:
+
+```bash
+cd /opt/deployfleet
+git pull origin claude/deployfleet-architecture-planning-ed2gel
+docker compose -f deploy/docker-compose.prod.yml --env-file .env.production exec -T odoo \
+  odoo -c /etc/odoo/odoo.conf -d deployfleet_prod -u <module_list> --no-http --stop-after-init \
+  --db_host=db --db_user=deployfleet_prod --db_password=<DB_PASSWORD>
+docker compose -f deploy/docker-compose.prod.yml --env-file .env.production restart odoo
+```
+
+Use `-i <module_list>` instead of `-u` for a module's first-ever install.
+
 ---
 
 ## 7. Git commit standards
