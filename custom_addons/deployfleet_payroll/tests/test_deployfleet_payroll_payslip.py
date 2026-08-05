@@ -1,6 +1,6 @@
 from datetime import date
 
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -91,3 +91,21 @@ class TestDeployfleetPayrollPayslip(TransactionCase):
         payslip.action_confirm()
         with self.assertRaises(UserError):
             payslip.action_compute()
+
+    def test_dispatcher_cannot_read_payslips(self):
+        # Regression test for an engineering-audit finding: this ACL
+        # previously granted the dispatcher group perm_read=1 on both
+        # deployfleet.payroll.payslip and .payslip.line, contrary to
+        # this project's own documented "zero ACL rows outside
+        # group_deployfleet_hr_payroll_officer" design (CLAUDE.md §4/§9
+        # — payroll data needs a confidentiality boundary that manager/
+        # dispatcher does not automatically cross; only the owner role
+        # gets it, via an explicit separate implied_ids grant).
+        payslip = self._create_payslip()
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Payslip Dispatcher User", "login": "payslip_dispatcher_user@example.com",
+            "email": "payslip_dispatcher_user@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+        with self.assertRaises(AccessError):
+            payslip.with_user(dispatcher_user).read(["base_salary", "net_pay"])

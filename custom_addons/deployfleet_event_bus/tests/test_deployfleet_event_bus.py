@@ -91,6 +91,71 @@ class TestDeployfleetEventBus(TransactionCase):
         )
         self.assertEqual(json.loads(log.event_data), {"minutes_late": 45, "reason": "traffic"})
 
+    def test_register_event_works_for_a_real_dispatcher_user(self):
+        # Regression test for the engineering-audit finding: this
+        # model's ACL grants create/write to base.group_system only,
+        # and no DeployFleet role implies it. register_event()'s
+        # self.create() and _dispatch_event()'s self.write() were
+        # unsudo'd, so every real call site (dispatch confirm/cancel,
+        # trip lifecycle, delivery creation, vehicle status changes,
+        # invoice creation, maintenance recording) would raise
+        # AccessError the moment a real dispatcher account touched it —
+        # the same bug shape already found and fixed once for the AI
+        # pipeline. Exercised end to end as a real dispatcher-group
+        # user, the way the AI pipeline's own regression test does,
+        # rather than just as the TransactionCase superuser.
+        calls = self._register_test_handler(method_name="_test_handle_bus_event_as_caller")
+        self.env["deployfleet.event.subscription"].create({
+            "event_pattern": "vehicle.*",
+            "model_name": "res.partner",
+            "method_name": "_test_handle_bus_event_as_caller",
+        })
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Event Bus Dispatcher User", "login": "event_bus_dispatcher_user@example.com",
+            "email": "event_bus_dispatcher_user@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+
+        log = self.env["deployfleet.event.log"].with_user(dispatcher_user).register_event(
+            "vehicle.breakdown.created", "res.partner", self.env.user.partner_id.id,
+        )
+
+        self.assertEqual(log.state, "processed")
+        self.assertEqual(len(calls), 1)
+
+    def test_dispatch_still_runs_as_the_calling_user_not_sudo(self):
+        # The sudo() fix above is deliberately scoped to just the
+        # event-log bookkeeping (create/state write) — subscriber
+        # handlers must keep seeing the real calling user, since
+        # existing subscribers (e.g. the AI entity-summary cache
+        # invalidation) already apply their own sudo() only where they
+        # specifically need to, and a blanket-sudo'd dispatch would
+        # silently change that.
+        model_class = type(self.env["res.partner"])
+        seen_uids = []
+
+        def _handler(_self, event_name, source_model, source_id, payload):
+            seen_uids.append(_self.env.uid)
+
+        setattr(model_class, "_test_uid_handler", _handler)
+        self.addCleanup(delattr, model_class, "_test_uid_handler")
+        self.env["deployfleet.event.subscription"].create({
+            "event_pattern": "vehicle.*",
+            "model_name": "res.partner",
+            "method_name": "_test_uid_handler",
+        })
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Event Bus UID Dispatcher User", "login": "event_bus_uid_dispatcher_user@example.com",
+            "email": "event_bus_uid_dispatcher_user@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+
+        self.env["deployfleet.event.log"].with_user(dispatcher_user).register_event(
+            "vehicle.breakdown.created", "res.partner", 1,
+        )
+
+        self.assertEqual(seen_uids, [dispatcher_user.id])
+
     def test_core_module_has_no_knowledge_of_specific_subscribers(self):
         """Guards against reintroducing the hardcoded if-chain this module
         replaces (risk #4): dispatch must work for a subscriber the bus has

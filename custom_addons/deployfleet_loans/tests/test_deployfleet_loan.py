@@ -1,5 +1,6 @@
 from datetime import date
 
+from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase, tagged
 
 
@@ -76,3 +77,23 @@ class TestDeployfleetLoan(TransactionCase):
         second = self._create_payslip()
         second.action_compute()
         self.assertFalse(second.line_ids.filtered(lambda line: line.rule_id.code == "LOAN"))
+
+    def test_dispatcher_cannot_read_loans(self):
+        # Regression test for an engineering-audit finding: this ACL
+        # previously granted the dispatcher group perm_read=1, contrary
+        # to this project's own documented "zero ACL rows outside
+        # group_deployfleet_hr_payroll_officer" design for payroll-
+        # adjacent data. Since group_deployfleet_manager/owner do NOT
+        # imply hr_payroll_officer (only the owner gets it, via an
+        # explicit separate implied_ids grant), an ordinary dispatcher
+        # must get AccessError, not a result set.
+        loan = self.env["deployfleet.loan"].create({
+            "employee_id": self.employee.id, "amount": 3000.0, "monthly_deduction": 500.0,
+        })
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Loan Dispatcher User", "login": "loan_dispatcher_user@example.com",
+            "email": "loan_dispatcher_user@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+        with self.assertRaises(AccessError):
+            loan.with_user(dispatcher_user).read(["amount"])

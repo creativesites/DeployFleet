@@ -14,14 +14,39 @@
         the driver group (now perm_read=1/perm_write=1/perm_create=1 in
         ir.model.access.csv) to their own employee's requests only, via
         the standard Odoo self-service pattern (hr.employee.user_id).
-        Dispatcher/manager/owner have no matching group-scoped rule
-        here, so they remain unrestricted across every driver's
-        requests, as before.
     -->
     <record id="deployfleet_leave_request_rule_driver_own" model="ir.rule">
         <field name="name">Driver: own leave requests only</field>
         <field name="model_id" ref="model_deployfleet_leave_request"/>
         <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_driver'))]"/>
+    </record>
+
+    <!--
+        Bug found in the DeployFleet engineering audit: the rule above
+        was the model's ONLY rule, and group_deployfleet_manager implies
+        group_deployfleet_dispatcher implies group_deployfleet_driver
+        (deployfleet_security/security/deployfleet_security_groups.xml)
+        — so every dispatcher/manager/owner is also, transitively, a
+        member of the driver group. Odoo ORs a user's applicable
+        group-scoped rules, but since the driver-own rule was the only
+        one defined, every dispatcher/manager/owner got restricted to
+        their own employee record too (almost always none, since they
+        aren't drivers) — nobody but the requester could ever see or
+        approve a leave request. The comment previously here claiming
+        "dispatcher/manager/owner remain unrestricted" was incorrect.
+
+        This second rule grants the dispatcher group (and everything
+        that implies it) unrestricted company-wide access; ORed against
+        the driver-own rule above, a dispatcher/manager/owner user's
+        effective access is the union of both — i.e. unrestricted,
+        while a plain driver (not in the dispatcher group) still only
+        matches the first rule.
+    -->
+    <record id="deployfleet_leave_request_rule_dispatcher_all" model="ir.rule">
+        <field name="name">Dispatcher/Manager/Owner: all leave requests</field>
+        <field name="model_id" ref="model_deployfleet_leave_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('deployfleet_security.group_deployfleet_dispatcher'))]"/>
     </record>
 </odoo>

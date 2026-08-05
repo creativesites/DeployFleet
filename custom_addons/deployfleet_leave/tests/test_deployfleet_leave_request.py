@@ -110,3 +110,43 @@ class TestDeployfleetLeaveRequest(TransactionCase):
         request = self._create_request()  # belongs to self.driver, not other_driver_user
         with self.assertRaises(AccessError):
             request.with_user(other_driver_user).action_submit()
+
+    def test_dispatcher_can_approve_another_employees_leave_request(self):
+        # Regression test for the engineering-audit finding: because
+        # group_deployfleet_manager implies group_deployfleet_dispatcher
+        # implies group_deployfleet_driver, the driver-own ir.rule above
+        # was the model's ONLY rule and silently restricted every
+        # dispatcher/manager/owner to their own (nonexistent) employee
+        # record too — nobody but the requester could ever see or
+        # approve a leave request. Fixed with a second, broader rule
+        # (deployfleet_leave_request_rule_dispatcher_all) for the
+        # dispatcher group and everything that implies it.
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Test Dispatcher User", "login": "test_dispatcher_user@example.com",
+            "email": "test_dispatcher_user@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+        request = self._create_request()  # belongs to self.driver, not dispatcher_user
+        request.action_submit()
+        request.with_user(dispatcher_user).action_approve()
+        self.assertEqual(request.state, "approved")
+
+    def test_driver_cannot_self_approve_leave_request(self):
+        # Defense-in-depth regression test: a driver who legitimately
+        # has write access to their own leave request (per the ir.rule
+        # above) must still not be able to call action_approve()/
+        # action_reject() on it themselves — that would defeat the
+        # point of an approval workflow. The view hides these buttons
+        # for the driver role, but per this project's own stated
+        # principle a view restriction is a UI convenience, not a
+        # security boundary, so the check must also live in Python.
+        driver_group = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        driver_user = self.env["res.users"].create({
+            "name": "Self Approve Driver User", "login": "self_approve_driver_user@example.com",
+            "email": "self_approve_driver_user@example.com", "group_ids": [(6, 0, [driver_group.id])],
+        })
+        self.driver.user_id = driver_user.id
+        request = self._create_request()
+        request.with_user(driver_user).action_submit()
+        with self.assertRaises(UserError):
+            request.with_user(driver_user).action_approve()

@@ -59,8 +59,13 @@ class DeployfleetLeaveRequest(models.Model):
         self._check_state("draft")
         self.write({"state": "submitted"})
 
+    def _check_can_decide(self):
+        if not self.env.user.has_group("deployfleet_security.group_deployfleet_dispatcher"):
+            raise UserError(self.env._("Only a dispatcher, manager, or owner may approve or reject a leave request."))
+
     def action_approve(self):
         self._check_state("submitted")
+        self._check_can_decide()
         for request in self:
             conflicting_trips = self.env["deployfleet.trip"].search([
                 ("driver_id", "=", request.employee_id.id),
@@ -80,6 +85,7 @@ class DeployfleetLeaveRequest(models.Model):
 
     def action_reject(self):
         self._check_state("submitted")
+        self._check_can_decide()
         self.write({"state": "rejected"})
 
     def action_cancel(self):

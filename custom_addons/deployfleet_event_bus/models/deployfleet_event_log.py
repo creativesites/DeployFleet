@@ -50,12 +50,28 @@ class DeployfleetEventLog(models.Model):
             except (TypeError, ValueError) as exc:
                 _logger.warning("deployfleet_event_bus: could not serialize payload for %s: %s", name, exc)
 
-        log = self.create({
+        # Publishing an event must succeed regardless of the calling
+        # user's role — deployfleet.event.log grants create/write to
+        # base.group_system only, and no DeployFleet role implies it.
+        # Every unsudo'd call site (dispatch confirm/cancel, trip
+        # depart/complete/delay, delivery creation, vehicle status
+        # changes, invoice creation, maintenance recording) would raise
+        # AccessError for every real dispatcher/manager/driver account
+        # — the same bug shape already found and fixed once for the AI
+        # pipeline's own config/budget/cache models. sudo() is scoped to
+        # just this bookkeeping create, not propagated into dispatch:
+        # rebinding back to the caller's own env below keeps
+        # _dispatch_event()'s subscriber-handler invocations running as
+        # the real calling user, unchanged — several subscribers (e.g.
+        # the AI entity-summary cache invalidation) are already written
+        # expecting that and apply their own sudo() only where they
+        # specifically need to.
+        log = self.sudo().create({
             "name": name,
             "source_model": source_model,
             "source_id": source_id,
             "event_data": data_str,
-        })
+        }).with_env(self.env)
         log._dispatch_event()
         return log
 
@@ -95,7 +111,12 @@ class DeployfleetEventLog(models.Model):
                 )
                 errors.append(f"{sub.model_name}.{sub.method_name}: {exc}")
 
+        # sudo()'d for the same reason as the create() in register_event()
+        # — this bookkeeping write must succeed for every role, and is
+        # scoped narrowly to just this write rather than the whole
+        # dispatch loop above, which deliberately stays in the caller's
+        # own env.
         if errors:
-            self.write({"state": "failed", "error_message": "\n".join(errors)})
+            self.sudo().write({"state": "failed", "error_message": "\n".join(errors)})
         else:
-            self.write({"state": "processed"})
+            self.sudo().write({"state": "processed"})
