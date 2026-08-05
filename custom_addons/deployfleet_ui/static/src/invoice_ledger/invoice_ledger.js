@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "All" },
     { key: "draft", label: "Draft" },
@@ -51,7 +53,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetInvoiceLedger extends Component {
     static template = "deployfleet_ui.InvoiceLedger";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -88,29 +90,35 @@ export class DeployfleetInvoiceLedger extends Component {
 
     async loadInvoices() {
         this.state.loading = true;
-        const invoices = await this.orm.searchRead(
-            "deployfleet.invoice",
-            [],
-            ["name", "customer_id", "contract_id", "trip_id", "invoice_date", "state", "amount_total", "payment_state"],
-            { order: "invoice_date desc" },
-        );
-        this.state.invoices = invoices;
+        this.state.loadError = null;
+        try {
+            const invoices = await this.orm.searchRead(
+                "deployfleet.invoice",
+                [],
+                ["name", "customer_id", "contract_id", "trip_id", "invoice_date", "state", "amount_total", "payment_state"],
+                { order: "invoice_date desc" },
+            );
+            this.state.invoices = invoices;
 
-        const submissions = await this.orm.searchRead(
-            "deployfleet.zra.submission",
-            [["invoice_id", "in", invoices.map((invoice) => invoice.id)]],
-            ["invoice_id", "state", "zra_receipt_no"],
-            { order: "create_date desc" },
-        );
-        const zraByInvoiceId = {};
-        for (const submission of submissions) {
-            const invoiceId = submission.invoice_id[0];
-            if (!zraByInvoiceId[invoiceId]) {
-                zraByInvoiceId[invoiceId] = submission;
+            const submissions = await this.orm.searchRead(
+                "deployfleet.zra.submission",
+                [["invoice_id", "in", invoices.map((invoice) => invoice.id)]],
+                ["invoice_id", "state", "zra_receipt_no"],
+                { order: "create_date desc" },
+            );
+            const zraByInvoiceId = {};
+            for (const submission of submissions) {
+                const invoiceId = submission.invoice_id[0];
+                if (!zraByInvoiceId[invoiceId]) {
+                    zraByInvoiceId[invoiceId] = submission;
+                }
             }
+            this.state.zraByInvoiceId = zraByInvoiceId;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
         }
-        this.state.zraByInvoiceId = zraByInvoiceId;
-        this.state.loading = false;
     }
 
     stateBadgeVariant(state) {

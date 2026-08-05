@@ -14,6 +14,8 @@
                 </nav>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <p t-if="state.loading" class="df-maint-planner__loading">Loading maintenance data...</p>
 
             <!-- ============================= OVERVIEW ============================= -->

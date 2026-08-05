@@ -8,6 +8,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { copilotContextStore } from "./copilot_context";
 import { DeployfleetChatMessageRenderer } from "./chat_message_renderer";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -60,7 +62,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetCopilotRail extends Component {
     static template = "deployfleet_ui.CopilotRail";
-    static components = { DeployfleetButton, DeployfleetChatMessageRenderer };
+    static components = { DeployfleetButton, DeployfleetChatMessageRenderer, DeployfleetErrorBanner };
     static props = {};
 
     setup() {
@@ -111,22 +113,28 @@ export class DeployfleetCopilotRail extends Component {
 
     async loadPendingApprovals() {
         this.state.loading = true;
-        // action_method/target_id are included per the engineering-audit
-        // fix: an action_method request's proposed_vals is typically {}
-        // (the real effect is the method call, not a field write), so
-        // omitting action_method here left the approver unable to see
-        // what they were actually approving. auto_executed is included
-        // too, so the queue is honest about which requests already ran.
-        this.state.pendingApprovals = await this.orm.searchRead(
-            "deployfleet.ai.action.request",
-            [["state", "=", "pending_approval"]],
-            [
-                "name", "feature_id", "action_type", "target_model", "target_id",
-                "proposed_vals", "action_method", "auto_executed", "requested_by",
-            ],
-            { order: "create_date asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            // action_method/target_id are included per the engineering-audit
+            // fix: an action_method request's proposed_vals is typically {}
+            // (the real effect is the method call, not a field write), so
+            // omitting action_method here left the approver unable to see
+            // what they were actually approving. auto_executed is included
+            // too, so the queue is honest about which requests already ran.
+            this.state.pendingApprovals = await this.orm.searchRead(
+                "deployfleet.ai.action.request",
+                [["state", "=", "pending_approval"]],
+                [
+                    "name", "feature_id", "action_type", "target_model", "target_id",
+                    "proposed_vals", "action_method", "auto_executed", "requested_by",
+                ],
+                { order: "create_date asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get pendingCount() {

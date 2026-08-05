@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "All" },
     { key: "draft", label: "Draft" },
@@ -51,7 +53,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetContractWorkspace extends Component {
     static template = "deployfleet_ui.ContractWorkspace";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -72,7 +74,19 @@ export class DeployfleetContractWorkspace extends Component {
             creatingContract: false,
         });
 
-        onWillStart(() => Promise.all([this.loadContracts(), this.loadVehicleTypes(), this.loadCustomers()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadContracts(), this.loadVehicleTypes(), this.loadCustomers()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get rateBasisOptions() {
@@ -97,14 +111,12 @@ export class DeployfleetContractWorkspace extends Component {
     }
 
     async loadContracts() {
-        this.state.loading = true;
         this.state.contracts = await this.orm.searchRead(
             "deployfleet.contract",
             [],
             ["name", "customer_id", "rate_basis", "start_date", "end_date", "state"],
             { order: "create_date desc" },
         );
-        this.state.loading = false;
     }
 
     async loadVehicleTypes() {

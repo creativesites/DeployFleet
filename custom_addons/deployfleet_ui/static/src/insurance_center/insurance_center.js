@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const EXPIRY_FILTERS = [
     { key: "all", label: "All" },
     { key: "expiring_soon", label: "Expiring Soon" },
@@ -71,7 +73,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetInsuranceCenter extends Component {
     static template = "deployfleet_ui.InsuranceCenter";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -118,23 +120,29 @@ export class DeployfleetInsuranceCenter extends Component {
 
     async loadPolicies() {
         this.state.loading = true;
-        const policies = await this.orm.searchRead(
-            "deployfleet.insurance.policy",
-            [],
-            ["vehicle_id", "policy_number", "insurer_id", "end_date", "premium_amount"],
-            { order: "end_date asc" },
-        );
-        this.state.policies = policies.map((policy) => {
-            const daysLeft = daysUntil(policy.end_date);
-            let expiryBand = "ok";
-            if (daysLeft < 0) {
-                expiryBand = "expired";
-            } else if (daysLeft <= EXPIRING_SOON_DAYS) {
-                expiryBand = "expiring_soon";
-            }
-            return { ...policy, daysLeft, expiryBand };
-        });
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            const policies = await this.orm.searchRead(
+                "deployfleet.insurance.policy",
+                [],
+                ["vehicle_id", "policy_number", "insurer_id", "end_date", "premium_amount"],
+                { order: "end_date asc" },
+            );
+            this.state.policies = policies.map((policy) => {
+                const daysLeft = daysUntil(policy.end_date);
+                let expiryBand = "ok";
+                if (daysLeft < 0) {
+                    expiryBand = "expired";
+                } else if (daysLeft <= EXPIRING_SOON_DAYS) {
+                    expiryBand = "expiring_soon";
+                }
+                return { ...policy, daysLeft, expiryBand };
+            });
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async onSelectPolicy(policyId) {

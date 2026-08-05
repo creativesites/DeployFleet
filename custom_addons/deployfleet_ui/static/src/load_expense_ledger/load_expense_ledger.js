@@ -6,6 +6,8 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const EXPENSE_TYPE_FILTERS = [
     { key: "all", label: "All" },
     { key: "fuel", label: "Fuel" },
@@ -52,7 +54,7 @@ function readFileAsBase64(file) {
  */
 export class DeployfleetLoadExpenseLedger extends Component {
     static template = "deployfleet_ui.LoadExpenseLedger";
-    static components = { DeployfleetButton, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusPill, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -68,7 +70,19 @@ export class DeployfleetLoadExpenseLedger extends Component {
             creating: false,
         });
 
-        onWillStart(() => Promise.all([this.loadExpenses(), this.loadShipments()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadExpenses(), this.loadShipments()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get expenseTypeOptions() {
@@ -101,14 +115,12 @@ export class DeployfleetLoadExpenseLedger extends Component {
         // per row on expand (onSelectExpense below) rather than pulled as
         // base64 for every row in one list read, the same discipline
         // Delivery Center's signature/photo fields already established.
-        this.state.loading = true;
         this.state.expenses = await this.orm.searchRead(
             "deployfleet.load.expense",
             [],
             ["shipment_id", "trip_id", "expense_type", "amount", "recorded_by"],
             { order: "create_date desc", limit: 300 },
         );
-        this.state.loading = false;
     }
 
     async onSelectExpense(expenseId) {

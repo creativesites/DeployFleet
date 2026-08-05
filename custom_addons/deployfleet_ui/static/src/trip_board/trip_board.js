@@ -6,6 +6,9 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
+import { localISODate, todayISO, toDate } from "../utils/date_utils";
+
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
 
 const TABS = [
     { key: "board", label: "Trips" },
@@ -43,14 +46,6 @@ const CALENDAR_EVENT_STATUS = {
 
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
-}
-
-function todayISO() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function toDate(iso) {
-    return new Date(`${iso}T00:00:00`);
 }
 
 function dateOnly(odooDatetime) {
@@ -101,7 +96,7 @@ function dateOnly(odooDatetime) {
  */
 export class DeployfleetTripBoard extends Component {
     static template = "deployfleet_ui.TripBoard";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -129,16 +124,22 @@ export class DeployfleetTripBoard extends Component {
 
     async loadTrips() {
         this.state.loading = true;
-        this.state.trips = await this.orm.searchRead(
-            "deployfleet.trip",
-            [],
-            [
-                "name", "vehicle_id", "driver_id", "route_id", "planned_departure", "planned_arrival",
-                "actual_departure", "actual_arrival", "odometer_start", "odometer_end", "delay_reason", "state",
-            ],
-            { order: "planned_departure asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.trips = await this.orm.searchRead(
+                "deployfleet.trip",
+                [],
+                [
+                    "name", "vehicle_id", "driver_id", "route_id", "planned_departure", "planned_arrival",
+                    "actual_departure", "actual_arrival", "odometer_start", "odometer_end", "delay_reason", "state",
+                ],
+                { order: "planned_departure asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get stateFilters() {
@@ -279,7 +280,7 @@ export class DeployfleetTripBoard extends Component {
     }
 
     buildCalendarDay(date, anchor) {
-        const iso = date.toISOString().slice(0, 10);
+        const iso = localISODate(date);
         return {
             iso,
             dayNumber: date.getDate(),
@@ -310,7 +311,7 @@ export class DeployfleetTripBoard extends Component {
     onCalendarShift(direction) {
         const anchor = toDate(this.state.calendarAnchor);
         anchor.setMonth(anchor.getMonth() + direction);
-        this.state.calendarAnchor = anchor.toISOString().slice(0, 10);
+        this.state.calendarAnchor = localISODate(anchor);
     }
 
     onCalendarToday() {

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="deployfleet_ui.ErrorBanner">
+        <div class="df-error-banner">
+            <i class="fa fa-exclamation-triangle df-error-banner__icon"/>
+            <div class="df-error-banner__body">
+                <h3 class="df-error-banner__title">Something went wrong loading this screen</h3>
+                <p class="df-error-banner__message" t-esc="props.message"/>
+            </div>
+        </div>
+    </t>
+</templates>

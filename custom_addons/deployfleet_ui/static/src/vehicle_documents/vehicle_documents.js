@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "All" },
     { key: "valid", label: "Valid" },
@@ -60,7 +62,7 @@ function readFileAsBase64(file) {
  */
 export class DeployfleetVehicleDocuments extends Component {
     static template = "deployfleet_ui.VehicleDocuments";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -81,21 +83,31 @@ export class DeployfleetVehicleDocuments extends Component {
             verifyingDocumentId: null,
         });
 
-        onWillStart(() => Promise.all([this.loadDocuments(), this.loadVehicles(), this.loadDocumentTypes()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadDocuments(), this.loadVehicles(), this.loadDocumentTypes()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadDocuments() {
         // Deliberately excludes `attachment` — a Binary field, fetched
         // lazily per row on expand, the same discipline Load Expense
         // Ledger/Delivery Center already established.
-        this.state.loading = true;
         this.state.documents = await this.orm.searchRead(
             "deployfleet.compliance.document",
             [["res_model", "=", "deployfleet.vehicle"]],
             ["document_type_id", "res_id", "reference_number", "issue_date", "expiry_date", "verified", "state"],
             { order: "expiry_date asc" },
         );
-        this.state.loading = false;
     }
 
     async loadVehicles() {

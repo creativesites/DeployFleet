@@ -6,6 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
 import { useCopilotContext } from "../copilot_rail/copilot_context";
 
 // A shipment is "urgent" once its requested pickup is less than this many
@@ -132,7 +133,7 @@ function toOdooDatetime(localValue) {
  */
 export class DeployfleetDispatchBoard extends Component {
     static template = "deployfleet_ui.DispatchBoard";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
     // component, and declaring an empty props schema here made OWL
@@ -166,9 +167,19 @@ export class DeployfleetDispatchBoard extends Component {
             creating: false,
         });
 
-        onWillStart(() =>
-            Promise.all([this.loadShipments(), this.loadFormData()])
-        );
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadShipments(), this.loadFormData()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     computeUrgency(pickupDate) {
@@ -188,7 +199,6 @@ export class DeployfleetDispatchBoard extends Component {
     }
 
     async loadShipments() {
-        this.state.loading = true;
         const shipments = await this.orm.searchRead(
             "deployfleet.shipment",
             [],
@@ -202,7 +212,6 @@ export class DeployfleetDispatchBoard extends Component {
             ...shipment,
             urgency: this.computeUrgency(shipment.requested_pickup_date),
         }));
-        this.state.loading = false;
     }
 
     async loadFormData() {

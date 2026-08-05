@@ -6,6 +6,12 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
+function extractErrorMessage(error) {
+    return error?.data?.message || error?.message || "Something went wrong. Please try again.";
+}
 const EXPIRING_SOON_DAYS = 30;
 
 const TABS = [
@@ -62,7 +68,7 @@ const STATE_BADGE_VARIANT = { valid: "success", expiring_soon: "warning", expire
  */
 export class DeployfleetComplianceCenter extends Component {
     static template = "deployfleet_ui.ComplianceCenter";
-    static components = { DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -89,8 +95,14 @@ export class DeployfleetComplianceCenter extends Component {
 
     async loadAll() {
         this.state.loading = true;
-        await Promise.all([this.loadVehicleWall(), this.loadDriverWall()]);
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadVehicleWall(), this.loadDriverWall()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadVehicleWall() {

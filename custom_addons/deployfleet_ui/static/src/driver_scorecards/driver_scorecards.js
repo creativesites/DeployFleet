@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const SCORE_FILTERS = [
     { key: "all", label: "All" },
     { key: "good", label: "Good (80+)" },
@@ -124,7 +126,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetDriverScorecards extends Component {
     static template = "deployfleet_ui.DriverScorecards";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration — see the identical comment in
     // mission_control.js: this is an `ir.actions.client` root component,
     // and Odoo's action manager always injects standard props into it.
@@ -150,7 +152,19 @@ export class DeployfleetDriverScorecards extends Component {
             newLeaveByDriverId: {},
         });
 
-        onWillStart(() => Promise.all([this.loadDrivers(), this.loadVehicleTypes(), this.loadLeaveTypes()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadDrivers(), this.loadVehicleTypes(), this.loadLeaveTypes()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadVehicleTypes() {
@@ -217,7 +231,6 @@ export class DeployfleetDriverScorecards extends Component {
     }
 
     async loadDrivers() {
-        this.state.loading = true;
         // No `order` here: deployfleet_reliability_score is a computed,
         // unstored Float (hr_employee.py) — asking searchRead to sort by
         // it server-side fails with "Cannot convert ... to SQL because it
@@ -242,7 +255,6 @@ export class DeployfleetDriverScorecards extends Component {
         this.state.drivers = drivers
             .map((driver) => ({ ...driver, band: scoreBand(driver.deployfleet_reliability_score) }))
             .sort((a, b) => a.deployfleet_reliability_score - b.deployfleet_reliability_score);
-        this.state.loading = false;
     }
 
     async onSelectDriver(driverId) {

@@ -7,6 +7,8 @@
                 <p class="df-fuel-intel__subtitle">Fill-ups, consumption, and anomalies across the fleet.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section class="df-fuel-intel__log-form">
                 <h3 class="df-fuel-intel__log-form-title">Log Fuel</h3>
                 <div class="df-fuel-intel__log-form-fields">

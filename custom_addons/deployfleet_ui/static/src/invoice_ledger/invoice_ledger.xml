@@ -7,6 +7,8 @@
                 <p class="df-invoice-ledger__subtitle">Customer invoices, payment status, and ZRA submission status in one place.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-invoice-ledger__filters">
                 <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

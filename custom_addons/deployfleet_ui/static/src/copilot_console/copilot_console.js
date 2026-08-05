@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const MODEL_TIER_LABEL = {
     cheap: "Cheap / routine",
     reasoning: "Reasoning / complex",
@@ -87,7 +89,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetCopilotConsole extends Component {
     static template = "deployfleet_ui.CopilotConsole";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetMetricCard };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetMetricCard, DeployfleetErrorBanner };
     // No `static props` declaration — see the comment in
     // mission_control.js for why: this is an `ir.actions.client` root
     // component, and Odoo's action manager always injects standard
@@ -120,80 +122,86 @@ export class DeployfleetCopilotConsole extends Component {
 
     async loadData() {
         this.state.loading = true;
+        this.state.loadError = null;
+        try {
 
-        const agents = await this.orm.searchRead(
-            "deployfleet.ai.agent",
-            [],
-            ["key", "name", "description", "related_models", "feature_id", "system_prompt_template"],
-            { order: "sequence asc" },
-        );
-        const featureIds = agents.map((agent) => agent.feature_id[0]);
-        const features = featureIds.length
-            ? await this.orm.read(
-                  "deployfleet.ai.feature",
-                  featureIds,
-                  ["key", "enabled", "model_tier", "data_category"],
-              )
-            : [];
-        const featureById = Object.fromEntries(features.map((feature) => [feature.id, feature]));
-
-        const [
-            [costThisMonth, tokensThisMonth],
-            totalCallsAllTime,
-            cacheHitCallsAllTime,
-            allUsageLogs,
-            recentCalls,
-        ] = await Promise.all([
-            this.orm.call("deployfleet.ai.usage", "total_cost_this_month", []),
-            this.orm.searchCount("deployfleet.ai.usage", []),
-            this.orm.searchCount("deployfleet.ai.usage", [["cache_hit", "=", true]]),
-            // Aggregated client-side below rather than via orm.readGroup():
-            // that convenience method doesn't exist on this exact Odoo 19
-            // nightly's ORM service ("this.orm.readGroup is not a
-            // function") - the same class of version-drift already hit
-            // elsewhere in this project. searchRead + a plain JS reduce
-            // avoids depending on an unverified internal method name.
-            this.orm.searchRead(
-                "deployfleet.ai.usage",
+            const agents = await this.orm.searchRead(
+                "deployfleet.ai.agent",
                 [],
-                ["feature", "estimated_cost_usd", "tokens_in", "tokens_out"],
-                { limit: 2000 },
-            ),
-            this.orm.searchRead(
-                "deployfleet.ai.usage",
-                [],
-                ["feature", "provider", "tokens_in", "tokens_out", "estimated_cost_usd", "cache_hit", "call_date", "state"],
-                { order: "call_date desc", limit: 10 },
-            ),
-        ]);
+                ["key", "name", "description", "related_models", "feature_id", "system_prompt_template"],
+                { order: "sequence asc" },
+            );
+            const featureIds = agents.map((agent) => agent.feature_id[0]);
+            const features = featureIds.length
+                ? await this.orm.read(
+                      "deployfleet.ai.feature",
+                      featureIds,
+                      ["key", "enabled", "model_tier", "data_category"],
+                  )
+                : [];
+            const featureById = Object.fromEntries(features.map((feature) => [feature.id, feature]));
 
-        const breakdownByFeature = {};
-        for (const log of allUsageLogs) {
-            const row = (breakdownByFeature[log.feature] ??= {
-                feature: log.feature,
-                __count: 0,
-                estimated_cost_usd: 0,
-                tokens_in: 0,
-                tokens_out: 0,
-            });
-            row.__count += 1;
-            row.estimated_cost_usd += log.estimated_cost_usd;
-            row.tokens_in += log.tokens_in;
-            row.tokens_out += log.tokens_out;
+            const [
+                [costThisMonth, tokensThisMonth],
+                totalCallsAllTime,
+                cacheHitCallsAllTime,
+                allUsageLogs,
+                recentCalls,
+            ] = await Promise.all([
+                this.orm.call("deployfleet.ai.usage", "total_cost_this_month", []),
+                this.orm.searchCount("deployfleet.ai.usage", []),
+                this.orm.searchCount("deployfleet.ai.usage", [["cache_hit", "=", true]]),
+                // Aggregated client-side below rather than via orm.readGroup():
+                // that convenience method doesn't exist on this exact Odoo 19
+                // nightly's ORM service ("this.orm.readGroup is not a
+                // function") - the same class of version-drift already hit
+                // elsewhere in this project. searchRead + a plain JS reduce
+                // avoids depending on an unverified internal method name.
+                this.orm.searchRead(
+                    "deployfleet.ai.usage",
+                    [],
+                    ["feature", "estimated_cost_usd", "tokens_in", "tokens_out"],
+                    { limit: 2000 },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.ai.usage",
+                    [],
+                    ["feature", "provider", "tokens_in", "tokens_out", "estimated_cost_usd", "cache_hit", "call_date", "state"],
+                    { order: "call_date desc", limit: 10 },
+                ),
+            ]);
+
+            const breakdownByFeature = {};
+            for (const log of allUsageLogs) {
+                const row = (breakdownByFeature[log.feature] ??= {
+                    feature: log.feature,
+                    __count: 0,
+                    estimated_cost_usd: 0,
+                    tokens_in: 0,
+                    tokens_out: 0,
+                });
+                row.__count += 1;
+                row.estimated_cost_usd += log.estimated_cost_usd;
+                row.tokens_in += log.tokens_in;
+                row.tokens_out += log.tokens_out;
+            }
+            const featureBreakdown = Object.values(breakdownByFeature).sort(
+                (a, b) => b.estimated_cost_usd - a.estimated_cost_usd,
+            );
+
+            this.state.agents = agents;
+            this.state.featureById = featureById;
+            this.state.costThisMonth = costThisMonth;
+            this.state.tokensThisMonth = tokensThisMonth;
+            this.state.totalCallsAllTime = totalCallsAllTime;
+            this.state.cacheHitRate = totalCallsAllTime > 0 ? (cacheHitCallsAllTime / totalCallsAllTime) * 100 : 0;
+            this.state.featureBreakdown = featureBreakdown;
+            this.state.recentCalls = recentCalls;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
         }
-        const featureBreakdown = Object.values(breakdownByFeature).sort(
-            (a, b) => b.estimated_cost_usd - a.estimated_cost_usd,
-        );
-
-        this.state.agents = agents;
-        this.state.featureById = featureById;
-        this.state.costThisMonth = costThisMonth;
-        this.state.tokensThisMonth = tokensThisMonth;
-        this.state.totalCallsAllTime = totalCallsAllTime;
-        this.state.cacheHitRate = totalCallsAllTime > 0 ? (cacheHitCallsAllTime / totalCallsAllTime) * 100 : 0;
-        this.state.featureBreakdown = featureBreakdown;
-        this.state.recentCalls = recentCalls;
-        this.state.loading = false;
     }
 
     modelTierLabel(tier) {

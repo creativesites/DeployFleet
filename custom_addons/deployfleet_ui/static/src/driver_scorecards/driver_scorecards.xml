@@ -7,6 +7,8 @@
                 <p class="df-driver-scorecards__subtitle">Reliability score and recent performance events, worst first.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-driver-scorecards__filters">
                 <DeployfleetStatusPill t-foreach="scoreFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

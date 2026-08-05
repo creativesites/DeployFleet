@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATUS_FILTERS = [
     { key: "all", label: "All" },
     { key: "in_service", label: "In Service" },
@@ -65,7 +67,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetAssetRegistry extends Component {
     static template = "deployfleet_ui.AssetRegistry";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
     // component, and Odoo's action manager always injects standard props
@@ -117,13 +119,19 @@ export class DeployfleetAssetRegistry extends Component {
 
     async loadAssets() {
         this.state.loading = true;
-        this.state.assets = await this.orm.searchRead(
-            "deployfleet.asset",
-            [],
-            ["name", "asset_type", "serial_number", "status", "location", "acquisition_date"],
-            { order: "name asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.assets = await this.orm.searchRead(
+                "deployfleet.asset",
+                [],
+                ["name", "asset_type", "serial_number", "status", "location", "acquisition_date"],
+                { order: "name asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     onSelectAsset(assetId) {

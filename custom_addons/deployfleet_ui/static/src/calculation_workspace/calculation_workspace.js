@@ -5,6 +5,8 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -30,7 +32,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetCalculationWorkspace extends Component {
     static template = "deployfleet_ui.CalculationWorkspace";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -51,7 +53,19 @@ export class DeployfleetCalculationWorkspace extends Component {
             saving: false,
         });
 
-        onWillStart(() => Promise.all([this.loadRules(), this.loadParameters(), this.loadVehicleTypes()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadRules(), this.loadParameters(), this.loadVehicleTypes()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get tabs() {
@@ -66,11 +80,9 @@ export class DeployfleetCalculationWorkspace extends Component {
     }
 
     async loadRules() {
-        this.state.loading = true;
         this.state.rules = await this.orm.searchRead(
             "deployfleet.calculation.rule", [], ["key", "name", "formula"], { order: "name asc" },
         );
-        this.state.loading = false;
     }
 
     async loadParameters() {

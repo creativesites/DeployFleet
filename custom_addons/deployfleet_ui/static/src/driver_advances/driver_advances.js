@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "All" },
     { key: "issued", label: "Issued" },
@@ -52,7 +54,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetDriverAdvances extends Component {
     static template = "deployfleet_ui.DriverAdvances";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -102,13 +104,19 @@ export class DeployfleetDriverAdvances extends Component {
 
     async loadAdvances() {
         this.state.loading = true;
-        this.state.advances = await this.orm.searchRead(
-            "deployfleet.driver.advance",
-            [],
-            ["driver_id", "purpose", "issued_date", "amount", "outstanding_amount", "state"],
-            { order: "issued_date desc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.advances = await this.orm.searchRead(
+                "deployfleet.driver.advance",
+                [],
+                ["driver_id", "purpose", "issued_date", "amount", "outstanding_amount", "state"],
+                { order: "issued_date desc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async onSelectAdvance(advanceId) {

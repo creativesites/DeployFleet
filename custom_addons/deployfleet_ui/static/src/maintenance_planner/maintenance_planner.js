@@ -8,6 +8,8 @@ import { DeployfleetStatusBadge } from "../components/status_badge/status_badge"
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DeployfleetAiRecommendationCard } from "../components/ai_recommendation_card/ai_recommendation_card";
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+import { localISODate, todayISO, toDate, isoAddDays, daysBetweenISO } from "../utils/date_utils";
 
 const TABS = [
     { key: "overview", label: "Overview" },
@@ -56,24 +58,6 @@ const SCORE_BAND_VARIANT = { good: "success", watch: "warning", critical: "dange
 
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
-}
-
-function todayISO() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function toDate(iso) {
-    return new Date(`${iso}T00:00:00`);
-}
-
-function isoAddDays(iso, days) {
-    const d = toDate(iso);
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
-}
-
-function daysBetweenISO(a, b) {
-    return Math.round((toDate(b) - toDate(a)) / 86400000);
 }
 
 /**
@@ -134,6 +118,7 @@ export class DeployfleetMaintenancePlanner extends Component {
         DeployfleetStatusPill,
         DeployfleetMetricCard,
         DeployfleetAiRecommendationCard,
+        DeployfleetErrorBanner,
     };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
@@ -167,61 +152,67 @@ export class DeployfleetMaintenancePlanner extends Component {
 
     async loadAll() {
         this.state.loading = true;
-        const monthStart = `${todayISO().slice(0, 7)}-01`;
-        const [vehicles, schedules, jobCards, predictions, fuelLogs] = await Promise.all([
-            this.orm.searchRead(
-                "deployfleet.vehicle",
-                [["status", "!=", "retired"]],
-                ["license_plate", "name", "status", "odometer"],
-                { order: "license_plate asc" },
-            ),
-            this.orm.searchRead(
-                "deployfleet.maintenance.schedule",
-                [],
-                [
-                    "vehicle_id",
-                    "name",
-                    "last_service_date",
-                    "last_service_odometer",
-                    "next_due_odometer",
-                    "next_due_date",
-                    "is_due",
-                ],
-                {},
-            ),
-            this.orm.searchRead(
-                "deployfleet.workshop.job.card",
-                [],
-                ["name", "vehicle_id", "description", "opened_date", "closed_date", "state", "total_cost", "maintenance_schedule_id"],
-                { order: "opened_date desc", limit: 300 },
-            ),
-            this.orm.searchRead(
-                "deployfleet.maintenance.prediction",
-                [],
-                ["vehicle_id", "risk_score", "risk_level", "basis", "computed_date"],
-                { order: "computed_date desc" },
-            ),
-            this.orm.searchRead(
-                "deployfleet.fuel.log",
-                [["date", ">=", monthStart]],
-                ["distance_since_last_km"],
-            ),
-        ]);
+        this.state.loadError = null;
+        try {
+            const monthStart = `${todayISO().slice(0, 7)}-01`;
+            const [vehicles, schedules, jobCards, predictions, fuelLogs] = await Promise.all([
+                this.orm.searchRead(
+                    "deployfleet.vehicle",
+                    [["status", "!=", "retired"]],
+                    ["license_plate", "name", "status", "odometer"],
+                    { order: "license_plate asc" },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.maintenance.schedule",
+                    [],
+                    [
+                        "vehicle_id",
+                        "name",
+                        "last_service_date",
+                        "last_service_odometer",
+                        "next_due_odometer",
+                        "next_due_date",
+                        "is_due",
+                    ],
+                    {},
+                ),
+                this.orm.searchRead(
+                    "deployfleet.workshop.job.card",
+                    [],
+                    ["name", "vehicle_id", "description", "opened_date", "closed_date", "state", "total_cost", "maintenance_schedule_id"],
+                    { order: "opened_date desc", limit: 300 },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.maintenance.prediction",
+                    [],
+                    ["vehicle_id", "risk_score", "risk_level", "basis", "computed_date"],
+                    { order: "computed_date desc" },
+                ),
+                this.orm.searchRead(
+                    "deployfleet.fuel.log",
+                    [["date", ">=", monthStart]],
+                    ["distance_since_last_km"],
+                ),
+            ]);
 
-        const latestPredictionByVehicle = {};
-        for (const prediction of predictions) {
-            const vehicleId = prediction.vehicle_id[0];
-            if (!(vehicleId in latestPredictionByVehicle)) {
-                latestPredictionByVehicle[vehicleId] = prediction;
+            const latestPredictionByVehicle = {};
+            for (const prediction of predictions) {
+                const vehicleId = prediction.vehicle_id[0];
+                if (!(vehicleId in latestPredictionByVehicle)) {
+                    latestPredictionByVehicle[vehicleId] = prediction;
+                }
             }
-        }
 
-        this.state.vehicles = vehicles;
-        this.state.schedules = schedules;
-        this.state.jobCards = jobCards;
-        this.state.predictions = Object.values(latestPredictionByVehicle);
-        this.state.fuelDistanceThisMonth = fuelLogs.reduce((sum, log) => sum + log.distance_since_last_km, 0);
-        this.state.loading = false;
+            this.state.vehicles = vehicles;
+            this.state.schedules = schedules;
+            this.state.jobCards = jobCards;
+            this.state.predictions = Object.values(latestPredictionByVehicle);
+            this.state.fuelDistanceThisMonth = fuelLogs.reduce((sum, log) => sum + log.distance_since_last_km, 0);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     // ---------------------------------------------------------------
@@ -472,7 +463,7 @@ export class DeployfleetMaintenancePlanner extends Component {
     }
 
     buildCalendarDay(date, anchor) {
-        const iso = date.toISOString().slice(0, 10);
+        const iso = localISODate(date);
         return {
             iso,
             dayNumber: date.getDate(),

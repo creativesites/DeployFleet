@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const FLAG_FILTERS = [
     { key: "all", label: "All" },
     { key: "vehicle", label: "Vehicle Expired" },
@@ -43,7 +45,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetComplianceOverrideLedger extends Component {
     static template = "deployfleet_ui.ComplianceOverrideLedger";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -62,20 +64,26 @@ export class DeployfleetComplianceOverrideLedger extends Component {
 
     async loadOverrides() {
         this.state.loading = true;
-        this.state.overrides = await this.orm.searchRead(
-            "deployfleet.dispatch.compliance.override.log",
-            [],
-            ["assignment_id", "reason", "overridden_by", "vehicle_had_expired_documents", "driver_had_expired_documents", "create_date"],
-            { order: "create_date desc" },
-        );
-        const assignmentIds = [...new Set(this.state.overrides.map((o) => o.assignment_id[0]))];
-        if (assignmentIds.length) {
-            const assignments = await this.orm.read(
-                "deployfleet.dispatch.assignment", assignmentIds, ["shipment_id", "vehicle_id", "driver_id"],
+        this.state.loadError = null;
+        try {
+            this.state.overrides = await this.orm.searchRead(
+                "deployfleet.dispatch.compliance.override.log",
+                [],
+                ["assignment_id", "reason", "overridden_by", "vehicle_had_expired_documents", "driver_had_expired_documents", "create_date"],
+                { order: "create_date desc" },
             );
-            this.state.assignmentById = Object.fromEntries(assignments.map((a) => [a.id, a]));
+            const assignmentIds = [...new Set(this.state.overrides.map((o) => o.assignment_id[0]))];
+            if (assignmentIds.length) {
+                const assignments = await this.orm.read(
+                    "deployfleet.dispatch.assignment", assignmentIds, ["shipment_id", "vehicle_id", "driver_id"],
+                );
+                this.state.assignmentById = Object.fromEntries(assignments.map((a) => [a.id, a]));
+            }
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
         }
-        this.state.loading = false;
     }
 
     assignmentDetail(assignmentId) {

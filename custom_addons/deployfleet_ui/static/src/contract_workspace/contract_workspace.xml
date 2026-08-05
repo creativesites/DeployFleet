@@ -7,6 +7,8 @@
                 <p class="df-contract-workspace__subtitle">Customer contract terms and the pricing rules that back them.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-contract-workspace__filters">
                 <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

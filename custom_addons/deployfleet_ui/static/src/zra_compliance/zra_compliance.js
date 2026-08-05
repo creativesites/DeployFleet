@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "All" },
     { key: "draft", label: "Draft" },
@@ -50,7 +52,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetZraCompliance extends Component {
     static template = "deployfleet_ui.ZraCompliance";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -65,7 +67,19 @@ export class DeployfleetZraCompliance extends Component {
             retryingSubmissionId: null,
         });
 
-        onWillStart(() => Promise.all([this.loadSubmissions(), this.loadConfig()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadSubmissions(), this.loadConfig()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get stateFilters() {
@@ -86,14 +100,12 @@ export class DeployfleetZraCompliance extends Component {
     }
 
     async loadSubmissions() {
-        this.state.loading = true;
         this.state.submissions = await this.orm.searchRead(
             "deployfleet.zra.submission",
             [],
             ["invoice_id", "state", "zra_receipt_no", "error_message", "submitted_date"],
             { order: "create_date desc" },
         );
-        this.state.loading = false;
     }
 
     async loadConfig() {

@@ -7,6 +7,8 @@
                 <p class="df-insurance-center__subtitle">Policy renewals and claims across the fleet.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-insurance-center__filters">
                 <DeployfleetStatusPill t-foreach="expiryFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

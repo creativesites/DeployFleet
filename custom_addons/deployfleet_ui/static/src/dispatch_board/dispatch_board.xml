@@ -9,6 +9,8 @@
                 </p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section class="df-dispatch-board__new-form">
                 <h3 class="df-dispatch-board__section-title">New Shipment</h3>
                 <div class="df-dispatch-board__new-fields">

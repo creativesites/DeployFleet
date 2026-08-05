@@ -7,6 +7,8 @@
                 <p class="df-vehicle-types__subtitle">The vehicle classes your fleet operates.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <div class="df-vehicle-types__new">
                 <input type="text" class="df-vehicle-types__input"
                        placeholder="New type name"

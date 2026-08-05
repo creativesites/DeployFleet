@@ -6,6 +6,12 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 
+
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
+function extractErrorMessage(error) {
+    return error?.data?.message || error?.message || "Something went wrong. Please try again.";
+}
 const CONTRACT_STATE_BADGE_VARIANT = { draft: "info", active: "success", expired: "warning", terminated: "danger" };
 const SHIPMENT_STATE_BADGE_VARIANT = {
     draft: "info", confirmed: "info", assigned: "success", in_transit: "success", delivered: "success", cancelled: "danger",
@@ -33,7 +39,7 @@ const SHIPMENT_STATE_BADGE_VARIANT = {
  */
 export class DeployfleetCustomer360 extends Component {
     static template = "deployfleet_ui.Customer360";
-    static components = { DeployfleetButton, DeployfleetStatusBadge };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -59,11 +65,17 @@ export class DeployfleetCustomer360 extends Component {
 
     async loadCustomers() {
         this.state.loading = true;
-        this.state.customers = await this.orm.searchRead(
-            "res.partner", [["customer_rank", ">", 0]], ["name", "email", "phone"],
-            { order: "name asc", limit: 300 },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.customers = await this.orm.searchRead(
+                "res.partner", [["customer_rank", ">", 0]], ["name", "email", "phone"],
+                { order: "name asc", limit: 300 },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     onSearchInput(ev) {

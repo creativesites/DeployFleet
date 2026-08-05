@@ -48,6 +48,7 @@
         "web.assets_backend": [
             "deployfleet_ui/static/src/scss/tokens.scss",
             "deployfleet_ui/static/src/scss/animations.scss",
+            "deployfleet_ui/static/src/utils/*.js",
             "deployfleet_ui/static/src/components/**/*.scss",
             "deployfleet_ui/static/src/components/**/*.js",
             "deployfleet_ui/static/src/components/**/*.xml",

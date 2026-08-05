@@ -5,6 +5,8 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -36,7 +38,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetVehicleTypesWorkspace extends Component {
     static template = "deployfleet_ui.VehicleTypesWorkspace";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
     // component, and Odoo's action manager always injects standard props
@@ -60,13 +62,19 @@ export class DeployfleetVehicleTypesWorkspace extends Component {
 
     async loadTypes() {
         this.state.loading = true;
-        this.state.types = await this.orm.searchRead(
-            "deployfleet.vehicle.type",
-            [],
-            ["name", "code", "sequence"],
-            { order: "sequence asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.types = await this.orm.searchRead(
+                "deployfleet.vehicle.type",
+                [],
+                ["name", "code", "sequence"],
+                { order: "sequence asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     onSelectType(typeId) {

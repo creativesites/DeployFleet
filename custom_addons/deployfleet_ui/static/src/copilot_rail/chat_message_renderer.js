@@ -29,13 +29,23 @@ export class DeployfleetChatVehicleCard extends Component {
     }
 
     async loadVehicle() {
-        const vehicles = await this.orm.searchRead(
-            "deployfleet.vehicle",
-            [["id", "=", this.props.vehicleId]],
-            ["license_plate", "status", "current_driver_id", "odometer"],
-        );
-        this.state.vehicle = vehicles[0] || null;
-        this.state.notFound = !vehicles[0];
+        // Engineering-audit fix (C-17): an unguarded rejection here (e.g.
+        // an AccessError) previously left this card's onWillStart promise
+        // permanently unresolved from the render tree's perspective -
+        // treated the same as "not found" rather than left to crash the
+        // whole chat message.
+        try {
+            const vehicles = await this.orm.searchRead(
+                "deployfleet.vehicle",
+                [["id", "=", this.props.vehicleId]],
+                ["license_plate", "status", "current_driver_id", "odometer"],
+            );
+            this.state.vehicle = vehicles[0] || null;
+            this.state.notFound = !vehicles[0];
+        } catch {
+            this.state.vehicle = null;
+            this.state.notFound = true;
+        }
     }
 
     get statusBadgeVariant() {

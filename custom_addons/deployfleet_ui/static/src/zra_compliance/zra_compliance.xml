@@ -7,6 +7,8 @@
                 <p class="df-zra-compliance__subtitle">Smart Invoice submission status per invoice.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <div t-if="state.config" class="df-zra-compliance__device-status">
                 <span class="df-zra-compliance__device-label">Device:</span>
                 <DeployfleetStatusBadge

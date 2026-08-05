@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "active", label: "Active" },
     { key: "fitted", label: "Fitted" },
@@ -73,7 +75,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetTyreManager extends Component {
     static template = "deployfleet_ui.TyreManager";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -131,15 +133,21 @@ export class DeployfleetTyreManager extends Component {
 
     async loadTyres() {
         this.state.loading = true;
-        const tyres = await this.orm.searchRead(
-            "deployfleet.tyre",
-            [],
-            ["vehicle_id", "position", "serial_number", "tread_depth_mm", "state"],
-            {},
-        );
-        tyres.sort((a, b) => a.tread_depth_mm - b.tread_depth_mm);
-        this.state.tyres = tyres;
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            const tyres = await this.orm.searchRead(
+                "deployfleet.tyre",
+                [],
+                ["vehicle_id", "position", "serial_number", "tread_depth_mm", "state"],
+                {},
+            );
+            tyres.sort((a, b) => a.tread_depth_mm - b.tread_depth_mm);
+            this.state.tyres = tyres;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async onSelectTyre(tyreId) {

@@ -7,6 +7,8 @@
                 <p class="df-depot-registry__subtitle">Pickup and drop-off terminals.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <div class="df-depot-registry__new">
                 <input type="text" class="df-depot-registry__input" placeholder="Name"
                        t-att-value="state.newDepot.name"

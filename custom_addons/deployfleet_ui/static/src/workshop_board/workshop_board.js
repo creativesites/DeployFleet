@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const STATE_FILTERS = [
     { key: "all", label: "Active" },
     { key: "open", label: "Open" },
@@ -93,7 +95,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetWorkshopBoard extends Component {
     static template = "deployfleet_ui.WorkshopBoard";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration — see the identical comment in
     // mission_control.js: this is an `ir.actions.client` root component,
     // and Odoo's action manager always injects standard props into it.
@@ -149,14 +151,20 @@ export class DeployfleetWorkshopBoard extends Component {
 
     async loadJobCards() {
         this.state.loading = true;
-        const jobCards = await this.orm.searchRead(
-            "deployfleet.workshop.job.card",
-            [],
-            ["name", "vehicle_id", "description", "opened_date", "total_cost", "state"],
-            { order: "opened_date asc" },
-        );
-        this.state.jobCards = jobCards;
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            const jobCards = await this.orm.searchRead(
+                "deployfleet.workshop.job.card",
+                [],
+                ["name", "vehicle_id", "description", "opened_date", "total_cost", "state"],
+                { order: "opened_date asc" },
+            );
+            this.state.jobCards = jobCards;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async onSelectJobCard(jobCardId) {

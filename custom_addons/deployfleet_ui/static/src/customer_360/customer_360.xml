@@ -11,6 +11,8 @@
                        t-on-input="onSearchInput"/>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <p t-if="state.loading" class="df-customer-360__loading">Loading customers...</p>
             <p t-if="!state.loading and filteredCustomers.length === 0" class="df-customer-360__empty">
                 No customers match this search.

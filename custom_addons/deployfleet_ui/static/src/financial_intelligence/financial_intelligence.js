@@ -5,6 +5,12 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 
+
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
+function extractErrorMessage(error) {
+    return error?.data?.message || error?.message || "Something went wrong. Please try again.";
+}
 /**
  * Financial Intelligence (Billing & Finance domain) — the deferred
  * flagship from the AI & Intelligence domain audit ("Financial Forecast
@@ -37,7 +43,7 @@ import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
  */
 export class DeployfleetFinancialIntelligence extends Component {
     static template = "deployfleet_ui.FinancialIntelligence";
-    static components = { DeployfleetMetricCard };
+    static components = { DeployfleetMetricCard, DeployfleetErrorBanner };
 
     setup() {
         this.orm = useService("orm");
@@ -56,30 +62,36 @@ export class DeployfleetFinancialIntelligence extends Component {
 
     async loadData() {
         this.state.loading = true;
-        const [confirmedInvoices, loadExpenses, forecasts] = await Promise.all([
-            this.orm.searchRead(
-                "deployfleet.invoice", [["state", "=", "confirmed"]], ["amount_total", "payment_state"],
-            ),
-            this.orm.searchRead("deployfleet.load.expense", [], ["amount"]),
-            this.orm.searchRead(
-                "deployfleet.financial.forecast", [],
-                ["computed_date", "months_of_history", "forecast_revenue", "forecast_fuel_cost", "basis"],
-                { order: "computed_date desc", limit: 6 },
-            ),
-        ]);
+        this.state.loadError = null;
+        try {
+            const [confirmedInvoices, loadExpenses, forecasts] = await Promise.all([
+                this.orm.searchRead(
+                    "deployfleet.invoice", [["state", "=", "confirmed"]], ["amount_total", "payment_state"],
+                ),
+                this.orm.searchRead("deployfleet.load.expense", [], ["amount"]),
+                this.orm.searchRead(
+                    "deployfleet.financial.forecast", [],
+                    ["computed_date", "months_of_history", "forecast_revenue", "forecast_fuel_cost", "basis"],
+                    { order: "computed_date desc", limit: 6 },
+                ),
+            ]);
 
-        const confirmedRevenue = confirmedInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
-        const unpaidInvoices = confirmedInvoices.filter((invoice) => invoice.payment_state !== "paid");
-        const outstandingBalance = unpaidInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
-        const loadExpenseTotal = loadExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const confirmedRevenue = confirmedInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
+            const unpaidInvoices = confirmedInvoices.filter((invoice) => invoice.payment_state !== "paid");
+            const outstandingBalance = unpaidInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
+            const loadExpenseTotal = loadExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
-        this.state.confirmedRevenue = confirmedRevenue;
-        this.state.outstandingBalance = outstandingBalance;
-        this.state.unpaidInvoiceCount = unpaidInvoices.length;
-        this.state.loadExpenseTotal = loadExpenseTotal;
-        this.state.grossMargin = confirmedRevenue - loadExpenseTotal;
-        this.state.forecasts = forecasts;
-        this.state.loading = false;
+            this.state.confirmedRevenue = confirmedRevenue;
+            this.state.outstandingBalance = outstandingBalance;
+            this.state.unpaidInvoiceCount = unpaidInvoices.length;
+            this.state.loadExpenseTotal = loadExpenseTotal;
+            this.state.grossMargin = confirmedRevenue - loadExpenseTotal;
+            this.state.forecasts = forecasts;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     formatAmount(amount) {

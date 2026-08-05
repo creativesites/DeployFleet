@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const TABS = [
     { key: "maintenance", label: "Maintenance Risk" },
     { key: "fuel", label: "Fuel Anomalies" },
@@ -55,7 +57,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetAiPredictions extends Component {
     static template = "deployfleet_ui.AiPredictions";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -75,7 +77,19 @@ export class DeployfleetAiPredictions extends Component {
             fuelLogById: {},
         });
 
-        onWillStart(() => Promise.all([this.loadPredictions(), this.loadAnomalies()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadPredictions(), this.loadAnomalies()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadPredictions() {
@@ -88,7 +102,6 @@ export class DeployfleetAiPredictions extends Component {
             ],
             { order: "risk_score desc" },
         );
-        this.state.loading = false;
     }
 
     async loadAnomalies() {

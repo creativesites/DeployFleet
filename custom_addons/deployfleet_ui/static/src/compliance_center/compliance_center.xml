@@ -7,6 +7,8 @@
                 <p class="df-compliance-center__subtitle">Who can't legally run today — every vehicle and driver, at a glance.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading and hasAttentionItems" class="df-compliance-center__attention">
                 <DeployfleetStatusPill t-if="vehiclesWithExpiredCount > 0"
                                        label="'Vehicles with expired documents'"

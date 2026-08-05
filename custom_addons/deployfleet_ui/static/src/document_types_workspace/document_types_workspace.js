@@ -5,6 +5,8 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const APPLIES_TO_OPTIONS = [
     { value: "deployfleet.vehicle", label: "Vehicle" },
     { value: "hr.employee", label: "Driver" },
@@ -43,7 +45,7 @@ function appliesToLabel(model) {
  */
 export class DeployfleetDocumentTypesWorkspace extends Component {
     static template = "deployfleet_ui.DocumentTypesWorkspace";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -73,13 +75,19 @@ export class DeployfleetDocumentTypesWorkspace extends Component {
 
     async loadTypes() {
         this.state.loading = true;
-        this.state.types = await this.orm.searchRead(
-            "deployfleet.compliance.document.type",
-            [],
-            ["name", "code", "applies_to_model", "requires_expiry"],
-            { order: "name asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.types = await this.orm.searchRead(
+                "deployfleet.compliance.document.type",
+                [],
+                ["name", "code", "applies_to_model", "requires_expiry"],
+                { order: "name asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     onSelectType(typeId) {

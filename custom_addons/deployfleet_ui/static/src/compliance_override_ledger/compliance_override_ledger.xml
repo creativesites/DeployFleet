@@ -7,6 +7,8 @@
                 <p class="df-compliance-override-ledger__subtitle">The audit trail behind every dispatch confirmed despite an expired document.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-compliance-override-ledger__filters">
                 <DeployfleetStatusPill t-foreach="flagFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

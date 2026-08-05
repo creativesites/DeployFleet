@@ -8,6 +8,7 @@ import { DeployfleetStatusBadge } from "../components/status_badge/status_badge"
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DeployfleetAiRecommendationCard } from "../components/ai_recommendation_card/ai_recommendation_card";
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
 import { useCopilotContext } from "../copilot_rail/copilot_context";
 
 const STATUS_FILTERS = [
@@ -139,6 +140,7 @@ export class DeployfleetFleetCommandCenter extends Component {
         DeployfleetStatusPill,
         DeployfleetMetricCard,
         DeployfleetAiRecommendationCard,
+        DeployfleetErrorBanner,
     };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js: this is an `ir.actions.client` root
@@ -166,7 +168,19 @@ export class DeployfleetFleetCommandCenter extends Component {
             savingVehicleId: null,
         });
 
-        onWillStart(() => Promise.all([this.loadVehicles(), this.loadEditOptions()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadVehicles(), this.loadEditOptions()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadEditOptions() {
@@ -241,7 +255,6 @@ export class DeployfleetFleetCommandCenter extends Component {
     }
 
     async loadVehicles() {
-        this.state.loading = true;
         const vehicles = await this.orm.searchRead(
             "deployfleet.vehicle",
             [["status", "!=", "retired"]],
@@ -263,7 +276,6 @@ export class DeployfleetFleetCommandCenter extends Component {
             { order: "license_plate asc" },
         );
         this.state.vehicles = vehicles;
-        this.state.loading = false;
     }
 
     async onSelectVehicle(vehicleId) {

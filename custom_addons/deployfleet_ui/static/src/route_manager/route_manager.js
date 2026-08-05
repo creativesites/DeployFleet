@@ -5,6 +5,8 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -45,7 +47,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetRouteManager extends Component {
     static template = "deployfleet_ui.RouteManager";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -67,18 +69,28 @@ export class DeployfleetRouteManager extends Component {
             creating: false,
         });
 
-        onWillStart(() => Promise.all([this.loadRoutes(), this.loadDepots()]));
+        onWillStart(() => this.loadAllInitialData());
+    }
+
+    async loadAllInitialData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await Promise.all([this.loadRoutes(), this.loadDepots()]);
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     async loadRoutes() {
-        this.state.loading = true;
         this.state.routes = await this.orm.searchRead(
             "deployfleet.route",
             [],
             ["name", "origin_depot_id", "destination_depot_id", "distance_km"],
             { order: "name asc" },
         );
-        this.state.loading = false;
     }
 
     async loadDepots() {

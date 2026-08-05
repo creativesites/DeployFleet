@@ -7,6 +7,8 @@
                 <p class="df-copilot-console__subtitle">The agent catalog and the AI investment's usage and cost, in one place.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <p t-if="state.loading" class="df-copilot-console__loading">Loading...</p>
 
             <t t-if="!state.loading">

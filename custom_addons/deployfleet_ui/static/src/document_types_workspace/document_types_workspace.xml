@@ -7,6 +7,8 @@
                 <p class="df-document-types-workspace__subtitle">What compliance documents your fleet tracks, and for whom.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <p t-if="state.loading" class="df-document-types-workspace__loading">Loading document types...</p>
 
             <div t-if="!state.loading" class="df-document-types-workspace__table">

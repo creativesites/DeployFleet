@@ -7,6 +7,8 @@
                 <p class="df-fleet-cc__subtitle">Which trucks are making money?</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-fleet-cc__filters">
                 <DeployfleetStatusPill t-foreach="statusFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

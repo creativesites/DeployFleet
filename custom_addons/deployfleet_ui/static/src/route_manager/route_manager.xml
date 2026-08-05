@@ -7,6 +7,8 @@
                 <p class="df-route-manager__subtitle">The lanes your fleet runs between depots.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section class="df-route-manager__new-form">
                 <h3 class="df-route-manager__section-title">New Route</h3>
                 <div class="df-route-manager__new-fields">

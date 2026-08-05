@@ -7,6 +7,12 @@ import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DEPLOYFLEET_MEGA_MENU_DOMAINS } from "../mega_menu/domain_content";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
+function extractErrorMessage(error) {
+    return error?.data?.message || error?.message || "Something went wrong. Please try again.";
+}
+
 // Every domain here is the underlying record set doc 16 §3.3 calls for
 // ("each count a clickable pill jumping straight to the underlying
 // list"), not the Mega Menu that contains it — verified directly against
@@ -85,7 +91,7 @@ const DOMAIN_QUICK_LINKS = [
  */
 export class DeployfleetMissionControl extends Component {
     static template = "deployfleet_ui.MissionControl";
-    static components = { DeployfleetStatusPill, DeployfleetMetricCard };
+    static components = { DeployfleetStatusPill, DeployfleetMetricCard, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately: this is an
     // `ir.actions.client` root component, and Odoo's action manager
     // always injects standard props (`action`, `actionId`,
@@ -117,6 +123,18 @@ export class DeployfleetMissionControl extends Component {
     }
 
     async loadData() {
+        this.state.loading = true;
+        this.state.loadError = null;
+        try {
+            await this._loadCounts();
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
+    }
+
+    async _loadCounts() {
         const [
             unassignedShipments,
             expiringDocuments,
@@ -148,7 +166,6 @@ export class DeployfleetMissionControl extends Component {
         this.state.activeVehicles = activeVehicles;
         this.state.activeShipments = activeShipments;
         this.state.confirmedRevenue = confirmedInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
-        this.state.loading = false;
     }
 
     get formattedRevenue() {

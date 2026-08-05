@@ -36,11 +36,12 @@
                         <p class="df-copilot-rail__subtitle">Pending AI-proposed actions awaiting your approval.</p>
 
                         <p t-if="state.loading" class="df-copilot-rail__loading">Loading...</p>
-                        <p t-if="!state.loading and pendingCount === 0" class="df-copilot-rail__empty">
+                        <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+                        <p t-if="!state.loading and !state.loadError and pendingCount === 0" class="df-copilot-rail__empty">
                             <i class="fa fa-check-circle"/> Nothing waiting on you right now.
                         </p>
 
-                        <ul t-if="!state.loading and pendingCount > 0" class="df-copilot-rail__list">
+                        <ul t-if="!state.loading and !state.loadError and pendingCount > 0" class="df-copilot-rail__list">
                             <li t-foreach="state.pendingApprovals" t-as="request" t-key="request.id" class="df-copilot-rail__item">
                                 <div class="df-copilot-rail__item-header">
                                     <span class="df-copilot-rail__item-name" t-esc="request.name"/>

@@ -7,6 +7,8 @@
                 <p class="df-load-expense-ledger__subtitle">Tolls, fuel, and other per-trip costs actually incurred.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-load-expense-ledger__filters">
                 <DeployfleetStatusPill t-foreach="typeFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

@@ -7,6 +7,8 @@
                 <p class="df-financial-intelligence__subtitle">Revenue, outstanding balance, actual costs, and the forecast trend.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <p t-if="state.loading" class="df-financial-intelligence__loading">Loading...</p>
 
             <section t-if="!state.loading" class="df-financial-intelligence__kpis">

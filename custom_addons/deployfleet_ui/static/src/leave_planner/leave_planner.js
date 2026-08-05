@@ -6,6 +6,9 @@ import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
+import { localISODate, todayISO, toDate } from "../utils/date_utils";
+
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
 
 const TABS = [
     { key: "requests", label: "Requests" },
@@ -41,14 +44,6 @@ function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
 
-function todayISO() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function toDate(iso) {
-    return new Date(`${iso}T00:00:00`);
-}
-
 /**
  * Leave Planner (Driver & HR domain custom-views work) — replaces the
  * stock `deployfleet.leave.request` list/form with a workspace covering
@@ -76,7 +71,7 @@ function toDate(iso) {
  */
 export class DeployfleetLeavePlanner extends Component {
     static template = "deployfleet_ui.LeavePlanner";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -104,28 +99,34 @@ export class DeployfleetLeavePlanner extends Component {
 
     async loadAll() {
         this.state.loading = true;
-        const currentYear = new Date().getFullYear();
-        const [requests, employees, leaveTypes, balances] = await Promise.all([
-            this.orm.searchRead(
-                "deployfleet.leave.request",
-                [],
-                ["employee_id", "leave_type_id", "date_from", "date_to", "number_of_days", "state"],
-                { order: "date_from desc" },
-            ),
-            this.orm.searchRead("hr.employee", [], ["name"], { order: "name asc" }),
-            this.orm.searchRead("deployfleet.leave.type", [], ["name"], {}),
-            this.orm.searchRead(
-                "deployfleet.leave.balance",
-                [["year", "=", currentYear]],
-                ["employee_id", "leave_type_id", "year", "allocated_days", "used_days", "remaining_days"],
-                { order: "employee_id asc" },
-            ),
-        ]);
-        this.state.requests = requests;
-        this.state.employees = employees;
-        this.state.leaveTypes = leaveTypes;
-        this.state.balances = balances;
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            const currentYear = new Date().getFullYear();
+            const [requests, employees, leaveTypes, balances] = await Promise.all([
+                this.orm.searchRead(
+                    "deployfleet.leave.request",
+                    [],
+                    ["employee_id", "leave_type_id", "date_from", "date_to", "number_of_days", "state"],
+                    { order: "date_from desc" },
+                ),
+                this.orm.searchRead("hr.employee", [], ["name"], { order: "name asc" }),
+                this.orm.searchRead("deployfleet.leave.type", [], ["name"], {}),
+                this.orm.searchRead(
+                    "deployfleet.leave.balance",
+                    [["year", "=", currentYear]],
+                    ["employee_id", "leave_type_id", "year", "allocated_days", "used_days", "remaining_days"],
+                    { order: "employee_id asc" },
+                ),
+            ]);
+            this.state.requests = requests;
+            this.state.employees = employees;
+            this.state.leaveTypes = leaveTypes;
+            this.state.balances = balances;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     get stateFilters() {
@@ -214,7 +215,7 @@ export class DeployfleetLeavePlanner extends Component {
     }
 
     buildCalendarDay(date, anchor) {
-        const iso = date.toISOString().slice(0, 10);
+        const iso = localISODate(date);
         return {
             iso,
             dayNumber: date.getDate(),
@@ -245,7 +246,7 @@ export class DeployfleetLeavePlanner extends Component {
     onCalendarShift(direction) {
         const anchor = toDate(this.state.calendarAnchor);
         anchor.setMonth(anchor.getMonth() + direction);
-        this.state.calendarAnchor = anchor.toISOString().slice(0, 10);
+        this.state.calendarAnchor = localISODate(anchor);
     }
 
     onCalendarToday() {

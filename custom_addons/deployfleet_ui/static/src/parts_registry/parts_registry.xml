@@ -7,6 +7,8 @@
                 <p class="df-parts-registry__subtitle">Stock on hand, reorder levels, and unit cost.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-parts-registry__filters">
                 <DeployfleetStatusPill t-foreach="stockFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

@@ -7,6 +7,8 @@
                 <p class="df-driver-documents__subtitle">Licenses and medical certificates across the driver roster.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading" class="df-driver-documents__filters">
                 <DeployfleetStatusPill t-foreach="stateFilters" t-as="filter" t-key="filter.key"
                                        label="filter.label"

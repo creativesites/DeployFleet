@@ -7,6 +7,8 @@
                 <p class="df-mission-control__subtitle">Is anything wrong today?</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section t-if="!state.loading and hasAttentionItems" class="df-mission-control__attention">
                 <DeployfleetStatusPill t-foreach="attentionPills" t-as="item" t-key="item.stateKey"
                                        label="item.label"

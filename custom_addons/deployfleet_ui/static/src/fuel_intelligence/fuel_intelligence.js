@@ -7,6 +7,8 @@ import { DeployfleetButton } from "../components/button/button";
 import { DeployfleetStatusBadge } from "../components/status_badge/status_badge";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 const LOG_FILTERS = [
     { key: "all", label: "All" },
     { key: "anomalous", label: "Anomalies" },
@@ -46,7 +48,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetFuelIntelligence extends Component {
     static template = "deployfleet_ui.FuelIntelligence";
-    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill };
+    static components = { DeployfleetButton, DeployfleetStatusBadge, DeployfleetStatusPill, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -85,40 +87,46 @@ export class DeployfleetFuelIntelligence extends Component {
 
     async loadAll() {
         this.state.loading = true;
-        const [logs, vehicles, drivers] = await Promise.all([
-            this.orm.searchRead(
-                "deployfleet.fuel.log",
-                [],
-                ["vehicle_id", "driver_id", "date", "liters", "total_cost", "consumption_l_per_100km", "is_anomaly"],
-                { order: "date desc, id desc", limit: LOG_LIMIT },
-            ),
-            this.orm.searchRead("deployfleet.vehicle", [["status", "!=", "retired"]], ["license_plate", "name"], {
-                order: "license_plate asc",
-            }),
-            this.orm.searchRead("hr.employee", [["deployfleet_is_driver", "=", true]], ["name"], {
-                order: "name asc",
-            }),
-        ]);
+        this.state.loadError = null;
+        try {
+            const [logs, vehicles, drivers] = await Promise.all([
+                this.orm.searchRead(
+                    "deployfleet.fuel.log",
+                    [],
+                    ["vehicle_id", "driver_id", "date", "liters", "total_cost", "consumption_l_per_100km", "is_anomaly"],
+                    { order: "date desc, id desc", limit: LOG_LIMIT },
+                ),
+                this.orm.searchRead("deployfleet.vehicle", [["status", "!=", "retired"]], ["license_plate", "name"], {
+                    order: "license_plate asc",
+                }),
+                this.orm.searchRead("hr.employee", [["deployfleet_is_driver", "=", true]], ["name"], {
+                    order: "name asc",
+                }),
+            ]);
 
-        const logIds = logs.map((log) => log.id);
-        let zScoreByLogId = {};
-        if (logIds.length) {
-            const anomalies = await this.orm.searchRead(
-                "deployfleet.fuel.anomaly",
-                [["fuel_log_id", "in", logIds]],
-                ["fuel_log_id", "z_score"],
-            );
-            zScoreByLogId = Object.fromEntries(anomalies.map((a) => [a.fuel_log_id[0], a.z_score]));
+            const logIds = logs.map((log) => log.id);
+            let zScoreByLogId = {};
+            if (logIds.length) {
+                const anomalies = await this.orm.searchRead(
+                    "deployfleet.fuel.anomaly",
+                    [["fuel_log_id", "in", logIds]],
+                    ["fuel_log_id", "z_score"],
+                );
+                zScoreByLogId = Object.fromEntries(anomalies.map((a) => [a.fuel_log_id[0], a.z_score]));
+            }
+
+            this.state.logs = logs.map((log) => ({
+                ...log,
+                anomalyZScore: zScoreByLogId[log.id] ?? null,
+                isAnomalous: log.is_anomaly || log.id in zScoreByLogId,
+            }));
+            this.state.vehicles = vehicles;
+            this.state.drivers = drivers;
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
         }
-
-        this.state.logs = logs.map((log) => ({
-            ...log,
-            anomalyZScore: zScoreByLogId[log.id] ?? null,
-            isAnomalous: log.is_anomaly || log.id in zScoreByLogId,
-        }));
-        this.state.vehicles = vehicles;
-        this.state.drivers = drivers;
-        this.state.loading = false;
     }
 
     fuelAnomalyLabel(log) {

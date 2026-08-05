@@ -5,6 +5,8 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { DeployfleetButton } from "../components/button/button";
 
+import { DeployfleetErrorBanner } from "../components/error_banner/error_banner";
+
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
@@ -31,7 +33,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetDepotRegistry extends Component {
     static template = "deployfleet_ui.DepotRegistry";
-    static components = { DeployfleetButton };
+    static components = { DeployfleetButton, DeployfleetErrorBanner };
     // No `static props` declaration, deliberately — see the identical
     // comment in mission_control.js.
 
@@ -53,10 +55,16 @@ export class DeployfleetDepotRegistry extends Component {
 
     async loadDepots() {
         this.state.loading = true;
-        this.state.depots = await this.orm.searchRead(
-            "deployfleet.depot", [], ["name", "street", "city"], { order: "name asc" },
-        );
-        this.state.loading = false;
+        this.state.loadError = null;
+        try {
+            this.state.depots = await this.orm.searchRead(
+                "deployfleet.depot", [], ["name", "street", "city"], { order: "name asc" },
+            );
+        } catch (error) {
+            this.state.loadError = extractErrorMessage(error);
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     onSelectDepot(depotId) {

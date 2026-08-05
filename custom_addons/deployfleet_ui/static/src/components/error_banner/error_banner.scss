@@ -1,0 +1,30 @@
+.df-error-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--df-space-2);
+    padding: var(--df-space-3);
+    margin: var(--df-space-3);
+    background: var(--df-color-danger-bg);
+    border: 1px solid var(--df-color-danger);
+    border-radius: var(--df-radius-md);
+}
+
+.df-error-banner__icon {
+    color: var(--df-color-danger);
+    font-size: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.df-error-banner__title {
+    margin: 0 0 4px;
+    font-size: var(--df-font-size-md);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-error-banner__message {
+    margin: 0;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}

@@ -7,6 +7,8 @@
                 <p class="df-delivery-center__subtitle">Proof of delivery across the fleet.</p>
             </header>
 
+            <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
+
             <section class="df-delivery-center__new-form">
                 <h3 class="df-delivery-center__section-title">Record Delivery</h3>
                 <div class="df-delivery-center__new-fields">
