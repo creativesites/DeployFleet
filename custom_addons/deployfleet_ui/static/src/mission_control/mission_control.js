@@ -117,6 +117,9 @@ export class DeployfleetMissionControl extends Component {
             activeVehicles: 0,
             activeShipments: 0,
             confirmedRevenue: 0,
+            setupItemsTotal: 0,
+            setupItemsDone: 0,
+            setupStripDismissed: false,
         });
 
         onWillStart(() => this.loadData());
@@ -144,6 +147,8 @@ export class DeployfleetMissionControl extends Component {
             activeVehicles,
             activeShipments,
             confirmedInvoices,
+            setupItemsTotal,
+            setupItemsDone,
         ] = await Promise.all([
             this.orm.searchCount("deployfleet.shipment", [["state", "=", "confirmed"]]),
             this.orm.searchCount("deployfleet.compliance.document", [["state", "=", "expiring_soon"]]),
@@ -156,6 +161,12 @@ export class DeployfleetMissionControl extends Component {
                 [["state", "in", ["confirmed", "assigned", "in_transit"]]],
             ),
             this.orm.searchRead("deployfleet.invoice", [["state", "=", "confirmed"]], ["amount_total"]),
+            // First-Time Experience checklist (doc 22) - the one existing-
+            // screen touch the Help Center feature makes. Own group,
+            // deployfleet.help.checklist.progress rows are already scoped
+            // to the current user by the backend's own ir.rule.
+            this.orm.searchCount("deployfleet.help.checklist.item", []),
+            this.orm.searchCount("deployfleet.help.checklist.progress", [["done", "=", true]]),
         ]);
 
         this.state.unassignedShipments = unassignedShipments;
@@ -166,6 +177,24 @@ export class DeployfleetMissionControl extends Component {
         this.state.activeVehicles = activeVehicles;
         this.state.activeShipments = activeShipments;
         this.state.confirmedRevenue = confirmedInvoices.reduce((sum, invoice) => sum + invoice.amount_total, 0);
+        this.state.setupItemsTotal = setupItemsTotal;
+        this.state.setupItemsDone = setupItemsDone;
+    }
+
+    get showSetupStrip() {
+        return (
+            !this.state.setupStripDismissed &&
+            this.state.setupItemsTotal > 0 &&
+            this.state.setupItemsDone < this.state.setupItemsTotal
+        );
+    }
+
+    onDismissSetupStrip() {
+        this.state.setupStripDismissed = true;
+    }
+
+    onContinueSetup() {
+        this.actionService.doAction("deployfleet_ui.action_deployfleet_help_center", { clearBreadcrumbs: true });
     }
 
     get formattedRevenue() {

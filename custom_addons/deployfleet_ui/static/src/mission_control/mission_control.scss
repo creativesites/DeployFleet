@@ -40,6 +40,59 @@
     margin-bottom: var(--df-space-3);
 }
 
+// First-Time Experience "finish setup" strip (doc 22) - an onboarding
+// nudge, not a "something's wrong" signal, so it deliberately uses the
+// info status-semantic color rather than the attention strip's own
+// danger/warning palette.
+.df-mission-control__setup-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--df-space-2);
+    flex-wrap: wrap;
+    padding: var(--df-space-1) var(--df-space-2);
+    margin-bottom: var(--df-space-3);
+    border-radius: var(--df-radius-md);
+    background: var(--df-color-info-bg);
+    color: var(--df-color-info);
+}
+
+.df-mission-control__setup-strip-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+}
+
+.df-mission-control__setup-strip-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.df-mission-control__setup-strip-continue {
+    min-height: 44px;
+    padding: 6px var(--df-space-2);
+    border: none;
+    border-radius: 999px;
+    background: var(--df-color-info);
+    color: var(--df-color-neutral-0);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    cursor: pointer;
+}
+
+.df-mission-control__setup-strip-dismiss {
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    background: none;
+    color: var(--df-color-info);
+    cursor: pointer;
+}
+
 .df-mission-control__all-clear {
     color: var(--df-color-success);
     font-weight: var(--df-font-weight-medium);

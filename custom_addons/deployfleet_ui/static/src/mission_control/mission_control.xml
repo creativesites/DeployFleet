@@ -9,6 +9,21 @@
 
             <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
 
+            <div t-if="!state.loading and showSetupStrip" class="df-mission-control__setup-strip">
+                <div class="df-mission-control__setup-strip-text">
+                    <i class="fa fa-graduation-cap"/>
+                    <span>Finish setting up DeployFleet — <t t-esc="state.setupItemsDone"/> of <t t-esc="state.setupItemsTotal"/> done.</span>
+                </div>
+                <div class="df-mission-control__setup-strip-actions">
+                    <button type="button" class="df-mission-control__setup-strip-continue" t-on-click="() => this.onContinueSetup()">
+                        Continue
+                    </button>
+                    <button type="button" class="df-mission-control__setup-strip-dismiss" t-on-click="() => this.onDismissSetupStrip()">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </div>
+
             <section t-if="!state.loading and hasAttentionItems" class="df-mission-control__attention">
                 <DeployfleetStatusPill t-foreach="attentionPills" t-as="item" t-key="item.stateKey"
                                        label="item.label"

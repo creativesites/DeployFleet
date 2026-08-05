@@ -87,6 +87,92 @@
     margin-bottom: var(--df-space-3);
 }
 
+// First-Time Experience checklist (doc 22's onboarding section).
+.df-help-center__checklist {
+    margin-bottom: var(--df-space-3);
+    padding: var(--df-space-2);
+    border-radius: var(--df-radius-lg);
+    background: var(--df-color-neutral-0);
+    border: 1px solid var(--df-color-neutral-300);
+}
+
+.df-help-center__checklist-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--df-space-1);
+}
+
+.df-help-center__checklist-header h2 {
+    margin: 0;
+    font-size: var(--df-font-size-md);
+}
+
+.df-help-center__checklist-progress {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+}
+
+.df-help-center__checklist-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.df-help-center__checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: var(--df-space-1) 0;
+    border-top: 1px solid var(--df-color-neutral-100);
+}
+
+.df-help-center__checklist-item:first-child {
+    border-top: none;
+}
+
+.df-help-center__checklist-item--done .df-help-center__checklist-item-title {
+    color: var(--df-color-neutral-600);
+    text-decoration: line-through;
+}
+
+.df-help-center__checklist-check {
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 44px;
+    border: none;
+    background: none;
+    color: var(--df-color-primary);
+    font-size: var(--df-font-size-lg);
+    cursor: pointer;
+}
+
+.df-help-center__checklist-item-body {
+    padding-top: 10px;
+}
+
+.df-help-center__checklist-item-title {
+    font-weight: var(--df-font-weight-medium);
+}
+
+.df-help-center__checklist-item-description {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+    margin-top: 2px;
+}
+
+.df-help-center__checklist-item-actions {
+    display: flex;
+    gap: var(--df-space-2);
+    margin-top: 4px;
+}
+
+.df-help-center__checklist-item-actions a {
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-primary);
+    cursor: pointer;
+}
+
 // Mobile-first: one column by default, more on wider viewports.
 .df-help-center__cards {
     display: grid;

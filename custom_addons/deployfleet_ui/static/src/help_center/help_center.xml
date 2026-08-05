@@ -28,6 +28,37 @@
                     <p class="df-help-center__intro">
                         Everything you need to know about running your fleet with DeployFleet, in plain language.
                     </p>
+
+                    <div t-if="state.checklistItems.length" class="df-help-center__checklist">
+                        <div class="df-help-center__checklist-header">
+                            <h2>Get set up</h2>
+                            <span class="df-help-center__checklist-progress"
+                                  t-esc="checklistDoneCount + ' of ' + state.checklistItems.length + ' done'"/>
+                        </div>
+                        <ul class="df-help-center__checklist-items">
+                            <li t-foreach="state.checklistItems" t-as="item" t-key="item.id"
+                                t-attf-class="df-help-center__checklist-item {{ isChecklistItemDone(item.id) ? 'df-help-center__checklist-item--done' : '' }}">
+                                <button type="button" class="df-help-center__checklist-check"
+                                        t-att-disabled="state.checklistBusyItemId === item.id"
+                                        t-on-click="() => this.onToggleChecklistItem(item)">
+                                    <i t-attf-class="fa {{ isChecklistItemDone(item.id) ? 'fa-check-square-o' : 'fa-square-o' }}"/>
+                                </button>
+                                <div class="df-help-center__checklist-item-body">
+                                    <div class="df-help-center__checklist-item-title" t-esc="item.title"/>
+                                    <div t-if="item.description" class="df-help-center__checklist-item-description" t-esc="item.description"/>
+                                    <div class="df-help-center__checklist-item-actions">
+                                        <a t-if="item.action_xml_id" href="#" t-on-click.prevent="() => this.onChecklistItemAction(item)">
+                                            Do this
+                                        </a>
+                                        <a t-if="item.related_article_id" href="#" t-on-click.prevent="() => this.onChecklistItemLearnMore(item)">
+                                            Learn more
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                     <div class="df-help-center__cards">
                         <DeployfleetCard t-foreach="homeCards" t-as="card" t-key="card.key" layer="'command'" interactive="true">
                             <div class="df-help-center__home-card" t-on-click="() => this.onHomeCardClick(card.key)">

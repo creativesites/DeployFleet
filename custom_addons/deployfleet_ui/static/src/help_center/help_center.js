@@ -96,6 +96,7 @@ export class DeployfleetHelpCenter extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
+        this.actionService = useService("action");
         this.homeCards = HOME_CARDS;
         this.state = useState({
             loading: true,
@@ -111,6 +112,9 @@ export class DeployfleetHelpCenter extends Component {
             searchQuery: "",
             searchResults: [],
             searching: false,
+            checklistItems: [],
+            checklistProgressByItemId: {},
+            checklistBusyItemId: null,
         });
 
         onWillStart(() => this.loadInitial());
@@ -136,7 +140,7 @@ export class DeployfleetHelpCenter extends Component {
             ]);
             this.state.categories = categories;
             this.state.workflows = workflows;
-            await this.resolveContext();
+            await Promise.all([this.loadChecklist(), this.resolveContext()]);
         } catch (error) {
             this.state.loadError = extractErrorMessage(error);
         } finally {
@@ -167,6 +171,81 @@ export class DeployfleetHelpCenter extends Component {
         }
         if (category) {
             await this.openCategory(category);
+        }
+    }
+
+    /**
+     * First-Time Experience checklist (doc 22's onboarding section),
+     * rendered on the `home` section. Only the first active checklist
+     * is shown - `deployfleet_help` seeds exactly one ("First-Time
+     * Setup"); a future role-specific second checklist would need this
+     * to become a picker, not attempted speculatively now. Progress
+     * rows are scoped to the current user by the backend's own ir.rule
+     * (`deployfleet_help_checklist_progress_rule_own`), so this plain
+     * `searchRead([])` already only ever sees the caller's own rows.
+     */
+    async loadChecklist() {
+        const [checklist] = await this.orm.searchRead(
+            "deployfleet.help.checklist", [], ["id"], { limit: 1, order: "sequence" },
+        );
+        if (!checklist) {
+            return;
+        }
+        const [items, progress] = await Promise.all([
+            this.orm.searchRead(
+                "deployfleet.help.checklist.item",
+                [["checklist_id", "=", checklist.id]],
+                ["title", "description", "icon", "action_xml_id", "related_article_id"],
+                { order: "sequence" },
+            ),
+            this.orm.searchRead(
+                "deployfleet.help.checklist.progress", [], ["checklist_item_id", "done"],
+            ),
+        ]);
+        this.state.checklistItems = items;
+        this.state.checklistProgressByItemId = Object.fromEntries(
+            progress.map((p) => [p.checklist_item_id[0], p]),
+        );
+    }
+
+    get checklistDoneCount() {
+        return this.state.checklistItems.filter((item) => this.state.checklistProgressByItemId[item.id]?.done)
+            .length;
+    }
+
+    isChecklistItemDone(itemId) {
+        return Boolean(this.state.checklistProgressByItemId[itemId]?.done);
+    }
+
+    async onToggleChecklistItem(item) {
+        this.state.checklistBusyItemId = item.id;
+        try {
+            const existing = this.state.checklistProgressByItemId[item.id];
+            if (existing) {
+                await this.orm.call("deployfleet.help.checklist.progress", "action_toggle_done", [[existing.id]]);
+                this.state.checklistProgressByItemId[item.id] = { ...existing, done: !existing.done };
+            } else {
+                const [progressId] = await this.orm.create(
+                    "deployfleet.help.checklist.progress", [{ checklist_item_id: item.id, done: true }],
+                );
+                this.state.checklistProgressByItemId[item.id] = { id: progressId, done: true };
+            }
+        } catch (error) {
+            this.notification.add(extractErrorMessage(error), { type: "danger" });
+        } finally {
+            this.state.checklistBusyItemId = null;
+        }
+    }
+
+    onChecklistItemAction(item) {
+        if (item.action_xml_id) {
+            this.actionService.doAction(item.action_xml_id, { clearBreadcrumbs: true });
+        }
+    }
+
+    onChecklistItemLearnMore(item) {
+        if (item.related_article_id) {
+            this.openArticle(item.related_article_id[0]);
         }
     }
 
