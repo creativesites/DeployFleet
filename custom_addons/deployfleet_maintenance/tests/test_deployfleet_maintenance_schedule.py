@@ -84,3 +84,46 @@ class TestDeployfleetMaintenanceSchedule(TransactionCase):
         job_card = schedule.action_create_job_card()
         self.assertEqual(job_card.maintenance_schedule_id, schedule)
         self.assertEqual(job_card.vehicle_id, self.vehicle)
+
+    def test_closing_linked_job_card_resets_the_schedule(self):
+        """Regression test for an engineering-audit finding (C-14):
+        closing a job card opened from a maintenance-due alert never
+        reset the schedule it came from - next_due_odometer/next_due_date
+        are only recomputed off last_service_odometer/last_service_date,
+        which only action_record_service() updates, so is_due stayed
+        True (or flipped back True on the very next cron run) forever
+        after the service was actually done."""
+        schedule = self.env["deployfleet.maintenance.schedule"].create({
+            "vehicle_id": self.vehicle.id, "name": "Oil Change",
+            "interval_km": 5000.0, "last_service_odometer": 45000.0,
+        })
+        self.assertTrue(schedule.is_due)
+        job_card = schedule.action_create_job_card()
+        job_card.action_start_diagnosis()
+        job_card.action_start_repair()
+        job_card.action_submit_for_approval()
+        self.vehicle.odometer = 51000.0
+        job_card.action_close()
+
+        self.assertEqual(job_card.state, "closed")
+        self.assertEqual(schedule.last_service_odometer, 51000.0)
+        self.assertFalse(schedule.is_due)
+        self.assertFalse(schedule.due_notified)
+
+    def test_closing_an_unlinked_job_card_does_not_touch_any_schedule(self):
+        """A job card not opened from a maintenance-due alert has no
+        maintenance_schedule_id - closing it must not error and must
+        not affect an unrelated schedule on the same vehicle."""
+        schedule = self.env["deployfleet.maintenance.schedule"].create({
+            "vehicle_id": self.vehicle.id, "name": "Oil Change",
+            "interval_km": 5000.0, "last_service_odometer": 45000.0,
+        })
+        job_card = self.env["deployfleet.workshop.job.card"].create({"vehicle_id": self.vehicle.id})
+        job_card.action_start_diagnosis()
+        job_card.action_start_repair()
+        job_card.action_submit_for_approval()
+        job_card.action_close()
+
+        self.assertEqual(job_card.state, "closed")
+        self.assertEqual(schedule.last_service_odometer, 45000.0)
+        self.assertTrue(schedule.is_due)

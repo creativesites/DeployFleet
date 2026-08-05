@@ -32,3 +32,23 @@ class TestDeployfleetPart(TransactionCase):
     def test_cannot_receive_non_positive_quantity(self):
         with self.assertRaises(UserError):
             self.part.action_receive_stock(0.0)
+
+    def test_consume_stock_reads_current_db_quantity_not_a_stale_cache(self):
+        """Regression test for an engineering-audit finding (C-15): the
+        old implementation decremented self.quantity_on_hand (the ORM's
+        already-read, in-memory value) rather than re-reading the row -
+        under a concurrent write this let a caller commit a decrement
+        based on stock levels that were no longer current, silently
+        losing part of a concurrent update. Updating the row directly
+        via SQL (bypassing the recordset's ORM cache, simulating a
+        concurrent writer) and then calling action_consume_stock() proves
+        the fix reads the live row, not the stale cached value."""
+        self.env.cr.execute(
+            "UPDATE deployfleet_part SET quantity_on_hand = %s WHERE id = %s",
+            (3.0, self.part.id),
+        )
+        # self.part's ORM cache still holds quantity_on_hand == 10.0 here.
+        with self.assertRaises(UserError):
+            self.part.action_consume_stock(5.0)
+        self.part.invalidate_recordset(["quantity_on_hand"])
+        self.assertEqual(self.part.quantity_on_hand, 3.0)

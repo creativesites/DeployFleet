@@ -73,4 +73,15 @@ class DeployfleetWorkshopJobCard(models.Model):
             for line in job_card.line_ids.filtered(lambda ln: ln.line_type == "part"):
                 line.part_id.action_consume_stock(line.quantity)
             job_card.write({"state": "closed", "closed_date": fields.Date.context_today(job_card)})
-            job_card.vehicle_id.action_set_available()
+            # Engineering-audit fix: this previously marked the vehicle
+            # available unconditionally, even if a second, unrelated job
+            # card was still open on the SAME vehicle - closing the first
+            # one silently released the vehicle back into dispatch
+            # rotation while the second repair was still in progress.
+            other_open_job_cards = self.search([
+                ("vehicle_id", "=", job_card.vehicle_id.id),
+                ("state", "!=", "closed"),
+                ("id", "!=", job_card.id),
+            ])
+            if not other_open_job_cards:
+                job_card.vehicle_id.action_set_available()

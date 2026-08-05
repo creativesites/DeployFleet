@@ -47,12 +47,42 @@ class DeployfleetDispatchAssignment(models.Model):
         )
 
     def action_confirm(self):
+        """Engineering-audit fix: this method previously had no state
+        guard at all, and only compared scores among this shipment's own
+        sibling proposals before committing - nothing stopped two
+        different shipments each having a proposed assignment against
+        the *same* vehicle, and confirming both (sequentially, by two
+        different dispatchers, no concurrency required) silently
+        overwrote the vehicle's status a second time with no error.
+        Both gaps are closed here: a state guard rejects confirming
+        anything but a proposed assignment (blocks double-confirm), and
+        the vehicle's actual current availability is re-checked
+        immediately before committing, not just its sibling proposals'
+        scores."""
         for assignment in self:
+            if assignment.state != "proposed":
+                raise UserError(self.env._(
+                    "Only a proposed assignment can be confirmed - this one is '%(state)s'.",
+                    state=assignment.state,
+                ))
             higher_scored = assignment._higher_scored_siblings()
             if higher_scored and not assignment.override_reason:
                 raise UserError(self.env._(
                     "A higher-scored candidate is available for this shipment. "
                     "Provide an override reason to confirm this assignment instead."
+                ))
+            if assignment.vehicle_id.status != "available":
+                # Deliberately not override-able, unlike the higher-scored-
+                # candidate check above: that one is a scoring preference;
+                # this one is a physical conflict (the vehicle is already
+                # committed elsewhere) that confirming anyway wouldn't
+                # resolve, just paper over into the exact double-booked
+                # state this guard exists to prevent.
+                raise UserError(self.env._(
+                    "%(vehicle)s is no longer available (status: %(status)s) - it may have "
+                    "just been confirmed on another shipment. Choose a different vehicle for "
+                    "this assignment.",
+                    vehicle=assignment.vehicle_id.license_plate, status=assignment.vehicle_id.status,
                 ))
 
             assignment.state = "confirmed"
@@ -71,6 +101,8 @@ class DeployfleetDispatchAssignment(models.Model):
 
     def action_cancel(self):
         for assignment in self:
+            if assignment.state == "cancelled":
+                raise UserError(self.env._("This assignment is already cancelled."))
             was_confirmed = assignment.state == "confirmed"
             assignment.state = "cancelled"
             if was_confirmed:

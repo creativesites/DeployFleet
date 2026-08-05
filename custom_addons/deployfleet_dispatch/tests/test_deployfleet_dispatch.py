@@ -214,3 +214,50 @@ class TestDeployfleetAssignmentConfirm(DeployfleetDispatchTestBase):
         self.assertEqual(event_name, "deployfleet.dispatch.assigned")
         self.assertEqual(payload["driver_id"], driver.id)
         self.assertEqual(payload["vehicle_id"], vehicle.id)
+
+    def test_confirming_an_already_confirmed_assignment_raises(self):
+        """Regression test for an engineering-audit finding:
+        action_confirm() had no state guard at all - a double-click (or
+        a client retry) could re-confirm an already-confirmed assignment
+        with no error."""
+        self._create_vehicle()
+        self._create_driver()
+        shipment = self._create_shipment()
+        [assignment] = shipment.action_suggest_assignments(limit=1)
+        assignment.action_confirm()
+        with self.assertRaises(UserError):
+            assignment.action_confirm()
+
+    def test_confirming_a_vehicle_already_committed_elsewhere_raises(self):
+        """Regression test: nothing previously stopped two different
+        shipments each having a proposed assignment against the SAME
+        vehicle, and confirming both - the second confirm silently
+        overwrote the vehicle's status a second time with no error,
+        double-booking it. Deliberately not override-able (unlike the
+        higher-scored-candidate check): a vehicle genuinely can't be in
+        two places, so an override wouldn't resolve the conflict, just
+        paper over it."""
+        vehicle = self._create_vehicle()
+        self._create_driver(name="Driver A")
+        self._create_driver(name="Driver B")
+        shipment_one = self._create_shipment()
+        shipment_two = self._create_shipment()
+        [assignment_one] = shipment_one.action_suggest_assignments(limit=1)
+        # Both shipments proposed against the same (only) vehicle.
+        [assignment_two] = shipment_two.action_suggest_assignments(limit=1)
+        self.assertEqual(assignment_one.vehicle_id, vehicle)
+        self.assertEqual(assignment_two.vehicle_id, vehicle)
+
+        assignment_one.action_confirm()
+        with self.assertRaises(UserError):
+            assignment_two.action_confirm()
+        self.assertEqual(assignment_two.state, "proposed")
+
+    def test_cancelling_an_already_cancelled_assignment_raises(self):
+        self._create_vehicle()
+        self._create_driver()
+        shipment = self._create_shipment()
+        [assignment] = shipment.action_suggest_assignments(limit=1)
+        assignment.action_cancel()
+        with self.assertRaises(UserError):
+            assignment.action_cancel()

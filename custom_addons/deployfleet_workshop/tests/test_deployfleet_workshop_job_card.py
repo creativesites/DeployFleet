@@ -54,3 +54,25 @@ class TestDeployfleetWorkshopJobCard(TransactionCase):
             self.env["deployfleet.workshop.job.line"].create({
                 "job_card_id": job_card.id, "line_type": "part", "quantity": 1.0,
             })
+
+    def test_closing_one_job_card_does_not_free_vehicle_while_another_is_still_open(self):
+        """Regression test for an engineering-audit finding (C-13):
+        action_close() previously marked the vehicle available
+        unconditionally, even if a second, unrelated job card on the
+        SAME vehicle was still open - closing the first one silently
+        released the vehicle back into dispatch rotation while a second
+        repair was still in progress."""
+        first = self.env["deployfleet.workshop.job.card"].create({"vehicle_id": self.vehicle.id})
+        second = self.env["deployfleet.workshop.job.card"].create({"vehicle_id": self.vehicle.id})
+        for job_card in (first, second):
+            job_card.action_start_diagnosis()
+            job_card.action_start_repair()
+            job_card.action_submit_for_approval()
+
+        first.action_close()
+        self.assertEqual(first.state, "closed")
+        self.assertEqual(self.vehicle.status, "maintenance")
+
+        second.action_close()
+        self.assertEqual(second.state, "closed")
+        self.assertEqual(self.vehicle.status, "available")
