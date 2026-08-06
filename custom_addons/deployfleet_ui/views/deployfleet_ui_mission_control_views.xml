@@ -17,4 +17,22 @@
               parent="deployfleet_core.menu_deployfleet_root"
               action="action_deployfleet_mission_control"
               sequence="0"/>
+
+    <!--
+        Odoo's web client picks the post-login landing screen by
+        selecting the first root-level app menu (by sequence, see
+        deployfleet_core's own menu_deployfleet_root for the sequence
+        fix) and calling selectMenu() on it directly - which does
+        nothing at all if that root menu itself has no action
+        (verified against the real menu_service.js source: `if
+        (!menu.actionID) return;`). menu_deployfleet_root is a pure
+        grouping menu with no action of its own, so without this the
+        sequence fix alone would land on a blank screen instead of
+        Mission Control. deployfleet_ui (not deployfleet_core) is the
+        right place to set this, since deployfleet_core can't reference
+        an action defined in a module that depends on it.
+    -->
+    <record id="deployfleet_core.menu_deployfleet_root" model="ir.ui.menu">
+        <field name="action" ref="action_deployfleet_mission_control"/>
+    </record>
 </odoo>

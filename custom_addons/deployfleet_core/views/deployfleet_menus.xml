@@ -5,9 +5,18 @@
         attach their own menus as children of this one via
         parent="deployfleet_core.menu_deployfleet_root" rather than each
         defining a separate top-level app entry.
+
+        sequence="1" (previously 20, Aug 2026): Odoo's web client picks
+        the landing screen after login by taking the first root-level app
+        menu ordered by this field (web/static/src/webclient/webclient.js
+        _loadDefaultApp(), verified against the real 19.0 source before
+        this change) - at 20, Discuss (mail.menu_root_discuss, sequence 5
+        in real Odoo core, also verified) always won, landing every user
+        on Discuss/OdooBot's welcome message instead of the product. 1 is
+        comfortably ahead of every stock app sequence seen in core so far.
     -->
     <menuitem id="menu_deployfleet_root"
               name="DeployFleet"
-              sequence="20"
+              sequence="1"
               web_icon="deployfleet_core,static/description/icon.png"/>
 </odoo>

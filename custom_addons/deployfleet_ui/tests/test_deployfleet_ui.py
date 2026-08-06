@@ -40,6 +40,29 @@ class TestDeployfleetUi(TransactionCase):
         siblings = self.env["ir.ui.menu"].search([("parent_id", "=", menu.parent_id.id)], order="sequence")
         self.assertEqual(siblings[0], menu)
 
+    def test_deployfleet_root_menu_opens_mission_control(self):
+        # Odoo's web client picks the post-login landing screen by
+        # selecting the first root-level app menu (by sequence) and
+        # running its own action directly - a root menu with no action
+        # of its own does nothing at all (verified against the real
+        # menu_service.js source). Without this, the sequence fix alone
+        # would land on a blank screen instead of Mission Control.
+        root_menu = self.env.ref("deployfleet_core.menu_deployfleet_root")
+        mission_control_action = self.env.ref("deployfleet_ui.action_deployfleet_mission_control")
+        self.assertEqual(root_menu.action, f"ir.actions.client,{mission_control_action.id}")
+
+    def test_deployfleet_root_menu_beats_discuss_sequence(self):
+        # Found live (Aug 2026): every user landed on Discuss/OdooBot's
+        # welcome message after login, since DeployFleet's own root menu
+        # (sequence 20) lost the "first root app" race to Discuss's
+        # (mail.menu_root_discuss, sequence 5 in real Odoo core). This
+        # pins the fix directly against Discuss's actual menu, not just
+        # an arbitrary low number, so a future change to either side
+        # that reintroduces the regression fails loudly here.
+        root_menu = self.env.ref("deployfleet_core.menu_deployfleet_root")
+        discuss_menu = self.env.ref("mail.menu_root_discuss")
+        self.assertLess(root_menu.sequence, discuss_menu.sequence)
+
     def test_dispatch_board_action_registered(self):
         action = self.env.ref("deployfleet_ui.action_deployfleet_dispatch_board")
         self.assertEqual(action.tag, "deployfleet_ui.dispatch_board")
