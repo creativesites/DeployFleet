@@ -297,8 +297,44 @@
     margin-bottom: var(--df-space-2);
 }
 
-.df-copilot-rail__message {
+// ---- Message row: avatar + bubble (chat polish pass) ----
+
+.df-copilot-rail__message-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    max-width: 100%;
+}
+
+.df-copilot-rail__message-row--user {
+    flex-direction: row-reverse;
+}
+
+.df-copilot-rail__message-avatar--ai {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--df-color-ai), #5b21b6);
+    color: var(--df-color-neutral-0);
+    font-size: 13px;
+}
+
+.df-copilot-rail__message-bubble {
+    display: flex;
+    flex-direction: column;
     max-width: 85%;
+    min-width: 0;
+}
+
+.df-copilot-rail__message-row--user .df-copilot-rail__message-bubble {
+    align-items: flex-end;
+}
+
+.df-copilot-rail__message {
     padding: 6px var(--df-space-1);
     border-radius: var(--df-radius-md);
     font-size: var(--df-font-size-sm);
@@ -306,23 +342,97 @@
 }
 
 .df-copilot-rail__message--user {
-    align-self: flex-end;
     background: var(--df-color-ai);
     color: var(--df-color-neutral-0);
 }
 
 .df-copilot-rail__message--assistant {
-    align-self: flex-start;
     background: var(--df-color-neutral-0);
     border: 1px solid var(--df-color-neutral-300);
     color: var(--df-color-neutral-900);
 }
 
-.df-copilot-rail__tool-calls {
-    margin: 4px 0 0 0;
-    font-size: var(--df-font-size-sm);
+.df-copilot-rail__message-time {
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--df-color-neutral-600);
+}
+
+.df-copilot-rail__tool-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.df-copilot-rail__tool-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--df-color-ai-bg);
     color: var(--df-color-ai);
-    opacity: 0.85;
+    font-size: 11px;
+    font-weight: var(--df-font-weight-medium);
+}
+
+// ---- First-run per-agent welcome/onboarding state ----
+
+.df-copilot-rail__welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--df-space-1);
+    padding: var(--df-space-3) var(--df-space-1);
+}
+
+.df-copilot-rail__welcome-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--df-color-ai-bg);
+    color: var(--df-color-ai);
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.df-copilot-rail__welcome-description {
+    margin: 0;
+    max-width: 320px;
+    color: var(--df-color-neutral-600);
+    font-size: var(--df-font-size-sm);
+}
+
+.df-copilot-rail__welcome-prompts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-top: var(--df-space-1);
+}
+
+.df-copilot-rail__welcome-prompt {
+    min-height: 44px;
+    padding: 8px var(--df-space-2);
+    border-radius: var(--df-radius-md);
+    border: 1px solid var(--df-color-neutral-300);
+    background: var(--df-color-neutral-0);
+    color: var(--df-color-neutral-900);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--df-duration-micro) var(--df-ease-micro);
+}
+
+.df-copilot-rail__welcome-prompt:hover {
+    border-color: var(--df-color-ai);
+    color: var(--df-color-ai);
 }
 
 .df-copilot-rail__context-chip {
@@ -418,10 +528,39 @@
     }
 }
 
+// A flat proposed_vals object (proposedValsEntries()'s happy path) reads
+// as a plain key/value list instead of the raw JSON block below — most
+// AI-proposed field writes are exactly this shape (a handful of scalar
+// fields), so this is the common case, not the fallback.
+.df-copilot-rail__item-payload-table {
+    width: 100%;
+    margin: 0 0 var(--df-space-2);
+    border-collapse: collapse;
+    font-size: var(--df-font-size-sm);
+
+    td {
+        padding: 3px var(--df-space-1);
+        border-bottom: 1px solid var(--df-color-neutral-100);
+        vertical-align: top;
+    }
+}
+
+.df-copilot-rail__item-payload-key {
+    width: 40%;
+    color: var(--df-color-neutral-600);
+    font-weight: var(--df-font-weight-medium);
+}
+
+.df-copilot-rail__item-payload-value {
+    color: var(--df-color-neutral-900);
+    word-break: break-word;
+}
+
 // Deliberately kept as a dark code block even on this light panel — a
 // dark, monospace payload viewer is the familiar convention for raw
 // JSON/code (editors, diffs, terminals), and reads clearly regardless of
-// the surrounding panel's theme.
+// the surrounding panel's theme. Now the fallback for anything nested/
+// unparseable, not the only rendering (see .df-copilot-rail__item-payload-table above).
 .df-copilot-rail__item-payload {
     max-height: 140px;
     overflow-y: auto;

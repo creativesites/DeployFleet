@@ -4,7 +4,9 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { registry } from "@web/core/registry";
+import { user } from "@web/core/user";
 import { DeployfleetButton } from "../components/button/button";
+import { DeployfleetAvatar } from "../components/avatar/avatar";
 import { copilotContextStore } from "./copilot_context";
 import { DeployfleetChatMessageRenderer } from "./chat_message_renderer";
 
@@ -13,6 +15,79 @@ import { DeployfleetErrorBanner } from "../components/error_banner/error_banner"
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
 }
+
+// Friendly label/icon for each deployfleet.ai.tool key (doc 21 §3's
+// registry) shown as a chip under an assistant message that invoked it -
+// a static client-side map, not a live read of deployfleet.ai.tool,
+// deliberately: group_deployfleet_driver has no ACL grant on that model
+// (dispatcher+ only, security/ir.model.access.csv in deployfleet_ai_agents),
+// and a driver-only demo/real session must still be able to see which
+// tool an assistant turn used. Six known keys as of doc 21 §10 Phase
+// 1b/3 - an unrecognized key (a future tool this map hasn't been updated
+// for) falls back to its raw key with a generic search icon rather than
+// being hidden.
+const TOOL_LABEL = {
+    get_vehicle_summary: { label: "Vehicle status", icon: "fa fa-truck" },
+    get_due_maintenance: { label: "Due maintenance", icon: "fa fa-wrench" },
+    get_available_drivers: { label: "Available drivers", icon: "fa fa-id-card" },
+    get_unassigned_shipments: { label: "Unassigned shipments", icon: "fa fa-cube" },
+    get_expiring_documents: { label: "Expiring documents", icon: "fa fa-file-text-o" },
+    mark_vehicle_available: { label: "Mark vehicle available", icon: "fa fa-check-circle" },
+};
+
+// First-run per-agent onboarding (doc 21's Phase C/D UX follow-up):
+// suggested prompts shown on a brand-new, message-free session, keyed by
+// deployfleet.ai.agent.key. fleet_analyst/dispatch_agent/maintenance_agent/
+// compliance_agent have real registered tools (deployfleet_ai_tool_data.xml)
+// so their prompts intentionally imply a live lookup; finance_agent/
+// customer_agent have none yet (that data file's own comment: "deliberately
+// excluded for now") so their prompts stay general-reasoning questions
+// rather than implying live data this session can't actually fetch.
+const AGENT_WELCOME = {
+    fleet_analyst: {
+        icon: "fa fa-truck",
+        prompts: [
+            "Which vehicles are currently in breakdown or maintenance?",
+            "Summarize the status of a specific vehicle by its license plate.",
+        ],
+    },
+    dispatch_agent: {
+        icon: "fa fa-th-large",
+        prompts: [
+            "Which drivers are available today?",
+            "What shipments still need a vehicle assigned?",
+        ],
+    },
+    maintenance_agent: {
+        icon: "fa fa-wrench",
+        prompts: [
+            "What maintenance is due soon across the fleet?",
+            "Summarize a vehicle's current maintenance status.",
+        ],
+    },
+    compliance_agent: {
+        icon: "fa fa-shield",
+        prompts: [
+            "What compliance documents are expiring soon?",
+            "Which vehicles or drivers have expired documents right now?",
+        ],
+    },
+    finance_agent: {
+        icon: "fa fa-money",
+        prompts: [
+            "What should I look at first to control costs this month?",
+            "Explain how the gross margin approximation on Financial Intelligence is calculated.",
+        ],
+    },
+    customer_agent: {
+        icon: "fa fa-users",
+        prompts: [
+            "What should I gather before onboarding a new customer?",
+            "How does a rate card differ from a contract?",
+        ],
+    },
+};
+const DEFAULT_AGENT_WELCOME = { icon: "fa fa-magic", prompts: [] };
 
 /**
  * The Copilot Rail (doc 16 §6/§8, Phase C / Slice 4) — a persistent,
@@ -62,7 +137,7 @@ function extractErrorMessage(error) {
  */
 export class DeployfleetCopilotRail extends Component {
     static template = "deployfleet_ui.CopilotRail";
-    static components = { DeployfleetButton, DeployfleetChatMessageRenderer, DeployfleetErrorBanner };
+    static components = { DeployfleetButton, DeployfleetAvatar, DeployfleetChatMessageRenderer, DeployfleetErrorBanner };
     static props = {};
 
     setup() {
@@ -152,15 +227,6 @@ export class DeployfleetCopilotRail extends Component {
         const domainPrefix = this.copilotContext.domain ? `${this.copilotContext.domain}: ` : "";
         return `Viewing ${domainPrefix}${this.copilotContext.recordLabel} `
             + `(${this.copilotContext.model} #${this.copilotContext.recordId})`;
-    }
-
-    /** doc 21 §5's transparency detail: which tool(s) an assistant turn
-     * actually invoked, as a short "looked up: ..." line. */
-    formattedToolCalls(toolCalls) {
-        if (!toolCalls || !toolCalls.length) {
-            return "";
-        }
-        return toolCalls.map((call) => call.tool).join(", ");
     }
 
     formattedProposedVals(proposedVals) {
@@ -256,13 +322,56 @@ export class DeployfleetCopilotRail extends Component {
         this.state.agents = await this.orm.searchRead(
             "deployfleet.ai.agent",
             [],
-            ["name", "feature_id", "system_prompt_template"],
+            ["key", "name", "description", "feature_id", "system_prompt_template"],
             { order: "sequence asc" },
         );
     }
 
     get filteredSessions() {
         return this.state.sessions.filter((s) => Boolean(s.archived) === this.state.showArchived);
+    }
+
+    /** The deployfleet.ai.agent behind the currently-open session, found
+     * by matching feature_id back to the loaded agent catalog — sessions
+     * deliberately don't store agent_id (see this file's own module
+     * docstring: deployfleet_ai_core must never depend on
+     * deployfleet_ai_agents), so this is the only way to recover "which
+     * agent is this" for the welcome state/suggested prompts below. */
+    get selectedAgent() {
+        const session = this.state.sessions.find((s) => s.id === this.state.selectedSessionId);
+        if (!session) {
+            return null;
+        }
+        return this.state.agents.find((a) => a.feature_id[0] === session.feature_id[0]) || null;
+    }
+
+    get selectedAgentWelcome() {
+        const agent = this.selectedAgent;
+        return (agent && AGENT_WELCOME[agent.key]) || DEFAULT_AGENT_WELCOME;
+    }
+
+    /** Current user's avatar, standard Odoo image-controller URL — the
+     * same convention used throughout the web client for a user's own
+     * avatar (no new RPC: user.userId already comes from the existing
+     * @web/core/user session singleton). */
+    get currentUserAvatarUrl() {
+        return `/web/image/res.users/${user.userId}/avatar_128`;
+    }
+
+    /** doc 21 §5's transparency detail, rendered as chips rather than a
+     * plain comma-joined string: {key, label, icon} per tool call, using
+     * TOOL_LABEL when known and falling back to the raw key otherwise so
+     * a future tool this map hasn't caught up with still shows *something*
+     * rather than being silently dropped. */
+    toolCallChips(toolCalls) {
+        return (toolCalls || []).map((call) => ({
+            key: call.tool,
+            ...(TOOL_LABEL[call.tool] || { label: call.tool, icon: "fa fa-search" }),
+        }));
+    }
+
+    onUseSuggestedPrompt(prompt) {
+        this.state.newMessageText = prompt;
     }
 
     onNewSessionAgentInput(value) {
@@ -306,7 +415,7 @@ export class DeployfleetCopilotRail extends Component {
         const messages = await this.orm.searchRead(
             "deployfleet.ai.chat.message",
             [["session_id", "=", sessionId]],
-            ["role", "content", "tool_calls", "rich_payload"],
+            ["role", "content", "tool_calls", "rich_payload", "create_date"],
             { order: "create_date asc" },
         );
         this.state.messagesBySessionId[sessionId] = messages.map((message) => ({
@@ -314,6 +423,43 @@ export class DeployfleetCopilotRail extends Component {
             toolCalls: this.parseJsonField(message.tool_calls),
             richPayload: this.parseJsonField(message.rich_payload),
         }));
+    }
+
+    /** Odoo returns datetime fields as naive UTC strings ("YYYY-MM-DD
+     * HH:MM:SS", no timezone marker) — parsing that directly with
+     * `new Date(str)` is interpreted as *local* time by JS, silently
+     * shifting every timestamp by the browser's UTC offset (the exact
+     * class of bug the engineering audit's C-16 fix already closed on
+     * the Trip Board calendar; reusing that same fix's
+     * `replace(" ", "T") + "Z"` pattern here rather than reintroducing
+     * it). */
+    formattedMessageTime(createDate) {
+        if (!createDate) {
+            return "";
+        }
+        const date = new Date(createDate.replace(" ", "T") + "Z");
+        return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    }
+
+    /** Approvals tab: a flat, single-level object renders as a readable
+     * key/value list instead of raw JSON; anything nested or unparseable
+     * falls back to the existing <pre> JSON view (formattedProposedVals)
+     * rather than trying to flatten arbitrary structures. */
+    proposedValsEntries(proposedVals) {
+        let parsed;
+        try {
+            parsed = JSON.parse(proposedVals);
+        } catch {
+            return null;
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            return null;
+        }
+        const entries = Object.entries(parsed);
+        if (!entries.length || entries.some(([, value]) => value !== null && typeof value === "object")) {
+            return null;
+        }
+        return entries;
     }
 
     /** `tool_calls`/`rich_payload` come back from the ORM as either a JSON

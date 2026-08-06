@@ -53,7 +53,15 @@
                                 <p t-if="request.action_method" class="df-copilot-rail__item-method">
                                     Will call <code t-esc="request.action_method"/> on record #<t t-esc="request.target_id"/>
                                 </p>
-                                <pre t-if="!request.action_method" class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                                <t t-if="!request.action_method">
+                                    <table t-if="this.proposedValsEntries(request.proposed_vals)" class="df-copilot-rail__item-payload-table">
+                                        <tr t-foreach="this.proposedValsEntries(request.proposed_vals)" t-as="entry" t-key="entry[0]">
+                                            <td class="df-copilot-rail__item-payload-key" t-esc="entry[0]"/>
+                                            <td class="df-copilot-rail__item-payload-value" t-esc="entry[1]"/>
+                                        </tr>
+                                    </table>
+                                    <pre t-else="" class="df-copilot-rail__item-payload" t-esc="this.formattedProposedVals(request.proposed_vals)"/>
+                                </t>
                                 <div class="df-copilot-rail__item-actions">
                                     <DeployfleetButton
                                         label="'Approve'"
@@ -140,18 +148,42 @@
 
                             <div class="df-copilot-rail__conversation">
                                 <t t-foreach="state.messagesBySessionId[state.selectedSessionId] or []" t-as="message" t-key="message_index">
-                                    <div t-attf-class="df-copilot-rail__message df-copilot-rail__message--{{ message.role }}">
-                                        <span t-esc="message.content"/>
-                                        <p t-if="message.toolCalls and message.toolCalls.length" class="df-copilot-rail__tool-calls">
-                                            <i class="fa fa-search"/> Looked up: <t t-esc="this.formattedToolCalls(message.toolCalls)"/>
-                                        </p>
+                                    <div t-attf-class="df-copilot-rail__message-row df-copilot-rail__message-row--{{ message.role }}">
+                                        <span t-if="message.role === 'assistant'" class="df-copilot-rail__message-avatar df-copilot-rail__message-avatar--ai">
+                                            <i class="fa fa-magic"/>
+                                        </span>
+                                        <DeployfleetAvatar t-if="message.role === 'user'" name="'You'" imageUrl="currentUserAvatarUrl" size="'sm'"/>
+                                        <div class="df-copilot-rail__message-bubble">
+                                            <div t-attf-class="df-copilot-rail__message df-copilot-rail__message--{{ message.role }}">
+                                                <span t-esc="message.content"/>
+                                            </div>
+                                            <div t-if="message.toolCalls and message.toolCalls.length" class="df-copilot-rail__tool-chips">
+                                                <span t-foreach="this.toolCallChips(message.toolCalls)" t-as="chip" t-key="chip.key" class="df-copilot-rail__tool-chip">
+                                                    <i t-att-class="chip.icon"/> <t t-esc="chip.label"/>
+                                                </span>
+                                            </div>
+                                            <span t-if="message.create_date" class="df-copilot-rail__message-time" t-esc="this.formattedMessageTime(message.create_date)"/>
+                                        </div>
                                     </div>
                                     <DeployfleetChatMessageRenderer
                                         t-if="message.richPayload and message.richPayload.components"
                                         components="message.richPayload.components"/>
                                 </t>
-                                <p t-if="(state.messagesBySessionId[state.selectedSessionId] or []).length === 0"
-                                   class="df-copilot-rail__empty">Ask this agent anything.</p>
+
+                                <div t-if="(state.messagesBySessionId[state.selectedSessionId] or []).length === 0" class="df-copilot-rail__welcome">
+                                    <span class="df-copilot-rail__welcome-icon">
+                                        <i t-att-class="selectedAgentWelcome.icon"/>
+                                    </span>
+                                    <p t-if="selectedAgent and selectedAgent.description" class="df-copilot-rail__welcome-description" t-esc="selectedAgent.description"/>
+                                    <p t-else="" class="df-copilot-rail__welcome-description">Ask this agent anything.</p>
+                                    <div t-if="selectedAgentWelcome.prompts.length" class="df-copilot-rail__welcome-prompts">
+                                        <button t-foreach="selectedAgentWelcome.prompts" t-as="prompt" t-key="prompt"
+                                                type="button" class="df-copilot-rail__welcome-prompt"
+                                                t-on-click="() => this.onUseSuggestedPrompt(prompt)">
+                                            <t t-esc="prompt"/>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div t-if="contextNote" class="df-copilot-rail__context-chip">
