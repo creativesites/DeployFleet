@@ -40,6 +40,87 @@
     margin-bottom: var(--df-space-3);
 }
 
+// Demo-only welcome card - the same "featured panel" visual language as
+// the login page's demo-login section (tinted wash, bordered, generous
+// padding), so a demo visitor sees one consistent "this is a guided
+// moment" treatment across the two places they'll encounter it.
+.df-mission-control__welcome {
+    position: relative;
+    margin-bottom: var(--df-space-3);
+    padding: var(--df-space-3);
+    padding-right: var(--df-space-6);
+    border-radius: var(--df-radius-lg);
+    border: 1px solid var(--df-color-neutral-300);
+    background: linear-gradient(180deg, var(--df-tint-primary-subtle), transparent);
+}
+
+.df-mission-control__welcome-dismiss {
+    position: absolute;
+    top: var(--df-space-1);
+    right: var(--df-space-1);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--df-color-neutral-600);
+    cursor: pointer;
+}
+
+.df-mission-control__welcome-heading {
+    margin: 0 0 4px;
+    font-size: var(--df-font-size-lg);
+    font-weight: var(--df-font-weight-bold);
+    color: var(--df-color-neutral-900);
+}
+
+.df-mission-control__welcome-pitch {
+    margin: 0 0 var(--df-space-2);
+    font-size: var(--df-font-size-base);
+    color: var(--df-color-neutral-700);
+}
+
+.df-mission-control__welcome-bullets {
+    margin: 0 0 var(--df-space-2);
+    padding-left: 1.2em;
+    font-size: var(--df-font-size-sm);
+    color: var(--df-color-neutral-600);
+
+    li {
+        margin-bottom: 4px;
+    }
+}
+
+.df-mission-control__welcome-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.df-mission-control__welcome-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px var(--df-space-2);
+    border: 1px solid var(--df-color-neutral-300);
+    border-radius: 999px;
+    background: var(--df-color-neutral-0);
+    color: var(--df-color-primary);
+    font-family: var(--df-font-family);
+    font-size: var(--df-font-size-sm);
+    font-weight: var(--df-font-weight-medium);
+    cursor: pointer;
+    transition:
+        border-color var(--df-duration-micro) var(--df-ease-micro),
+        transform var(--df-duration-micro) var(--df-ease-micro);
+
+    &:hover {
+        border-color: var(--df-color-primary);
+        transform: translateY(-1px);
+    }
+}
+
 // First-Time Experience "finish setup" strip (doc 22) - an onboarding
 // nudge, not a "something's wrong" signal, so it deliberately uses the
 // info status-semantic color rather than the attention strip's own

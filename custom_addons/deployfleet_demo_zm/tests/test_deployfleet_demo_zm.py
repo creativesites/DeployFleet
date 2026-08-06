@@ -49,6 +49,42 @@ class TestDeployfleetDemoZm(TransactionCase):
     def test_compliance_override_log_created_for_expired_vehicle(self):
         self.assertTrue(self.env["deployfleet.dispatch.compliance.override.log"].search([]))
 
+    def test_confirmed_unassigned_shipments_exist_for_dispatch_board(self):
+        # Found live (Aug 2026): every shipment the seed data created went
+        # straight through confirm-and-assign in one step, leaving zero
+        # shipments in "confirmed" state - the Dispatch Board's whole
+        # assignment-suggestion flow had nothing to demo. Pins the fix
+        # directly against the state Mission Control's own attention
+        # strip and the Dispatch Board both key off.
+        confirmed = self.env["deployfleet.shipment"].search([("state", "=", "confirmed")])
+        self.assertGreaterEqual(len(confirmed), 3)
+        self.assertFalse(
+            self.env["deployfleet.dispatch.assignment"].search([("shipment_id", "in", confirmed.ids)]),
+            "these shipments are meant to stay unassigned for the Dispatch Board to suggest against",
+        )
+
+    def test_compliance_documents_have_a_real_state_spread(self):
+        # Found live (Aug 2026): all 24 seeded compliance documents shared
+        # one hard-coded expiry_date (300 days out), so the Compliance
+        # Center's Traffic-Light Wall was 100% green - nothing to demo.
+        # Pins the fix directly against the states the wall's chips key off.
+        states = set(self.env["deployfleet.compliance.document"].search([]).mapped("state"))
+        self.assertIn("valid", states)
+        self.assertIn("expiring_soon", states)
+        self.assertIn("expired", states)
+
+    def test_driver_reliability_scores_span_all_scorecard_bands(self):
+        # Found live (Aug 2026): only 2 of 7 drivers had any performance
+        # events at all, so Driver Scorecards' Watch (50-79) and At Risk
+        # (<50) filter chips were always empty - nothing to demo besides
+        # the default "Good" band. Pins the fix directly against the
+        # score thresholds the scorecard's own chips filter on.
+        drivers = self.env["hr.employee"].search([("deployfleet_is_driver", "=", True)])
+        scores = drivers.mapped("deployfleet_reliability_score")
+        self.assertTrue(any(score >= 80 for score in scores), "expected at least one driver in the Good band")
+        self.assertTrue(any(50 <= score < 80 for score in scores), "expected at least one driver in the Watch band")
+        self.assertTrue(any(score < 50 for score in scores), "expected at least one driver in the At Risk band")
+
     def test_breakdown_vehicle_has_breakdown_status(self):
         vehicle = self.env["deployfleet.vehicle"].search([("license_plate", "=", "ABT 2207")], limit=1)
         self.assertEqual(vehicle.status, "breakdown")

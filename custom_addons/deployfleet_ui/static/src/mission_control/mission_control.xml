@@ -9,6 +9,26 @@
 
             <DeployfleetErrorBanner t-if="!state.loading and state.loadError" message="state.loadError"/>
 
+            <div t-if="showWelcomeCard" class="df-mission-control__welcome">
+                <button type="button" class="df-mission-control__welcome-dismiss" t-on-click="() => this.onDismissWelcome()"
+                        aria-label="Dismiss">
+                    <i class="fa fa-times"/>
+                </button>
+                <h2 class="df-mission-control__welcome-heading" t-esc="welcomeContent.heading"/>
+                <p class="df-mission-control__welcome-pitch" t-esc="welcomeContent.pitch"/>
+                <ul class="df-mission-control__welcome-bullets">
+                    <li t-foreach="welcomeContent.bullets" t-as="bullet" t-key="bullet" t-esc="bullet"/>
+                </ul>
+                <div class="df-mission-control__welcome-links">
+                    <button t-foreach="welcomeContent.links" t-as="link" t-key="link.actionXmlId"
+                            type="button" class="df-mission-control__welcome-link"
+                            t-on-click="() => this.onWelcomeLinkClick(link)">
+                        <i t-att-class="link.icon"/>
+                        <span t-esc="link.label"/>
+                    </button>
+                </div>
+            </div>
+
             <div t-if="!state.loading and showSetupStrip" class="df-mission-control__setup-strip">
                 <div class="df-mission-control__setup-strip-text">
                     <i class="fa fa-graduation-cap"/>

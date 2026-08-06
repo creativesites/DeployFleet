@@ -213,6 +213,32 @@ def _create_insurance_and_compliance(env, vehicles):
     insurer = env["res.partner"].create({"name": "Madison General Insurance Zambia", "is_company": True})
 
     today = date.today()
+
+    # Compliance Center (doc 20's Traffic-Light Wall) needs a real spread of
+    # valid/expiring_soon/expired chips to demo, the same way the insurance
+    # policies below already vary - found live (Aug 2026) that every one of
+    # the 24 seeded compliance documents was hard-coded to expiry_date =
+    # today + 300 days, so the wall was 100% green for every vehicle.
+    # EXPIRING_SOON_DAYS is 30 (deployfleet_compliance/models/
+    # deployfleet_compliance_document.py) - offsets below are chosen to sit
+    # clearly inside/outside that threshold, not just barely on either side.
+    doc_expiry_offsets = {
+        # truck_8 already carries the deliberately-expired insurance policy
+        # (exercises the compliance-override log) - stack an expired
+        # roadworthiness certificate on the same vehicle too, so the wall
+        # shows a vehicle that's genuinely non-compliant across documents.
+        ("truck_8", "vehicle_roadworthiness"): -10,
+        ("truck_8", "vehicle_permit"): 12,
+        # truck_2 already carries the expiring-soon insurance policy -
+        # give it an expired permit and an expiring-soon roadworthiness
+        # certificate, a second vehicle worth clicking into.
+        ("truck_2", "vehicle_permit"): -5,
+        ("truck_2", "vehicle_roadworthiness"): 25,
+        # A third vehicle with just one expiring-soon document, so the
+        # amber state isn't only ever paired with an already-flagged truck.
+        ("truck_5", "vehicle_roadworthiness"): 18,
+    }
+
     for key, vehicle in vehicles.items():
         if key == "truck_8":
             end_date = today - timedelta(days=15)  # deliberately expired - exercises the override log
@@ -230,13 +256,14 @@ def _create_insurance_and_compliance(env, vehicles):
             "premium_amount": 18500.0,
         })
         for doc_type in (roadworthiness, permit, registration):
+            offset_days = doc_expiry_offsets.get((key, doc_type.code), 300)
             document_model.create({
                 "document_type_id": doc_type.id,
                 "res_model": "deployfleet.vehicle",
                 "res_id": vehicle.id,
                 "reference_number": f"{doc_type.code.upper()}-{vehicle.license_plate.replace(' ', '')}",
                 "issue_date": today - timedelta(days=200),
-                "expiry_date": today + timedelta(days=300),
+                "expiry_date": today + timedelta(days=offset_days),
             })
 
 
@@ -461,6 +488,25 @@ def _run_operations(env, customers, depots, routes, vehicles, drivers):
         env, customer_list[3], depots["Lusaka HQ"], depots["Livingstone"], 5000.0, -2, "Next week's retail delivery",
     )
 
+    # Confirmed, awaiting dispatch - the exact real-world state the
+    # Dispatch Board's assignment-suggestion flow is built to work with
+    # (found missing entirely, Aug 2026: every other shipment above goes
+    # straight through confirm-and-assign in one step via
+    # _assign_confirm_and_get_trip, and the one shipment left alone above
+    # is never confirmed at all, so the demo database had zero shipments
+    # in "confirmed" state - a visitor opening the Dispatch Board saw an
+    # empty board with nothing to suggest or assign). Deliberately calls
+    # only action_confirm(), the same call _assign_confirm_and_get_trip
+    # itself makes as its own first line, without creating a dispatch
+    # assignment - these are meant to stay unassigned.
+    for customer_info, pickup, dropoff, weight, cargo, days_ago in [
+        (customer_list[0], depots["Ndola"], depots["Livingstone"], 4800.0, "Assorted retail stock", 1),
+        (customer_list[2], depots["Livingstone"], depots["Lusaka HQ"], 3200.0, "Tourism equipment", 0),
+        (customer_list[4], depots["Kitwe"], depots["Ndola"], 9500.0, "Agro-processing inputs", 2),
+    ]:
+        shipment = _create_shipment(env, customer_info, pickup, dropoff, weight, days_ago, cargo)
+        shipment.action_confirm()
+
 
 # ---------------------------------------------------------------------
 # HR extras: leave, driver advances, load expenses, loans, performance
@@ -520,6 +566,31 @@ def _create_hr_extras(env, drivers, admin):
         "date": date.today() - timedelta(days=8), "score_impact": -3.0,
         "description": "Delivery arrived 90 minutes after the planned window.",
     })
+
+    # Driver Scorecards' filter chips (Good 80+/Watch 50-79/At Risk <50)
+    # had nothing to show for two of the three bands - found live (Aug
+    # 2026), only driver_1/driver_5 had any events at all, so 5 of 7
+    # drivers sat at the untouched default score of 100. driver_3 and
+    # driver_7 are left with a clean record on purpose, as the "Good"
+    # exemplars alongside driver_1/driver_5's minor dings.
+    # score_impact values mirror this module's own suggested defaults
+    # (deployfleet_driver_performance/models/deployfleet_driver_performance_event.py's
+    # DEFAULT_SCORE_IMPACT) - accident -20, violation -10, speeding -5.
+    for driver_key, event_type, days_ago, score_impact, description in [
+        ("driver_4", "accident", 40, -20.0, "Minor collision reversing into a loading bay in Kitwe."),
+        ("driver_4", "violation", 25, -10.0, "Overweight load flagged at a Copperbelt weighbridge."),
+        ("driver_4", "speeding", 10, -5.0, "Speed alert on the Kitwe-Ndola corridor."),
+        ("driver_6", "accident", 60, -20.0, "Rear-ended at a Lusaka intersection while queued in traffic."),
+        ("driver_6", "accident", 30, -20.0, "Ran off the shoulder avoiding a pothole near Kapiri Mposhi."),
+        ("driver_6", "violation", 14, -10.0, "Driving without a valid trip sheet."),
+        ("driver_6", "speeding", 5, -5.0, "Speed alert on the Lusaka-Kabwe corridor."),
+    ]:
+        performance_model.create({
+            "driver_id": drivers[driver_key].id, "event_type": event_type,
+            "date": date.today() - timedelta(days=days_ago),
+            "score_impact": score_impact,
+            "description": description,
+        })
 
 
 def _create_payslips(env, drivers):

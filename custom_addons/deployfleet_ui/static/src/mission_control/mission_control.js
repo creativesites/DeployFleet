@@ -3,6 +3,7 @@
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { user } from "@web/core/user";
 import { DeployfleetStatusPill } from "../components/status_pill/status_pill";
 import { DeployfleetMetricCard } from "../components/metric_card/metric_card";
 import { DEPLOYFLEET_MEGA_MENU_DOMAINS } from "../mega_menu/domain_content";
@@ -11,6 +12,76 @@ import { DeployfleetErrorBanner } from "../components/error_banner/error_banner"
 
 function extractErrorMessage(error) {
     return error?.data?.message || error?.message || "Something went wrong. Please try again.";
+}
+
+const SESSION_STORAGE_KEY = "deployfleet_demo_welcome_dismissed";
+
+// Demo-only welcome card content (doc 22 follow-up, Aug 2026) - shown
+// instead of the First-Time Setup strip above, never alongside it, since
+// that strip's copy ("Add your first vehicle", "Create your first
+// shipment") is written for a real customer setting up their own
+// company and would actively confuse a demo visitor browsing pre-seeded
+// data. Detected purely client-side from the login string
+// deployfleet_demo_zm's own controller creates (demo.<role>@deployfleet.
+// demo) - no new backend field/RPC needed. Deliberately excludes
+// "customer": that persona is a portal user (base.group_portal), which
+// never lands on Mission Control at all - it gets Odoo's separate portal
+// UI, a genuinely different surface this card can't reach.
+//
+// Quick-link destinations were chosen only after checking each role's
+// actual ACLs, not assumed: group_deployfleet_driver has read access to
+// deployfleet.trip/.shipment/.vehicle but NOT deployfleet.driver.
+// performance.event (dispatcher/manager-only, a real pre-existing gap
+// flagged separately, not fixed here) - so Driver's own links stay to
+// Trip Board and Help Center rather than Driver Scorecards, which would
+// 403 on the very screen this card recommends.
+const DEMO_ROLE_CONTENT = {
+    owner: {
+        heading: "You're exploring DeployFleet as Owner / Manager",
+        pitch: "Full visibility — every workspace, every domain, no restrictions.",
+        bullets: [
+            "The attention strip and KPIs below update live from real demo data.",
+            "You can reach every domain — Dispatch, Fleet, Compliance, Billing, AI.",
+            "Ask the Copilot a question about the fleet — it's a real, working assistant.",
+        ],
+        links: [
+            { actionXmlId: "deployfleet_ui.action_deployfleet_dispatch_board", label: "Dispatch Board", icon: "fa fa-th-large" },
+            { actionXmlId: "deployfleet_ui.action_deployfleet_fleet_command_center", label: "Fleet Command Center", icon: "fa fa-truck" },
+            { actionXmlId: "deployfleet_ui.action_deployfleet_copilot_console", label: "Copilot Console", icon: "fa fa-magic" },
+        ],
+    },
+    dispatcher: {
+        heading: "You're exploring DeployFleet as a Dispatcher",
+        pitch: "This is where live operations get run — day in, day out.",
+        bullets: [
+            "The Dispatch Board is your main workspace: confirm shipments, assign drivers and vehicles.",
+            "Track every vehicle's status and trips from the Fleet Command Center.",
+            "Compliance issues that could block a dispatch show up automatically.",
+        ],
+        links: [
+            { actionXmlId: "deployfleet_ui.action_deployfleet_dispatch_board", label: "Dispatch Board", icon: "fa fa-th-large" },
+            { actionXmlId: "deployfleet_ui.action_deployfleet_trip_board", label: "Trip Board", icon: "fa fa-road" },
+            { actionXmlId: "deployfleet_ui.action_deployfleet_fleet_command_center", label: "Fleet Command Center", icon: "fa fa-truck" },
+        ],
+    },
+    driver: {
+        heading: "You're exploring DeployFleet as a Driver",
+        pitch: "The road-facing side of the product — what a driver sees day to day.",
+        bullets: [
+            "The Trip Board shows assigned trips, in the same real data every other role sees.",
+            "This demo shows the backend web view — the real driver experience is a dedicated mobile app.",
+            "Need a hand? The Help Center (bottom-left corner) has plain-language guides.",
+        ],
+        links: [
+            { actionXmlId: "deployfleet_ui.action_deployfleet_trip_board", label: "Trip Board", icon: "fa fa-road" },
+            { actionXmlId: "deployfleet_ui.action_deployfleet_help_center", label: "Help Center", icon: "fa fa-question-circle" },
+        ],
+    },
+};
+
+function getDemoRole() {
+    const match = /^demo\.([a-z]+)@deployfleet\.demo$/.exec(user.login || "");
+    return match ? match[1] : null;
 }
 
 // Every domain here is the underlying record set doc 16 §3.3 calls for
@@ -120,7 +191,14 @@ export class DeployfleetMissionControl extends Component {
             setupItemsTotal: 0,
             setupItemsDone: 0,
             setupStripDismissed: false,
+            // sessionStorage, not localStorage: demo accounts are one
+            // shared login used by many different real visitors, so the
+            // welcome card should reappear on every fresh login, but not
+            // re-flash every time someone navigates back to Mission
+            // Control mid-session.
+            welcomeDismissed: window.sessionStorage.getItem(SESSION_STORAGE_KEY) === "1",
         });
+        this.demoRole = getDemoRole();
 
         onWillStart(() => this.loadData());
     }
@@ -183,6 +261,7 @@ export class DeployfleetMissionControl extends Component {
 
     get showSetupStrip() {
         return (
+            !this.demoRole &&
             !this.state.setupStripDismissed &&
             this.state.setupItemsTotal > 0 &&
             this.state.setupItemsDone < this.state.setupItemsTotal
@@ -195,6 +274,29 @@ export class DeployfleetMissionControl extends Component {
 
     onContinueSetup() {
         this.actionService.doAction("deployfleet_ui.action_deployfleet_help_center", { clearBreadcrumbs: true });
+    }
+
+    get welcomeContent() {
+        return this.demoRole ? DEMO_ROLE_CONTENT[this.demoRole] : null;
+    }
+
+    get showWelcomeCard() {
+        // Guards against an unrecognized role (e.g. "customer", which
+        // never actually reaches Mission Control - portal users get a
+        // different UI surface entirely - but defensively checked here
+        // rather than assumed): DEMO_ROLE_CONTENT has no entry for it,
+        // so welcomeContent would be null and the template would throw
+        // reading .heading off it.
+        return Boolean(this.welcomeContent) && !this.state.welcomeDismissed;
+    }
+
+    onDismissWelcome() {
+        this.state.welcomeDismissed = true;
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, "1");
+    }
+
+    onWelcomeLinkClick(link) {
+        this.actionService.doAction(link.actionXmlId, { clearBreadcrumbs: true });
     }
 
     get formattedRevenue() {
