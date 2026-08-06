@@ -29,6 +29,12 @@
     // own rgb (#00d2ff == rgb(0, 210, 255)), not a resting-elevation
     // shadow, so it's its own token rather than reusing --df-shadow-hover.
     --df-glow-accent: 0 6px 20px rgba(0, 210, 255, 0.35);
+    // Light washes of --df-color-primary's own rgb (#0b93d3 ==
+    // rgb(11, 147, 211)), for hover/active backgrounds on chrome that
+    // needs to stay subtle (e.g. the top navbar's nav-entry states) —
+    // too faint to use as a resting surface, only as a state indicator.
+    --df-tint-primary-subtle: rgba(11, 147, 211, 0.08);
+    --df-tint-primary-active: rgba(11, 147, 211, 0.12);
 
     // ---- Neutral scale (Workspace Layer surfaces, body text, borders) ----
     // neutral-900/300/100 retargeted to the new styling guide's exact

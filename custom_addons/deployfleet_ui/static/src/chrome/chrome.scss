@@ -1,0 +1,53 @@
+// Global Odoo chrome restyle — retheme's Odoo's own top navbar/systray/
+// breadcrumbs to DeployFleet's brand, per the user's explicit "global
+// chrome only" scope choice (CSS-token overrides against stable,
+// well-known Odoo classes, deliberately NOT xpath template surgery like
+// web/deployfleet_ui_login_templates.xml carries). This is what a user
+// sees on every single screen, including the stock Odoo list/form/kanban
+// views this project hasn't custom-built yet, so it's the highest-
+// leverage single file for "doesn't feel like an Odoo ERP" (doc 20 §1)
+// outside of the domains already fully redesigned.
+//
+// Verified against Odoo 19.0's real
+// addons/web/static/src/webclient/navbar/navbar.xml / navbar.scss source
+// before writing this (not guessed) - same discipline the login page
+// redesign used. Odoo's own navbar SCSS already exposes several of these
+// as CSS custom properties read via var(--x, <scss-fallback>) (e.g.
+// --NavBar-entry-backgroundColor--hover, --o-navbar-badge-bg); those are
+// overridden here at their live custom-property names. A few navbar
+// properties (background, border-bottom, font-size on .o_main_navbar
+// itself) are compiled directly from Sass variables with no var()
+// wrapper at all, so they're overridden with plain CSS rules instead,
+// relying on normal cascade order - deployfleet_ui's web.assets_backend
+// entries load after core web's own, the same safe assumption the login
+// page's .oe_login_buttons override already relies on.
+//
+// Deliberately NOT included in this batch: a global .btn-primary
+// retheme. Bootstrap's button-variant mixin compiles distinct rules for
+// base/:hover/:focus/:active/:disabled states (confirmed by reading
+// primary_variables.scss's button-variant map before writing this) -
+// doing this correctly needs to cover all of them consistently across
+// every stock view in all 45 backend modules, none of which can be
+// click-tested from this environment. Sized differently from the navbar
+// (one element vs. every button in the product) and deliberately
+// deferred to its own follow-up batch rather than shipped half-covered.
+
+.o_main_navbar {
+    background: var(--df-color-neutral-0);
+    border-bottom: 1px solid var(--df-color-neutral-300);
+
+    --NavBar-brand-color: var(--df-color-neutral-900);
+    --NavBar-entry-color: var(--df-color-neutral-700);
+    --NavBar-entry-backgroundColor--hover: var(--df-tint-primary-subtle);
+    --NavBar-entry-backgroundColor--focus: var(--df-tint-primary-subtle);
+    --NavBar-entry-backgroundColor--active: var(--df-tint-primary-active);
+    --NavBar-entry-borderColor-active: var(--df-color-primary);
+    --NavBar-entry-color--active: var(--df-color-primary);
+
+    --o-navbar-badge-bg: var(--df-color-danger);
+    --o-navbar-badge-color: var(--df-color-neutral-0);
+
+    .oi-apps {
+        color: var(--df-color-primary);
+    }
+}
