@@ -18,34 +18,34 @@ in any OWL template.
 
 ## What's actually here today
 
-Two raster lockups supplied by the user (Aug 2026) — no vector source
-exists yet, so these are the only real assets, not a placeholder list:
+The first batch (Aug 2026) was two raster lockups with baked-in
+backgrounds. A second batch, supplied the same month, added real
+transparent-background assets — those are now the preferred source for
+anything that needs to sit on a colored or dark surface; the originals
+are kept for their specific light/dark-background use cases.
 
 | Filename | Size | Use |
 |---|---|---|
-| `logo-full-light-bg.png` | 1584×672, source-quality | Full wordmark + icon + tagline, navy text, for light backgrounds. Large — use `-web` variant in actual UI. |
-| `logo-full-light-bg-web.png` | 760×322 | Same, downscaled for real on-screen use (login page, Help Center header). |
-| `logo-full-dark-bg.jpg` | 597×244, source-quality | Same lockup, white text, for dark backgrounds. Low source resolution — visibly soft above ~300px display width. |
-| `logo-mark.png` | 270×230 | Icon-only crop (the "D" mark), cropped from the light lockup. **Not a transparent cutout** — carries the light lockup's own subtle paper-texture background baked in, so it only reads cleanly on near-white/`--df-color-neutral-100`-ish surfaces, not on the brand gradient, dark Command Layer glass, or any other colored chrome. |
-| `logo-mark-web.png` | 97×82 | Downscaled icon crop, for small chrome (login page badge, favicon source at current fidelity). |
+| `logo-mark-transparent.png` | 169×171, real alpha transparency | **Preferred icon mark.** The "D" mark with a genuinely transparent background — safe to composite onto the brand gradient, dark Command Layer glass, or any colored chrome, unlike the earlier crop below. Used for the Odoo Apps-list module icon (`deployfleet_core/static/description/icon.png`, a direct copy of this file) and the Launcher header's brand mark. |
+| `logo-mark-transparent-web.png` | 97×97 | Downscaled version of the above, for small chrome — this is what the Launcher header actually loads. |
+| `logo-full-transparent.png` | 1146×292, real alpha transparency | **Preferred full lockup.** Icon + "DeployFleet" wordmark + tagline, navy text, transparent background, source quality. |
+| `logo-full-transparent-web.png` | 760×194 | Downscaled version for real on-screen use. |
+| `logo-full-light-bg.png` / `-web.png` | 1584×672 / 760×322 | First-batch lockup with an opaque light paper-texture background baked in — still fine on near-white surfaces (e.g. the login page, which already uses this one), but superseded by the transparent version above for anything else. |
+| `logo-full-dark-bg.jpg` | 597×244, source-quality | White-text lockup for dark backgrounds. Low source resolution — visibly soft above ~300px display width. No transparent dark-text-on-light equivalent needed now that the transparent lockup composites cleanly on any surface. |
+| `logo-mark.png` / `-web.png` | 270×230 / 97×82 | First-batch icon crop, **not transparent** (carries the light lockup's paper texture) — superseded by `logo-mark-transparent*.png` for new work; kept since nothing currently depends on removing it. |
 
 ## Still genuinely missing — get from the designer when possible
 
 - A true vector (`logo-full.svg`, `logo-mark.svg`) — everything above is
   raster, so it will soften at large display sizes or high-DPI zoom.
-- A transparent-background icon mark, for compositing onto the brand
-  gradient, dark Command Layer glass, or any surface that isn't
-  near-white — the current `logo-mark*.png` files cannot be used there
-  without visible edge artifacts.
 - `favicon.ico` / `favicon-192.png` / `favicon-512.png` — not generated
-  yet; `logo-mark-web.png` is the best current source if one needs to be
-  produced from what exists today, but a purpose-cut icon would look
-  sharper at favicon sizes.
+  yet; `logo-mark-transparent-web.png` is a good source to produce one
+  from, but a purpose-cut icon would look sharper at favicon sizes.
 
-## Also worth updating separately, not part of this directory
+## Also worth knowing
 
-`custom_addons/deployfleet_core/static/description/icon.png` is a
-different Odoo convention entirely — the module icon shown in Odoo's own
-Apps list — and should be swapped for the new logo mark once a proper
-square asset (ideally vector or the transparent cutout above) exists. It
-isn't touched by this directory or by anything that reads from it.
+`custom_addons/deployfleet_core/static/description/icon.png` (the Odoo
+Apps-list module icon) is a direct copy of `logo-mark-transparent.png`,
+not a reference to it — Odoo's module-icon convention doesn't support
+loading from another module's `static/` tree, so the file is duplicated
+there. If the mark is ever revised, that copy needs updating too.

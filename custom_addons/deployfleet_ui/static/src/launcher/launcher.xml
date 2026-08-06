@@ -14,7 +14,9 @@
                 <div class="df-launcher">
                     <div class="df-launcher__header">
                         <div class="df-launcher__brand">
-                            <span class="df-launcher__brand-mark">DF</span>
+                            <span class="df-launcher__brand-mark">
+                                <img src="/deployfleet_ui/static/img/brand/logo-mark-transparent-web.png" alt="DeployFleet"/>
+                            </span>
                             <div>
                                 <h2 class="df-launcher__title">DeployFleet Launcher</h2>
                                 <p class="df-launcher__subtitle">Jump to any workspace. Alt+L to open, Esc to close.</p>

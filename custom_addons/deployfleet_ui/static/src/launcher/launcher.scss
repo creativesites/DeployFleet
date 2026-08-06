@@ -106,10 +106,13 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    border-radius: var(--df-radius-sm);
-    background: var(--df-color-accent);
-    color: var(--df-color-neutral-0);
-    font-weight: var(--df-font-weight-bold);
+    flex-shrink: 0;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
 }
 
 .df-launcher__title {
@@ -160,6 +163,41 @@
     // row instead of leaving the wrap point to chance.
     .df-launcher__search {
         flex-basis: 100%;
+    }
+
+    // The header used to wrap to 3+ rows on a phone (brand row, full-
+    // width search row, and the close button left to flex-wrap onto
+    // wherever it landed) - tall enough to push the actual workspace
+    // grids mostly off-screen and leave the close button in an
+    // unpredictable spot. Taken out of the flex flow entirely and
+    // pinned to the corner instead, the standard mobile-modal pattern,
+    // so it's always reachable in the same place regardless of how the
+    // rest of the header wraps; the subtitle is dropped since it's
+    // decorative copy that isn't worth its own line on a short viewport.
+    .df-launcher__header {
+        position: relative;
+        padding-right: 48px;
+    }
+
+    .df-launcher__subtitle {
+        display: none;
+    }
+
+    .df-launcher__brand-mark {
+        width: 28px;
+        height: 28px;
+    }
+
+    .df-launcher__title {
+        font-size: var(--df-font-size-base);
+    }
+
+    .df-launcher__close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 36px;
+        height: 36px;
     }
 }
 
@@ -229,6 +267,31 @@
 
 .df-launcher__priority-pill:hover {
     transform: translateY(-1px);
+}
+
+// On a phone, content-sized flex-wrap pills tend to land one per row
+// (each pill's natural width, driven by its label + icon + shortcut
+// badge, comfortably exceeds half the viewport) - an actual grid forces
+// two per row regardless of label length. The Alt+<letter> shortcut
+// badge is also dropped here: it's a desktop power-user affordance with
+// no equivalent on a touchscreen (no physical Alt key), so showing it on
+// mobile was already dead weight, not just a space problem.
+@media (max-width: 640px) {
+    .df-launcher__priority-strip {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--df-space-1);
+    }
+
+    .df-launcher__priority-pill {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: flex-start;
+    }
+
+    .df-launcher__shortcut-badge {
+        display: none;
+    }
 }
 
 .df-launcher__shortcut-badge {
@@ -382,16 +445,6 @@
     .df-launcher__grid {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--df-space-1);
-    }
-}
-
-// Two columns of a 160px minimum still doesn't comfortably fit a
-// narrow phone (~360px viewport minus panel padding and the gap) —
-// drop to one column rather than letting tiles get uncomfortably
-// cramped or overflow.
-@media (max-width: 400px) {
-    .df-launcher__grid {
-        grid-template-columns: 1fr;
     }
 }
 
