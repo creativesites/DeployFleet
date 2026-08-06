@@ -4,9 +4,31 @@
         <field name="name">DeployFleet Operations</field>
     </record>
 
+    <!--
+        implied_ids includes base.group_user (Odoo's own "Internal User"
+        baseline) at this, the base of the whole driver -> dispatcher ->
+        manager -> owner chain - found missing entirely (Aug 2026, from a
+        live 403 on res.partner for a real dispatcher/driver-only login,
+        the first time this project ever exercised one outside a
+        superuser test run). Without it, every role except owner (which
+        only ever got base.group_user *transitively*, through its
+        owner-only hr_payroll_officer/system_auditor grants below - manager
+        was equally exposed, just never observed since no manager-only
+        login had been tried either) had no access to res.partner or any
+        other core Odoo model gated behind the standard Internal User
+        group - not a narrow oversight, since res.partner alone is
+        referenced by nearly every model in the product (partner_id
+        fields, breadcrumbs, avatars). A DeployFleet driver/dispatcher is
+        a real internal staff member of the trucking company, not a
+        portal/external contact, so implying base.group_user here is the
+        correct baseline, not a workaround - the same pattern
+        hr.group_hr_user (implied by hr_payroll_officer/system_auditor
+        below) already uses in real Odoo core.
+    -->
     <record id="group_deployfleet_driver" model="res.groups">
         <field name="name">DeployFleet Driver</field>
         <field name="privilege_id" ref="group_privilege_deployfleet_operations"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_deployfleet_dispatcher" model="res.groups">

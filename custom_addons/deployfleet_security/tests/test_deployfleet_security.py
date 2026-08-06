@@ -55,6 +55,29 @@ class TestDeployfleetSecurityGroups(TransactionCase):
         })
         self.assertNotIn(payroll_officer, user.group_ids)
 
+    def test_driver_implies_base_group_user(self):
+        # Found live (Aug 2026): a real dispatcher/driver-only login hit a
+        # 403 on res.partner, since neither group had any path to Odoo's
+        # own "Internal User" baseline - only owner did, transitively,
+        # through its owner-only hr_payroll_officer/system_auditor grants.
+        # Fixed at the base of the chain so driver/dispatcher/manager all
+        # inherit it, matching the pattern hr.group_hr_user already uses
+        # in real Odoo core.
+        driver = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        self.assertIn(self.env.ref("base.group_user"), driver.implied_ids)
+
+    def test_user_in_driver_group_can_read_res_partner(self):
+        driver = self.env.ref("deployfleet_security.group_deployfleet_driver")
+        user = self.env["res.users"].create({
+            "name": "Test Driver Only",
+            "login": "test_driver_only@example.com",
+            "group_ids": [(6, 0, [driver.id])],
+        })
+        self.assertIn(self.env.ref("base.group_user"), user.group_ids)
+        # The actual real-world failure mode, not just a group-membership
+        # check: this raised AccessError before the fix.
+        self.env["res.partner"].with_user(user).search([], limit=1)
+
 
 @tagged("post_install", "-at_install")
 class TestDeployfleetLicense(TransactionCase):
