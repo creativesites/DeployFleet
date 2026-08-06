@@ -41,67 +41,142 @@
     }
 }
 
+// The demo section is the primary focus of this page (it's a live demo
+// server, not a real customer's production login) - a tinted, bordered
+// "featured" panel above the real credential form, not a small
+// afterthought appended below it. See deployfleet_ui_login_templates.xml
+// for why this is now a single <form> with formaction-carrying buttons,
+// not four separate forms.
 .df-demo-login {
+    margin-bottom: var(--df-space-3);
+    padding: var(--df-space-3);
+    border-radius: var(--df-radius-lg);
+    border: 1px solid var(--df-color-neutral-300);
+    background: linear-gradient(180deg, var(--df-tint-primary-subtle), transparent);
+
+    &__heading {
+        margin: 0 0 4px;
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-lg);
+        font-weight: var(--df-font-weight-bold);
+        color: var(--df-color-neutral-900);
+    }
+
+    &__subheading {
+        margin: 0 0 var(--df-space-2);
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-sm);
+        color: var(--df-color-neutral-600);
+    }
+
     &__grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--df-space-1);
-    }
-
-    &__form {
+        gap: var(--df-space-2);
         margin: 0;
+        padding: 0;
+        border: none;
     }
 
-    // 64px, comfortably past this module's established 44px touch-target
-    // minimum - these read as quick-access tiles, not compact buttons.
-    &__btn {
+    // Full role-card treatment (icon chip + title + description), not a
+    // compact pill - this is the page's primary call to action, so it
+    // gets the visual weight to match. Comfortably past this module's
+    // established 44px touch-target minimum on every axis.
+    &__card {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
+        align-items: flex-start;
         width: 100%;
-        min-height: 64px;
-        padding: var(--df-space-1);
+        box-sizing: border-box;
+        padding: var(--df-space-2);
         border: 1px solid var(--df-color-neutral-300);
         border-radius: var(--df-radius-md);
         background: var(--df-color-neutral-0);
-        color: var(--df-color-neutral-900);
-        font-family: var(--df-font-family);
-        font-size: var(--df-font-size-sm);
-        font-weight: var(--df-font-weight-medium);
+        text-align: left;
         cursor: pointer;
         transition:
             border-color var(--df-duration-micro) var(--df-ease-micro),
-            transform var(--df-duration-micro) var(--df-ease-micro);
-
-        i {
-            font-size: var(--df-font-size-md);
-            color: var(--df-color-primary);
-        }
+            transform var(--df-duration-micro) var(--df-ease-micro),
+            box-shadow var(--df-duration-micro) var(--df-ease-micro);
 
         &:hover {
             border-color: var(--df-color-primary);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: var(--df-shadow-hover);
         }
 
         &:active {
             transform: scale(0.98);
         }
     }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--df-gradient-brand);
+        color: var(--df-color-neutral-0);
+        font-size: var(--df-font-size-md);
+        margin-bottom: var(--df-space-1);
+    }
+
+    &__card-title {
+        font-family: var(--df-font-family);
+        font-weight: var(--df-font-weight-bold);
+        font-size: var(--df-font-size-base);
+        color: var(--df-color-neutral-900);
+    }
+
+    &__card-desc {
+        margin-top: 2px;
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-sm);
+        color: var(--df-color-neutral-600);
+    }
+
+    // A plain text divider ("Or sign in with your account") between the
+    // featured demo panel and the real credential form below it - signals
+    // the manual form is still fully functional, just secondary, without
+    // shrinking its inputs (which would hurt usability for anyone who
+    // does need to type real credentials).
+    &__divider {
+        position: relative;
+        margin: 0 0 var(--df-space-2);
+        text-align: center;
+        font-family: var(--df-font-family);
+        font-size: var(--df-font-size-sm);
+        color: var(--df-color-neutral-500);
+
+        span {
+            position: relative;
+            z-index: 1;
+            background: var(--df-color-neutral-0);
+            padding: 0 var(--df-space-1);
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px solid var(--df-color-neutral-300);
+        }
+    }
 }
 
-// Mobile-first: two columns down to 400px (matches the Launcher's own
-// destination-grid breakpoint), one column below it.
 @media (max-width: 400px) {
-    .df-demo-login__grid {
-        grid-template-columns: 1fr;
+    .df-demo-login {
+        padding: var(--df-space-2);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .oe_login_buttons .btn.btn-primary,
-    .df-demo-login__btn {
+    .df-demo-login__card {
         transition: none;
     }
 }

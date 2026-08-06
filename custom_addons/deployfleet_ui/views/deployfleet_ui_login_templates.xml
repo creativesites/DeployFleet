@@ -24,7 +24,7 @@
              checked against the real 19.0 web.login_layout source before
              being used here. -->
         <xpath expr="//div[contains(@t-attf-class, 'o_database_list')]" position="attributes">
-            <attribute name="style">max-width: 420px;</attribute>
+            <attribute name="style">max-width: 560px;</attribute>
         </xpath>
         <xpath expr="//div[hasclass('text-center') and hasclass('pb-3') and hasclass('border-bottom')]" position="replace">
             <div class="df-login-brand text-center pb-3 border-bottom mb-4">
@@ -36,45 +36,64 @@
     </template>
 
     <template id="web_login_deployfleet_demo_buttons" inherit_id="web.login">
-        <!-- oe_login_buttons is the same container Odoo's own "Log in as
-             superuser" (debug mode) and OAuth provider links already
-             append into - the established, intended extension point for
-             alternate ways to authenticate from this page. -->
-        <xpath expr="//div[hasclass('oe_login_buttons')]" position="inside">
+        <!--
+            v2 (Aug 2026): the first version nested four <form> elements
+            inside Odoo's own oe_login_form - invalid HTML. Browsers
+            handle a nested <form> open tag by ignoring it (parse error)
+            but still honor its matching </form> close tag, which closes
+            the *outer* form early. That silently broke the first demo
+            button (Owner) - stripped of any enclosing form, its submit
+            did nothing at all - while the other three "accidentally"
+            worked, since the outer form's premature closure happened to
+            let their own <form> tags open validly afterward. Root-caused
+            from the user's exact symptom ("owner does nothing, the other
+            three work") rather than guessed.
+
+            Fixed structurally, not patched: this whole block now targets
+            oe_login_form itself (position="before"), placing it as a
+            sibling *before* the real form rather than a descendant
+            nested inside it - impossible to hit the same bug again
+            since there's nothing to nest into. It's also now a single
+            <form> with one shared csrf_token and four
+            formaction-carrying submit buttons (a real HTML5 mechanism,
+            not a hack) rather than four separate forms, so there is
+            only ever one <form> in this block, period.
+
+            Repositioned above the real form, not below it, since this
+            page is primarily a demo entry point per explicit user
+            direction - the manual credential form is secondary but
+            untouched, exactly as before.
+        -->
+        <xpath expr="//form[contains(@t-attf-class, 'oe_login_form')]" position="before">
             <t t-if="request.env['ir.config_parameter'].sudo().get_param('deployfleet_demo_zm.demo_login_enabled') == 'True'">
                 <div class="df-demo-login">
-                    <em class="d-block my-3 small text-center text-muted">— or explore a live demo —</em>
-                    <div class="df-demo-login__grid">
-                        <form method="post" action="/web/login/demo/owner" class="df-demo-login__form">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--owner">
-                                <i class="fa fa-user" role="presentation"/>
-                                <span>Owner / Manager</span>
-                            </button>
-                        </form>
-                        <form method="post" action="/web/login/demo/dispatcher" class="df-demo-login__form">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--dispatcher">
-                                <i class="fa fa-random" role="presentation"/>
-                                <span>Dispatcher</span>
-                            </button>
-                        </form>
-                        <form method="post" action="/web/login/demo/driver" class="df-demo-login__form">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--driver">
-                                <i class="fa fa-truck" role="presentation"/>
-                                <span>Driver</span>
-                            </button>
-                        </form>
-                        <form method="post" action="/web/login/demo/customer" class="df-demo-login__form">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <button type="submit" class="df-demo-login__btn df-demo-login__btn--customer">
-                                <i class="fa fa-briefcase" role="presentation"/>
-                                <span>Customer</span>
-                            </button>
-                        </form>
-                    </div>
+                    <h2 class="df-demo-login__heading">Explore a live demo</h2>
+                    <p class="df-demo-login__subheading">No signup, no password — pick a role below to see DeployFleet from that seat.</p>
+                    <form method="post" class="df-demo-login__grid">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <button type="submit" formaction="/web/login/demo/owner" class="df-demo-login__card">
+                            <span class="df-demo-login__icon"><i class="fa fa-user" role="presentation"/></span>
+                            <span class="df-demo-login__card-title">Owner / Manager</span>
+                            <span class="df-demo-login__card-desc">Full visibility — every workspace, every domain.</span>
+                        </button>
+                        <button type="submit" formaction="/web/login/demo/dispatcher" class="df-demo-login__card">
+                            <span class="df-demo-login__icon"><i class="fa fa-random" role="presentation"/></span>
+                            <span class="df-demo-login__card-title">Dispatcher</span>
+                            <span class="df-demo-login__card-desc">Live operations — assign trips, run the board.</span>
+                        </button>
+                        <button type="submit" formaction="/web/login/demo/driver" class="df-demo-login__card">
+                            <span class="df-demo-login__icon"><i class="fa fa-truck" role="presentation"/></span>
+                            <span class="df-demo-login__card-title">Driver</span>
+                            <span class="df-demo-login__card-desc">The road view — trips, inspections, deliveries.</span>
+                        </button>
+                        <button type="submit" formaction="/web/login/demo/customer" class="df-demo-login__card">
+                            <span class="df-demo-login__icon"><i class="fa fa-briefcase" role="presentation"/></span>
+                            <span class="df-demo-login__card-title">Customer</span>
+                            <span class="df-demo-login__card-desc">Track shipments — the client-facing portal.</span>
+                        </button>
+                    </form>
                 </div>
+                <p class="df-demo-login__divider"><span>Or sign in with your account</span></p>
             </t>
         </xpath>
     </template>
