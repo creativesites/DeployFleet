@@ -68,3 +68,25 @@ class TestDeployfleetVehicle(TransactionCase):
     def test_payload_capacity_is_gvw_minus_tare(self):
         vehicle = self._create_vehicle(gross_vehicle_weight_kg=32000.0, tare_weight_kg=9000.0)
         self.assertEqual(vehicle.payload_capacity_kg, 23000.0)
+
+    def test_dispatcher_can_read_fleet_vehicle_model(self):
+        # Regression test for a real ACL gap the user hit live as Owner:
+        # Fleet Command Center's Vehicle Profile edit section populates
+        # its model dropdown with a direct searchRead("fleet.vehicle.
+        # model", ...) — a native Odoo Fleet app model, not a DeployFleet
+        # one. fleet.vehicle.model's own ACL (addons/fleet/security/
+        # ir.model.access.csv) only grants read to fleet_group_user/
+        # fleet_group_manager, and no DeployFleet group ever implied
+        # either — so even the Owner, who already has full deployfleet.
+        # vehicle CRUD via the dispatcher->manager->owner implied chain,
+        # hit "You are not allowed to access 'Model of a vehicle'".
+        # Fixed with a dispatcher-level read grant (covers dispatcher,
+        # manager, and owner uniformly, same as every other ACL fix in
+        # this project) rather than granting the native fleet_group_
+        # manager group wholesale.
+        dispatcher_group = self.env.ref("deployfleet_security.group_deployfleet_dispatcher")
+        dispatcher_user = self.env["res.users"].create({
+            "name": "Test Dispatcher", "login": "test_dispatcher_fleet_model@example.com",
+            "email": "test_dispatcher_fleet_model@example.com", "group_ids": [(6, 0, [dispatcher_group.id])],
+        })
+        self.env["fleet.vehicle.model"].with_user(dispatcher_user).search([], limit=1)
